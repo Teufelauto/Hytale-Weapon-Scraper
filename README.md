@@ -1,7 +1,7 @@
 # Hytale-Weapon-Scraper
 Turn JSON weapon assets into a flat CSV.
 
-Currently only produces a CSV of Weapons. If you use Linux, the Godot User folder is somewhere else.
+Currently only produces a CSV of Weapons.
 # Instructions
 Coded in Godot 4.6
 
@@ -9,6 +9,8 @@ There is no GUI. It just opens a rectangle, letting you know it ran that you the
 
 Compiled executable must be run once to create folder:
 C:\Users\~UserName~\AppData\Roaming\Godot\app_userdata\Hytale Weapon Scraper
+
+ If you use Linux, the Godot User folder is ~/.local/share/godot/app_userdata/Hytale Weapon Scraper
 You may need to enable "Show Hidden Items" in File Explorer.
 
 Copy "Item" folder from Hytale assets.zip 
