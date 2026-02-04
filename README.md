@@ -11,7 +11,6 @@ Compiled executable must be run once to create folder:
 C:\Users\~UserName~\AppData\Roaming\Godot\app_userdata\Hytale Weapon Scraper
 
  If you use Linux, the Godot User folder is ~/.local/share/godot/app_userdata/Hytale Weapon Scraper
-You may need to enable "Show Hidden Items" in File Explorer.
 
 Copy "Item" folder from Hytale assets.zip 
 C:\Users\~UserName~\AppData\Roaming\Hytale\install\pre-release\package\game\latest\Assets.zip\Server\Item
