@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://5u2msmr4w1w8" path="res://main.gd" id="1_glv2v"]
 
 [node name="Control" type="Control" unique_id=1302697177]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,6 +13,7 @@ grow_vertical = 2
 script = ExtResource("1_glv2v")
 
 [node name="Label_assets_location" type="Label" parent="." unique_id=150200695]
+visible = false
 layout_mode = 0
 offset_left = 34.0
 offset_top = 30.0
@@ -19,6 +21,7 @@ offset_right = 436.0
 offset_bottom = 72.0
 
 [node name="Button_chng_assets_location" type="Button" parent="." unique_id=1267246896]
+visible = false
 layout_mode = 0
 offset_left = 39.0
 offset_top = 100.0
@@ -28,7 +31,7 @@ text = "Change Hytale assets.zip location"
 
 [node name="FileDialog_assets" type="FileDialog" parent="." unique_id=1159159012]
 oversampling_override = 1.0
-title = "Find and select assets.zip"
+title = "Open a File"
 initial_position = 2
 file_mode = 0
 display_mode = 1
