@@ -36,6 +36,8 @@ func _ready() -> void:
 	print_weapon_table_to_console()
 	save_array_as_csv(weapon_table, csv_save_path)
 
+	get_tree().quit() # Closes app
+
 # TODO Gett scraped data onto the table, either before or during populating.
 func scrape_template_weapon_items() -> void:
 	
