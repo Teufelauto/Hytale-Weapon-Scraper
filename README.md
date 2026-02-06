@@ -5,7 +5,7 @@ Currently only produces a CSV of Weapons.
 # Instructions
 Coded in Godot 4.6
 
-There is no GUI. It just opens a rectangle, letting you know it ran that you then need to close. 
+There is no GUI. It just opens a rectangle, letting you know it ran that you then need to close. (Auto-quit added to uncompiled code. Useful for *nearly* headless use.)
 
 Compiled executable must be run once to create folder:
 C:\Users\~UserName~\AppData\Roaming\Godot\app_userdata\Hytale Weapon Scraper
