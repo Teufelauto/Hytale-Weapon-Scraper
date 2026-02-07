@@ -21,10 +21,11 @@ var current_table_row: int = 0  # initialize for incrementing each weapon for en
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	check_if_first_load() # Creates settings file in user folder.
-	# TODO:  Check if Headless from App_Settings.json, and deal with that.
+	# TODO:  Check if Headless from App_Settings, and deal with that.
 	
 	my_weapons = MyWeaponShared.new() # for calling WeaponShared
 	open_assets_zip() # Open ZIP reader
+	
 	initialize_weapon_table()
 	
 	scrape_template_weapon_items()
@@ -35,8 +36,11 @@ func _ready() -> void:
 	
 	print_weapon_table_to_console()
 	save_array_as_csv(weapon_table, csv_save_path)
-
+	
+	ResourceSaver.save(WeaponShared, "user://app_setup.tres") # Experiment with resources
+	
 	get_tree().quit() # Closes app
+	
 
 # TODO Gett scraped data onto the table, either before or during populating.
 func scrape_template_weapon_items() -> void:
@@ -48,6 +52,7 @@ func open_assets_zip()->void:
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
 		return
+
 
 # Sets up app the first time it is loaded
 func check_if_first_load() -> void:
@@ -183,7 +188,7 @@ func scrape_weapon_item_data(CurrentWeapon: Object,current_weapon_descriptor: St
 	#======================================================================
 	
 	# Retrieve top-level dictionary stuff
-	# Fill unknowns with template data.
+	# TODO Fill unknowns with template data.
 	
 	var _item_icon: String = item_weapon_as_dict.get("Icon", "Unknown")
 	print("Pregenerated Icon: ", _item_icon)
@@ -212,7 +217,8 @@ func scrape_weapon_item_data(CurrentWeapon: Object,current_weapon_descriptor: St
 	var signature_attack_1_name: String = CurrentWeapon.signature_attack_1_name + "_Damage"
 	var signature_attack_2_name: String = CurrentWeapon.signature_attack_2_name + "_Damage"
 	
-	# Get attack damage from inside an array inside dictionary by calling "extract_attack_dmg" function. (Yucky brackets inside JSON make this necessary)
+	# Get attack damage from deep inside dictionary by calling "extract_attack_dmg" function.
+	# Necessary to check for existance to prevent errors when it isnt in the json.
 	if not primary_attack_1_name.begins_with("_"):
 		var primary_attack_1_dmg_physical: int = extract_attack_dmg(item_weapon_as_dict,primary_attack_1_name)
 		print("DMG 1: ", primary_attack_1_dmg_physical)
@@ -285,26 +291,22 @@ func parse_weapon_item_info(file_path_inside_zip: String) -> Dictionary:
 		return _item_weapon_info_as_dict
 
 
-#Array inside json needs special treatment. all the elses are for if key doesn't exist in json
+# json needs special treatment. all the ifs are for if a key doesn't exist in json
 func extract_attack_dmg(item_weapon_as_dict:Dictionary,move_name:String) -> int:
-	if "InteractionVars" in item_weapon_as_dict:
-		if move_name in item_weapon_as_dict.InteractionVars:
-			if "Interactions" in item_weapon_as_dict.InteractionVars[move_name]:
-				# Here we extract the Array from the Dictionary.
-				var attack_damage_array: Array = item_weapon_as_dict.InteractionVars[move_name].Interactions
-				# Here, we turn the Array index 0 into a Dictionary for accessing.
-				var attack_damage_as_dict: Dictionary = attack_damage_array[0] 
-				if "DamageCalculator" in attack_damage_as_dict:
-					if "BaseDamage" in attack_damage_as_dict.DamageCalculator:
-						if "Physical" in attack_damage_as_dict.DamageCalculator.BaseDamage:
-							# We can finally see what kind of damage is done
-							var attack_dmg_physical: int = attack_damage_as_dict.DamageCalculator.BaseDamage.Physical
-							return attack_dmg_physical
-						else: return 0
-					else: return 0
-				else: return 0
-			else: return 0
-		else: return 0
+	if "InteractionVars" not in item_weapon_as_dict:
+		return 0
+	if move_name not in item_weapon_as_dict.InteractionVars:
+		return 0
+	if "Interactions" not in item_weapon_as_dict.InteractionVars[move_name]:
+		return 0
+	if "DamageCalculator" not in item_weapon_as_dict.InteractionVars[move_name].Interactions[0]: # The [0] is to deal with the array inside json.
+		return 0
+	if "BaseDamage" not in item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator:
+		return 0
+	if "Physical" in item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage:
+		# We can finally see what kind of damage is done
+		return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical
+		#return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.get("Physical", 0)
 	else: return 0
 	
 	
