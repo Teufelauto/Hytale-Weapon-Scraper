@@ -1,13 +1,33 @@
 extends Control
 
+
+const user_folder: String = "Hytale-Weapon-Scraper" # Where this app's user data lives
+var hytale_roaming_folder: String # Where THE Hytale game player data lives.
+
+# Get Classes running
+var zip_reader := ZIPReader.new()
+
 # TODO get weaponshared data onto user folder as a json or something so it can be edited without recompile.
 const MyWeaponShared = preload("res://Weapons/WeaponShared.gd") 
 var my_weapons: MyWeaponShared
 
+# App Settings Data from JSON
+var run_app_headless: bool
+var scrape_prerelease_assets: bool
+var prerelease_assets_path: String
+var prerelease_assets_filename : String
+var scrape_release_assets: bool
+var release_assets_path : String
+var release_assets_filename : String
+var csv_prerelease_save_path : String
+var csv_prerelease_filename : String
+var csv_release_save_path : String
+var csv_release_filename : String
 
-var asset_zip_path: String = "user://Assets.zip"
-var csv_save_path: String = "user://weapon_table.csv"
-var zip_reader := ZIPReader.new()
+var asset_zip_path: String # the processed data
+var csv_save_path: String # the processed data
+
+
 
 # Weapon Table construction
 # Determine how many rows are in the weapon_table by counting each weapon's descriptors
@@ -18,15 +38,20 @@ var weapon_table_width: int
 var weapon_table: Array[Array] = [] # Initialize the empty table.
 var current_table_row: int = 0  # initialize for incrementing each weapon for entry into matrix
 
-# Called when the node enters the scene tree for the first time.
+#===================================================================================================
+#\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#===================================================================================================
 func _ready() -> void:
 	check_if_first_load() # Creates settings file in user folder.
-	# TODO:  Check if Headless from App_Settings, and deal with that.
-	
+	# TODO Save app_settings.json  ---------------Important---------- already being changed by code.
+	load_app_settings_from_json() # Populate variables with data from the json
+	# TODO  Check if Headless from App_Settings, and deal with that.
+	# TODO Allow Edit app_settings.json in app
+	# TODO Allow choosing release or pre-release track.
 	my_weapons = MyWeaponShared.new() # for calling WeaponShared
-	open_assets_zip() # Open ZIP reader
+	open_assets_zip() # Open ZIP reader at Assets.zip filepath
 	
-	initialize_weapon_table()
+	initialize_weapon_table() # Create a mostly blank 2d array to hold csv data.
 	
 	scrape_template_weapon_items()
 	
@@ -37,14 +62,92 @@ func _ready() -> void:
 	print_weapon_table_to_console()
 	save_array_as_csv(weapon_table, csv_save_path)
 	
-	ResourceSaver.save(WeaponShared, "user://app_setup.tres") # Experiment with resources
+	
+	#ResourceSaver.save(WeaponShared, "user://app_setup.tres") # Experiment with resources
+	# TODO Save app_settings.json
 	
 	get_tree().quit() # Closes app
-	
 
-# TODO Gett scraped data onto the table, either before or during populating.
-func scrape_template_weapon_items() -> void:
+
+func save_app_settings_to_json() -> void:
+	var data_to_save:Dictionary ={
+		"Run_App_Headless": run_app_headless,
+		"Assets":{
+			"PreRelease":{
+				"Scrape_Assets": scrape_prerelease_assets,
+				"Assets_Path": prerelease_assets_path,
+				"Assets_Filename": prerelease_assets_filename},
+			"Release":{
+				"Scrape_Assets": scrape_release_assets,
+				"Assets_Path": release_assets_path,
+				"Assets_Filename": release_assets_filename}},
+		"CSV_Output":{
+			"PreRelease":{
+				"CSV_Save_Path": csv_prerelease_save_path,
+				"CSV_Filename": csv_prerelease_filename},
+			"Release":{
+				"CSV_Save_Path": csv_release_save_path,
+				"CSV_Filename": csv_release_filename}}
+		}
+	#print(data_to_save)
+	const SAVE_PATH = "user://app_settings.json"
+	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		var json_string = JSON.stringify(data_to_save,"  ",false)
+		file.store_line(json_string)
+		file.close()
+		print("settings saved to: " + SAVE_PATH)
+	else:
+		print("Failed to save settings.")
 	
+	
+# Populate variables with data from the json
+func load_app_settings_from_json() -> void:
+	# Retrieve json data
+	var _json = JSON.new()
+	var _app_settings_string = FileAccess.get_file_as_string("user://app_settings.json")
+	var _app_settings:Dictionary = JSON.parse_string(_app_settings_string)
+	
+	run_app_headless = _app_settings.Run_App_Headless # true/false
+	scrape_prerelease_assets = _app_settings.Assets.PreRelease.Scrape_Assets # true/false
+	prerelease_assets_path = _app_settings.Assets.PreRelease.Assets_Path # C:/Users/%user%/AppData/Roaming/Hytale/install/pre-release/package/game/latest/
+	prerelease_assets_filename = _app_settings.Assets.PreRelease.Assets_Filename
+	scrape_release_assets = _app_settings.Assets.Release.Scrape_Assets # true/false
+	release_assets_path = _app_settings.Assets.Release.Assets_Path
+	release_assets_filename = _app_settings.Assets.Release.Assets_Filename
+	csv_prerelease_save_path = _app_settings.CSV_Output.PreRelease.CSV_Save_Path
+	csv_prerelease_filename = _app_settings.CSV_Output.PreRelease.CSV_Filename
+	csv_release_save_path = _app_settings.CSV_Output.Release.CSV_Save_Path
+	csv_release_filename = _app_settings.CSV_Output.Release.CSV_Filename
+	
+	
+	# Temporary assignment of pre-release, until logic is written.
+	#-----------------------------------------
+	var _prerelease_asset_zip_path = prerelease_assets_path + prerelease_assets_filename
+	var _prerelease_csv_save_path = csv_prerelease_save_path + csv_prerelease_filename
+	
+	asset_zip_path = _prerelease_asset_zip_path
+	csv_save_path = _prerelease_csv_save_path
+	
+	
+# The first time app_settings is created, pre-fill file-path for assets.
+func first_load_auto_determine_assets_location()->void:
+	load_app_settings_from_json() # Load here so we can write over it, then save it.
+	hytale_roaming_folder = retrieve_roaming_Hytale_folder_location()
+	var _path:String = "/install/pre-release/package/game/latest/"
+	prerelease_assets_path = hytale_roaming_folder + _path
+	_path = "/install/release/package/game/latest/"
+	release_assets_path = hytale_roaming_folder + _path
+	save_app_settings_to_json() 
+
+func retrieve_roaming_Hytale_folder_location() -> String:
+	var path = OS.get_user_data_dir()
+	path = path.rstrip(user_folder)
+	return path + "Hytale"
+	
+	
+# TODO Get scraped data into the table, either before or during populating.
+func scrape_template_weapon_items() -> void:
 	pass
 
 func open_assets_zip()->void:
@@ -59,30 +162,36 @@ func check_if_first_load() -> void:
 	
 	# Need to copy the App Setttings into the user folder, 
 	# so they can be edited by the user by headless method.
-	var setttings_file: String = "app_settings.json"
-	var not_first_time: bool = check_user_file_exists(setttings_file)
+	var file_name: String = "app_settings.json"
+	var file_exists: bool = check_user_file_exists(file_name)
 	var full_source: String
 	var full_destination: String
-	if not_first_time: # Meaning, if the file exists in the user folder, skip
-		print("User folder contains app_settings")
-	else:
-		full_source = "res://" + setttings_file
-		full_destination = "user://" + setttings_file
+	if not file_exists: 
+		full_source = "res://" + file_name
+		full_destination = "user://" + file_name
 		copy_file_from_res_to_user(full_source, full_destination) # copy app_settings to user
-
+		first_load_auto_determine_assets_location() # get target path
+		# save path data into JSON
+		
+		
+		
+		
+	else:
+		print("User folder contains app_settings")
+	
+	
+	
 	# TODO Weapon Setup resource
-	#var weapons_file: String = "weapon_setup.json"
-	#not_first_time = check_user_file_exists(weapons_file)
+	#file_name: String = "weapon_setup.json"
+	#not_first_time = check_user_file_exists(file_name)
 	#if not_first_time: # Meaning, if the file exists in the user folder, skip all this.
 		#print("User folder contains WeaponShared")
 	#else:
-		#full_source = "res://weapons/" + weapons_file
-		#full_destination = "user://" + weapons_file
+		#full_source = "res://weapons/" + file_name
+		#full_destination = "user://" + file_name
 		#copy_file_from_res_to_user(full_source, full_destination) # copy WeaponShared to user
 	
 	
-
-
 func copy_file_from_res_to_user (full_source: String, full_destination: String) -> void:
 	# Use DirAccess.copy_absolute()
 	# It copies a file from an absolute source path to an absolute destination path.
@@ -305,8 +414,8 @@ func extract_attack_dmg(item_weapon_as_dict:Dictionary,move_name:String) -> int:
 		return 0
 	if "Physical" in item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage:
 		# We can finally see what kind of damage is done
-		return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical
-		#return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.get("Physical", 0)
+		return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical # Does this allow null instead of 0?
+		# return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.get("Physical", 0)
 	else: return 0
 	
 	

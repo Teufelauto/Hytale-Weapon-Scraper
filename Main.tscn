@@ -13,7 +13,6 @@ grow_vertical = 2
 script = ExtResource("1_glv2v")
 
 [node name="Label_assets_location" type="Label" parent="." unique_id=150200695]
-visible = false
 layout_mode = 0
 offset_left = 34.0
 offset_top = 30.0
@@ -21,7 +20,6 @@ offset_right = 436.0
 offset_bottom = 72.0
 
 [node name="Button_chng_assets_location" type="Button" parent="." unique_id=1267246896]
-visible = false
 layout_mode = 0
 offset_left = 39.0
 offset_top = 100.0

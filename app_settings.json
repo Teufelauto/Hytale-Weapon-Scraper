@@ -1,9 +1,19 @@
 {
-	"Run_App_Headless":"false",
-	"New_Assets_Path": "user//:Assets_Folder",
-	"New_Assets_Filename": "Assets.zip",
-	"Old_Assets_Path": "user//:",
-	"Old_Assets_Filename": "Assets.zip",
-	"CSV_Save_Path": "user//:CSV_Folder",
-	"CSV_Filename":"Weapons.csv"
+	"Run_App_Headless": true,
+	"Assets":{
+		"PreRelease":{
+			"Scrape_Assets": true,
+			"Assets_Path": "user://",
+			"Assets_Filename": "Assets.zip"},
+		"Release":{
+			"Scrape_Assets": false,
+			"Assets_Path": "user://",
+			"Assets_Filename": "Assets.zip"}},
+	"CSV_Output":{
+		"PreRelease":{
+			"CSV_Save_Path": "user://",
+			"CSV_Filename": "Weapons_Data_PreRelease.csv"},
+		"Release":{
+			"CSV_Save_Path": "user://",
+			"CSV_Filename": "Weapons_Data_Release.csv"}}
 }
