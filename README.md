@@ -1,6 +1,6 @@
 # Hytale-Weapon-Scraper
 Turn JSON weapon assets into a flat CSV.
-
+App takes several seconds to go through the 3 GB Assets.zip on a 9800x3D computer with an NVME drive. It may appear frozen, but it's probably still parsing. It will close when it's done.
 Currently only produces a CSV of Weapons in the folder below. Default assets path, and location of CSV save can be changed to a location of your choosing.
 # Instructions
 There is no GUI yet. It just opens a rectangle while it runs, then closes when the csv is written.
