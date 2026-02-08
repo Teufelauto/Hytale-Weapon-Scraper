@@ -43,7 +43,6 @@ var current_table_row: int = 0  # initialize for incrementing each weapon for en
 #===================================================================================================
 func _ready() -> void:
 	check_if_first_load() # Creates settings file in user folder.
-	# TODO Save app_settings.json  ---------------Important---------- already being changed by code.
 	load_app_settings_from_json() # Populate variables with data from the json
 	# TODO  Check if Headless from App_Settings, and deal with that.
 	# TODO Allow Edit app_settings.json in app
