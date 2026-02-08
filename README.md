@@ -1,22 +1,23 @@
 # Hytale-Weapon-Scraper
 Turn JSON weapon assets into a flat CSV.
 
-Currently only produces a CSV of Weapons.
+Currently only produces a CSV of Weapons in the folder below. Default assets path, and location of CSV save can be changed to a location of your choosing.
 # Instructions
+There is no GUI yet. It just opens a rectangle while it runs, then closes when the csv is written.
+
+App creates folder:
+
+WIN: C:/Users/%UserName%/AppData/Roaming/Hytale-Weapon-Scraper
+
+LINUX:  ~/.local/share/Hytale-Weapon-Scraper
+
+The app creates an app_settings.json in this folder. If you want to change filenames or paths, do it here.
+
+By default, the app scrapes the latest Pre-Release on your system. If you wish to scrape a different version, change the PreRelease Assets_Path to the desired path. 
+
+Use "/" rather than "\\" in file paths, and end the path with a "/".
+
+The CSV can be saved to a different location by changing CSV_Output PreRelease path or name in app_settings.json
+
+
 Coded in Godot 4.6
-
-There is no GUI. It just opens a rectangle, letting you know it ran that you then need to close. (Auto-quit added to uncompiled code. Useful for *nearly* headless use.)
-
-Compiled executable must be run once to create folder:
-C:\Users\~UserName~\AppData\Roaming\Godot\app_userdata\Hytale Weapon Scraper
-
- If you use Linux, the Godot User folder is ~/.local/share/godot/app_userdata/Hytale Weapon Scraper
-
-Copy "Item" folder from Hytale assets.zip 
-C:\Users\~UserName~\AppData\Roaming\Hytale\install\pre-release\package\game\latest\Assets.zip\Server\Item
-
-and place into the AppData folder:  
-C:\Users\~UserName~\AppData\Roaming\Godot\app_userdata\Hytale Weapon Scraper
-
-Running the app again will populate the CSV in "Hytale Weapon Scraper" with fresh weapon data. These can be compared between releases.
-
