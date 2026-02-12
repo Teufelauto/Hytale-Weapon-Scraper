@@ -19,5 +19,6 @@ Use "/" rather than "\\" in file paths, and end the path with a "/".
 
 The JSON or CSV can be saved to a different location by changing Output PreRelease path or name in app_settings.json
 
+Editing Weapon_Dictionary.json will allow you to add weapons, or remove columns from the output. That would require a tutorial. Additional weapons are being configured. Still need to add info to table from another location in the zip.
 
 Coded in Godot 4.6. (Because it's easy to compile.)
