@@ -14,18 +14,19 @@ script = ExtResource("1_glv2v")
 
 [node name="Label_assets_location" type="Label" parent="." unique_id=150200695]
 layout_mode = 0
-offset_left = 34.0
-offset_top = 30.0
-offset_right = 436.0
-offset_bottom = 72.0
+offset_left = 399.0
+offset_top = 161.0
+offset_right = 801.0
+offset_bottom = 203.0
+text = "This is a work in progress. Run Headless mode."
 
 [node name="Button_chng_assets_location" type="Button" parent="." unique_id=1267246896]
 layout_mode = 0
-offset_left = 39.0
-offset_top = 100.0
-offset_right = 305.0
-offset_bottom = 147.0
-text = "Change Hytale assets.zip location"
+offset_left = 555.0
+offset_top = 207.0
+offset_right = 628.0
+offset_bottom = 254.0
+text = "Quit"
 
 [node name="FileDialog_assets" type="FileDialog" parent="." unique_id=1159159012]
 oversampling_override = 1.0
@@ -37,4 +38,24 @@ access = 2
 filters = PackedStringArray(".zip")
 use_native_dialog = true
 
+[node name="Label_processing" type="Label" parent="." unique_id=869038281]
+layout_mode = 0
+offset_left = 211.0
+offset_top = 320.0
+offset_right = 972.0
+offset_bottom = 380.0
+theme_override_font_sizes/font_size = 32
+text = "Weapons should change as retrieved from Assets.zip"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="." unique_id=1242092116]
+layout_mode = 0
+offset_left = 474.0
+offset_top = 406.0
+offset_right = 683.0
+offset_bottom = 525.0
+theme_override_font_sizes/font_size = 38
+text = "Do It"
+
 [connection signal="pressed" from="Button_chng_assets_location" to="." method="_on_button_chng_assets_location_pressed"]
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
