@@ -14,9 +14,9 @@ LINUX:  ~/.local/share/Hytale-Weapon-Scraper
 The app creates an app_settings.json in this folder. If you want to change filenames or paths, or which version of Hytale to scrape, do it here.
 
 ## app_settings.json
-The app scrapes the latest Pre-Release on your system, by default. If you wish to scrape a different version, change true to false for pre-release, and false to true for either latest release, or user_defined. Change the user_defined Assets_Path to the desired path, such as a previous version. The filename can be whatever you wish, but must retain the .json or .csv extensions.
+The app scrapes the latest Pre-Release on your system, by default. If you wish to scrape a different version, change true to false for pre-release, and false to true for either latest release, or user_defined. Change the user_defined Assets_Path to the desired path, such as a previous version.
 
-"Values may be changed in this file to modify load-path, save-path, and filename without a GUI. run_app_headless should be set to true, because the GUI is not ready. Choose only 0ne of the assets to change to true. You can change asset path values to a different location if you wish to analyze a zip saved in a custom location. So, if you wish to analyze an older release of the Assets.zip file, you can modify the pregenerated path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. Filenames can be whatever you like.",
+Values may be changed in this file to modify load-path, save-path, and filename without a GUI. run_app_headless should be set to true, because the GUI is not ready. Choose only 0ne of the assets to change to true. You can change asset path values to a different location if you wish to analyze a zip saved in a custom location. So, if you wish to analyze an older release of the Assets.zip file, you can modify the pregenerated path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. Filenames can be whatever you like.
  
 
 Use "/" rather than "\\" in file paths, and end the path with a "/".
