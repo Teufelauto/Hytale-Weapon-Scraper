@@ -1,0 +1,33 @@
+{	
+	"how_to_use_this_file ->":"Values may be changed in this file to modify load-path, save-path, and filename without a GUI. run_app_headless should be set to true, because the GUI is not ready. Choose only 0ne of the assets to change to true. You can change asset path values to a different location if you wish to analyze a zip saved in a custom location. So, if you wish to analyze an older release of the Assets.zip file, you can modify the pregenerated path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. Filenames can be whatever you like.",
+	"run_app_headless": true,
+	"assets":{
+		"user_defined":{
+			"scrape_assets": false,
+			"assets_path": "user://",
+			"assets_filename": "Assets.zip"},
+		"latest_prerelease":{
+			"scrape_assets": true,
+			"assets_path": "user://",
+			"assets_filename": "Assets.zip"},
+		"latest_release":{
+			"scrape_assets": false,
+			"assets_path": "user://",
+			"assets_filename": "Assets.zip"}},
+	"output":{
+		"user_defined":{
+			"compiled_json_save_path": "user://",
+			"compiled_json_filename": "weapons_encyclopedia_user_defined.json",
+			"csv_save_path": "user://",
+			"csv_filename": "weapons_table_user_defined.csv"},
+		"latest_prerelease":{
+			"compiled_json_save_path": "user://",
+			"compiled_json_filename": "weapons_encyclopedia_prerelease.json",
+			"csv_save_path": "user://",
+			"csv_filename": "weapons_table_prerelease.csv"},
+		"latest_release":{
+			"compiled_json_save_path": "user://",
+			"compiled_json_filename": "weapons_encyclopedia_release.json",
+			"csv_save_path": "user://",
+			"csv_filename": "weapons_table_release.csv"}}
+}

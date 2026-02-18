@@ -1,19 +1,24 @@
 extends Weapons
 class_name ItemsWeapon
 
-## JSON as Dictionary of Weapon templates
-static var item_template_dict: Dictionary = {}
+const KEYS_WITH_INT_VALUES: Array = [
+	"ItemLevel",
+	"MaxDurability",
+]
+
+static var item_template_dict: Dictionary = {} ## JSON as Dictionary of Weapon templates
 static var current_template_family: String
+
+static var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon
 
 ##===================================================================================================
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 ##===================================================================================================
 
 # current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
-static func scrape_weapon_item_data(current_family: String,current_child: String, 
-		xref_family_tree: Dictionary, current_row: int) -> void:
-	
-	update_common_family_dictionaries(current_family)
+static func scrape_weapon_item_data(current_family: String, current_family_lower: String, 
+		current_child: String, current_child_lower: String, 
+		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary, current_row: int) -> void:
 	
 	## Dictionary for a singular weapon, representing one row in the weapon table.
 	var unique_weapon: Dictionary = {}
@@ -21,64 +26,77 @@ static func scrape_weapon_item_data(current_family: String,current_child: String
 	## "Sword_Crude" or "Mace_Copper" etc
 	var weapon_id: String = current_family + "_" + current_child  
 	
-	## === A Specific Weapon Dictionary from Assets.json ===
-	var item_weapon_as_dict: Dictionary = parse_weapon_item_info(current_family, weapon_id)
-	
 	## List of columns made by the app for catagorizing data.
 	var app_headers: Dictionary = {
-		"Item_Count": current_row,
-		"ID": weapon_id,
-		"Weapon_Family": current_family,
-		"Descriptor": current_child,
+		"item_count": current_row,
+		"id": weapon_id,
+		"weapon_family": current_family,
+		"descriptor": current_child,
 		}
 	
 	print()# Seperates each iteration
 	print(current_row, ": ", weapon_id) # Display the current weapon being worked on.
 	
+	## === A Specific Weapon Dictionary from Assets.json ===
+	item_weapon_as_dict = parse_weapon_item_info(current_family, weapon_id)
+	
+	update_common_family_dictionaries(current_family)
+	## TODO if column not in item_weapon_as_dict, inject template value...
+	
 	# Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
-	for current_column in Weapons.weapon_table_columns.size():
+	for current_column in Weapons.weapon_table_column_array.size():
 		
 		## The header that appears at the top of the Table for the column we're working on.
-		var column_header = Weapons.weapon_table_columns[current_column]
+		var column_header = Weapons.weapon_table_column_array[current_column]
 		
 		## Get the value from the intermediate dict to make the key for the item weapon dict.
 		## The retrieved key is for looking inside item_weapon_as_dict to find the value for filling in the table.
 		var retrieved_key = xref_family_tree.get(column_header)
 		
 		## value to be put in the Table or unique dictionary
-		var value = get_key_value(item_weapon_as_dict, app_headers, retrieved_key)
+		var value = get_key_value(app_headers, retrieved_key, xref_common_table_headers)
 		
-		#Assign value to current child dictionary.
-		if column_header != "Item_Count": # We don't want Item Count in the JSON, as it is bad for comparing
-			unique_weapon.set(column_header, value)
+		# make value integer if able. (item level and max durability)
+		if retrieved_key in KEYS_WITH_INT_VALUES:
+			value = int(value)
 		
 		#Assign value to Table
-		var column_index_string: String = weapon_dict.Weapon_Table_Columns.find_key(column_header)
+		var column_index_string: String = weapon_dict.weapon_table_columns.find_key(column_header)
 		var column_index: int = int(column_index_string) #number was string, as a key in json
 		Weapons.weapon_table[current_row][column_index] = value
 		
+		## TODO put moves into branches
+		
+		#Assign value to current child dictionary.
+		if column_header != "item_count": # We don't want Item Count in the JSON, as it is bad for diff
+			unique_weapon.set(column_header, value)
+		
 	## Add this child to the dictionary under family.
-	weapon_compiled_dict[current_family].set(current_child, unique_weapon.duplicate())
+	weapon_compiled_dict[current_family_lower].set(current_child_lower, unique_weapon.duplicate())
+	
+	
+	
 
 
 ## Get value for the table cell
-static func get_key_value(item_dict: Dictionary, app_headers: Dictionary, key: String) -> Variant:
+static func get_key_value(app_headers: Dictionary, key: String, xref_common_table_headers: Dictionary) -> Variant:
 	
 	## Skip the moves that don't exist for this weapon.
 	if key == "_Damage" :
 		return ""
 	
-	## Check if key is not in JSON, but is instead, one of the app-made headers.
+	## Check if key is one of the app-made headers.
 	elif app_headers.has(key):
 		return app_headers.get(key)
 		
 	## Check if key is in the first level inside JSON
-	elif item_dict.has(key):
-		return item_dict.get(key)
+	elif xref_common_table_headers.find_key(key) :
+		# need to retrieve from template if not in item_dict
+		return common_key_in_weapon_check(key)
 	
-	## Check if key is Deep in JSON
-	elif not item_dict.has(key):
-		return extract_attack_dmg(item_dict, key)
+	## Check if key is Deep in JSON. (Weapon damage)
+	elif not item_weapon_as_dict.has(key):
+		return extract_attack_dmg(key)
 	
 	else:
 		print("Error: Couldn't find the key value to scrape!")
@@ -136,8 +154,8 @@ static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-## This is a lot, as the game is pre-release.
-static func extract_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
+## This is a lot
+static func extract_attack_dmg(move_name:String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return 0
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
@@ -154,6 +172,18 @@ static func extract_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String)
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.get("Physical", 0)
 
 
-## Retrieve ItemLevel from Template
-static func idk_item_level() -> int: 
-	return 0 # TEMP -----------------------------------------------------------------------------------
+## Deterimine if item weapon has key in top level. If not, tries to retrieve
+## from item template.
+static func common_key_in_weapon_check(key: String) -> Variant:
+	# need to compare, to see if common keys are not in weapon, 
+	# then check template if necessary
+	
+	if item_weapon_as_dict.has(key):
+		return item_weapon_as_dict.get(key)
+	elif item_template_dict.has(key):
+		return item_template_dict.get(key)
+	else:
+		print("No top level key, ", key, ", in weapon's json.")
+		
+		return "Unknown"
+	

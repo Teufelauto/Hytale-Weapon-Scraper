@@ -1,16 +1,16 @@
 {
-	"Weapon_Table_Columns": {
-		"0": "Item_Count",
-		"1": "ID",
-		"2": "Weapon_Family",
-		"3": "Descriptor",
-		"4": "Model",
-		"5": "Texture",
-		"6": "Icon",
-		"7": "ItemLevel",
-		"8": "Quality",
-		"9": "MaxDurability",
-		"10": "DurabilityLossOnHit",
+	"weapon_table_columns": {
+		"0": "item_count",
+		"1": "id",
+		"2": "weapon_family",
+		"3": "descriptor",
+		"4": "model",
+		"5": "texture",
+		"6": "icon",
+		"7": "item_level",
+		"8": "quality",
+		"9": "max_durability",
+		"10": "durability_loss_on_hit",
 		"11": "primary_attack_1_damage",
 		"12": "primary_attack_2_damage",
 		"13": "primary_attack_3_damage",
@@ -21,20 +21,20 @@
 		"18": "signature_attack_1_damage",
 		"19": "signature_attack_2_damage"
 	},
-	"Common_Headers": {
-		"Item_Count": "Item_Count",
-		"ID": "ID",
-		"Weapon_Family": "Weapon_Family",
-		"Descriptor": "Descriptor",
-		"Model": "Model",
-		"Texture": "Texture",
-		"Icon": "Icon",
-		"Quality": "Quality",
-		"ItemLevel": "ItemLevel",
-		"MaxDurability": "MaxDurability",
-		"DurabilityLossOnHit": "DurabilityLossOnHit"
+	"common_table_headers": {
+		"item_count": "item_count",
+		"id": "id",
+		"weapon_family": "weapon_family",
+		"descriptor": "descriptor",
+		"model": "Model",
+		"texture": "Texture",
+		"icon": "Icon",
+		"quality": "Quality",
+		"item_level": "ItemLevel",
+		"max_durability": "MaxDurability",
+		"durability_loss_on_hit": "DurabilityLossOnHit"
 	},
-	"Weapon_Family":{
+	"weapon_family":{
 		"Battleaxe":{
 			"parent": "Template_Weapon_Battleaxe",
 			"primary_attack_1_name": "Swing_Down_Left",

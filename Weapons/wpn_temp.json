@@ -31,18 +31,18 @@
 		"28": "Recipe_Item_4_Quantity",
 		"29": "RequiredTierLevel"
 	},
-	"Common_Headers": {
-		"Item_Count": "Item_Count",
-		"ID": "ID",
-		"Weapon_Family": "Weapon_Family",
-		"Descriptor": "Descriptor",
-		"Model": "Model",
-		"Texture": "Texture",
-		"Icon": "Icon",
-		"Quality": "Quality",
-		"ItemLevel": "ItemLevel",
-		"MaxDurability": "MaxDurability",
-		"DurabilityLossOnHit": "DurabilityLossOnHit"
+	"common_table_headers": {
+		"item_count": "item_count",
+		"id": "id",
+		"weapon_family": "weapon_family",
+		"descriptor": "descriptor",
+		"model": "Model",
+		"texture": "Texture",
+		"icon": "Icon",
+		"quality": "Quality",
+		"item_level": "ItemLevel",
+		"max_durability": "MaxDurability",
+		"durability_loss_on_hit": "DurabilityLossOnHit"
 	},
 	"Weapon_Family":{
 		"Battleaxe":{
