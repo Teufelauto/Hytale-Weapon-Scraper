@@ -1,7 +1,37 @@
 # Hytale-Weapon-Scraper
 Turn zipped weapon assets into a JSON for easy access, and a CSV table for easy viewing.
 App takes several seconds to go through the 3 GB Assets.zip on a 9800x3D computer with an NVME drive. It may appear frozen, but it's probably still parsing. It will close when it's done.
-Currently produces a JSON and CSV of Weapons in the folder below. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
+Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
+```json
+{
+  "battleaxe": {
+    "adamantite": {
+      "attack": {
+        "primary": [
+          integer,
+          integer,
+          integer
+        ],
+        "charged": [
+          integer
+        ],
+        "signature": [
+          integer
+        ]
+      },
+      "id": "Battleaxe_Adamantite",
+      "weapon_family": "Battleaxe",
+      "descriptor": "Adamantite",
+      "model": String,
+      "texture": String,
+      "icon": String,
+      "item_level": integer,
+      "quality": String,
+      "max_durability": integer,
+      "durability_loss_on_hit": float
+    },
+    "cobalt": { ... etc.
+```
 # Instructions
 There is no GUI yet. It just opens a rectangle while it runs, then closes when the json and csv are written.
 
