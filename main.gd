@@ -1,6 +1,8 @@
 extends Control
 class_name Weapons
 
+# We create a table for storing the info in a spreadsheet first. After each row 
+# is populated, the line of json is added. 
 
 const user_folder: String = "Hytale-Weapon-Scraper" # Where this app's user data lives
 var hytale_roaming_folder: String # Where THE Hytale game player data lives.
@@ -40,6 +42,7 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 ##==================================================================================================
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ##==================================================================================================
+
 func _ready() -> void:
 	check_if_first_load() # Creates generic settings files in user folder if necessary.
 	load_app_settings_from_json() # Populate app variables with data from the json.
@@ -257,7 +260,7 @@ func determine_weapon_table_columns() -> Array:
 		var value: String = weapon_dict.weapon_table_columns.get(i_as_string,"Error Creating Table")
 		table_columns.append(value)
 	family_weapon_columns_dictionary(table_columns)
-	print(table_columns)
+	#print(table_columns)
 	return table_columns
 
 
