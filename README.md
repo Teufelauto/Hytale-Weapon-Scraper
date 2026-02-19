@@ -2,6 +2,7 @@
 Turn zipped weapon assets into a JSON for easy access, and a CSV table for easy viewing.
 App takes several seconds to go through the 3 GB Assets.zip on a 9800x3D computer with an NVME drive. It may appear frozen, but it's probably still parsing. It will close when it's done.
 Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
+### Example json output
 ```json
 {
   "battleaxe": {
