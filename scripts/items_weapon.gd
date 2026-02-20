@@ -11,9 +11,8 @@ const KEYS_WITH_INT_VALUES: Array = [
 ]
 
 static var item_template_dict: Dictionary = {} ## JSON as Dictionary of Weapon templates
-static var current_template_family: String
-
-static var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon
+static var current_template_family: String ## Keeps track of the currently loaded template.
+static var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
 
 ##==================================================================================================
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
@@ -27,13 +26,15 @@ static func open_assets_zip()->void:
 		return
 
 
-# current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
+## Major Class function for getting data out of the Items/Weapons/(family folder)/(json file)
+## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
 static func scrape_weapon_item_data(current_family: String, current_family_lower: String, 
 		current_child: String, current_child_lower: String, 
 		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	
 	## Dictionary for a singular weapon, equivalent one row in the weapon table. Becomes output json
+	## Unusual branches constructed as needed elsewhere, such as dagger rear-attack.
 	var unique_weapon: Dictionary = {
 		"attack":{
 			"primary": [],
@@ -63,20 +64,24 @@ static func scrape_weapon_item_data(current_family: String, current_family_lower
 	update_common_family_dictionaries(current_family)
 	## TODO if column not in item_weapon_as_dict, inject template value...
 	
-	# Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
+	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in Weapons.weapon_table_column_array.size():
 		
 		## The header that appears at the top of the Table for the column we're working on.
 		var column_header = Weapons.weapon_table_column_array[current_column]
 		
+		## PascalCase or Pascal_Snake_Case for attack moves. Loses data for back-stabbing.
 		## Get the value from the intermediate dict to make the key for the item weapon dict.
 		## The retrieved key is for looking inside item_weapon_as_dict to find the value for filling in the table.
 		var retrieved_key = xref_family_tree.get(column_header)
 		
-		## value to be put in the Table or unique dictionary
-		var value = get_key_value(app_headers, retrieved_key, xref_common_table_headers)
+		## ------ This is the Meat & Potatos of it ------------
+		## Value to be put in the Table or unique dictionary
+		var value = get_key_value(app_headers, retrieved_key, 
+				xref_common_table_headers, column_header)
 		
-		# make value integer if able. (item level and max durability)
+		# Makes value integer if able. (item level and max durability. 
+		#Attacks functions already return int)
 		if retrieved_key in KEYS_WITH_INT_VALUES:
 			value = int(value)
 		
@@ -88,10 +93,11 @@ static func scrape_weapon_item_data(current_family: String, current_family_lower
 		#Assign value to current child dictionary, posibly in subdictionaries or arrays.
 		unique_weapon = assign_values_to_unique_dictionary(unique_weapon, column_header, value)
 		
-	## Add this child to the dictionary under family.
+	## Add this child to the Big Dictionary under family.
 	weapon_compiled_dict[current_family_lower].set(current_child_lower, unique_weapon.duplicate())
 
 
+## Puts the found value in the correct place inside the unique weapon dictionary.
 static func assign_values_to_unique_dictionary(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
@@ -109,6 +115,14 @@ static func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 	# Determine if we need to enter signature branch.
 	elif key.begins_with("signature_attack"):
 		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_charged_attack"):
+		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear signature branch.
+	elif key.begins_with("rear_signature_attack"):
+		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
 	
 	## Recipee integration may go here.
 	#elif key.begins_with("recipee"):
@@ -165,7 +179,7 @@ static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary
 
 ## Get value for the table cell
 static func get_key_value(app_headers: Dictionary, key: String, 
-		xref_common_table_headers: Dictionary) -> Variant:
+		xref_common_table_headers: Dictionary, column_header: String) -> Variant:
 	
 	## Skip the moves that don't exist for this weapon.
 	if key == "_Damage" :
@@ -175,12 +189,16 @@ static func get_key_value(app_headers: Dictionary, key: String,
 	elif app_headers.has(key):
 		return app_headers.get(key)
 		
-	## Check if key is in the first level inside JSON
+	## Check if key is in the first level inside JSON.
 	elif xref_common_table_headers.find_key(key) :
 		# need to retrieve from template if not in item_dict
 		return common_key_in_weapon_check(key)
 	
-	## Check if key is Deep in JSON. (Weapon damage)
+	## Check if key is rear attack damage in JSON.
+	elif column_header.begins_with("rear_"):
+		return extract_rear_attack_dmg(key)
+	
+	## Check if key is frontal attack damage in JSON.
 	elif not item_weapon_as_dict.has(key):
 		return extract_attack_dmg(key)
 	
@@ -203,6 +221,26 @@ static func common_key_in_weapon_check(key: String) -> Variant:
 		print("No top level key, ", key, ", in weapon's json.")
 		
 		return "Unknown"
+
+## Back-Stabbing Daggers get a special function. AngledDamage is the brach to follow.
+## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
+static func extract_rear_attack_dmg(move_name:String) -> int:
+	if not item_weapon_as_dict.has("InteractionVars"): 
+		return 0
+	if not item_weapon_as_dict.InteractionVars.has(move_name):
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("AngledDamage"): # The [0] is to deal with the array inside json.
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0].has("DamageCalculator"):
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0].DamageCalculator.has("BaseDamage"):
+		return 0
+	
+	## We can finally see what kind of damage is done.
+	## Return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical # Does this allow null instead of 0?
+	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0].DamageCalculator.BaseDamage.get("Physical", 0)
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
@@ -275,7 +313,7 @@ static func key_begins_with_charged_attack(unique_weapon: Dictionary,
 	elif key.contains("4"):
 		index = 3
 	else :
-		print("Error with charged attack index in assign_values_to_unique_dictionary")
+		print("Error with charged attack index in key_begins_with_charged_attack")
 		return unique_weapon
 		
 	# Grow array as needed for number of attacks. Changes based on weapon family.
@@ -307,7 +345,7 @@ static func key_begins_with_signature_attack(unique_weapon: Dictionary,
 	elif key.contains("4"):
 		index = 3
 	else :
-		print("Error with charged attack index in assign_values_to_unique_dictionary")
+		print("Error with attack index in key_begins_with_signature_attack")
 		return unique_weapon
 		
 	# Grow array as needed for number of attacks. Changes based on weapon family.
@@ -317,4 +355,76 @@ static func key_begins_with_signature_attack(unique_weapon: Dictionary,
 		unique_weapon.attack.signature.resize(array_min_size)
 		
 	unique_weapon.attack.signature[index] = value # Assign value to array in proper order.
+	return unique_weapon
+
+
+## Determine data to enter rear charged attack branch of json.
+static func key_begins_with_rear_charged_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int
+	# Assign index of value inside array.
+	if key.contains("1"):
+		index = 0
+	elif key.contains("2"):
+		index = 1
+	elif key.contains("3"):
+		index = 2
+	elif key.contains("4"):
+		index = 3
+	else :
+		print("Error with rear charged attack index in key_begins_with_rear_charged_attack")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	if not unique_weapon.attack.has("rear_charged"):
+		unique_weapon.attack.set("rear_charged", [0]) #It'll be at least 1 value
+		
+	## Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.rear_charged.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.rear_charged.resize(array_min_size)
+		
+	unique_weapon.attack.rear_charged[index] = value # Assign value to array in proper order.
+	return unique_weapon
+
+
+## Determine data to enter rear signature attack branch of json.
+static func key_begins_with_rear_signature_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int
+	# Assign index of value inside array.
+	if key.contains("1"):
+		index = 0
+	elif key.contains("2"):
+		index = 1
+	elif key.contains("3"):
+		index = 2
+	elif key.contains("4"):
+		index = 3
+	else :
+		print("Error with rear signature attack index in key_begins_with_rear_signature_attack")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	if not unique_weapon.attack.has("rear_signature"):
+		unique_weapon.attack.set("rear_signature", [0]) #It'll be at least 1 value
+	
+	# Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.rear_signature.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.rear_signature.resize(array_min_size)
+		
+	unique_weapon.attack.rear_signature[index] = value # Assign value to array in proper order.
 	return unique_weapon

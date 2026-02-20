@@ -1,4 +1,8 @@
 {
+	"info_for_devs": "If new materials for weapons are introduced, add them to the weapon_child 
+		 array, being mindful of capitalization. New weapon families can be similiarly added, 
+		 as long as they have the same json structure. weapon_table_columns may be reordered by 
+		 changing only key values, without sorting, if desired.",
 	"weapon_table_columns": {
 		"0": "item_count",
 		"1": "id",
@@ -20,7 +24,12 @@
 		"17": "charged_attack_3_damage",
 		"18": "signature_attack_1_damage",
 		"19": "signature_attack_2_damage",
-		"20": "signature_attack_3_damage"
+		"20": "signature_attack_3_damage",
+		"21": "rear_charged_attack_1_name",
+		"22": "rear_charged_attack_2_name",
+		"23": "rear_signature_attack_1_name",
+		"24": "rear_signature_attack_2_name",
+		"25": "rear_signature_attack_3_name"
 	},
 	"common_table_headers": {
 		"item_count": "item_count",
@@ -41,13 +50,8 @@
 			"primary_attack_1_name": "Swing_Down_Left",
 			"primary_attack_2_name": "Swing_Down_Right",
 			"primary_attack_3_name": "Swing_Down",
-			"primary_attack_4_name": "",
 			"charged_attack_1_name": "Downstrike",
-			"charged_attack_2_name": "",
-			"charged_attack_3_name": "",
 			"signature_attack_1_name": "Signature_Whirlwind",
-			"signature_attack_2_name": "",
-			"signature_attack_3_name": "",
 			"weapon_child": [
 				"Adamantite",
 				"Cobalt",
@@ -74,10 +78,14 @@
 			"primary_attack_4_name": "Stab_Right",
 			"charged_attack_1_name": "Pounce_Sweep",
 			"charged_attack_2_name": "Pounce_Stab",
-			"charged_attack_3_name": "",
+			"rear_charged_attack_1_name": "Pounce_Sweep",
+			"rear_charged_attack_2_name": "Pounce_Stab",
 			"signature_attack_1_name": "Razorstrike_Slash",
 			"signature_attack_2_name": "Razorstrike_Sweep",
 			"signature_attack_3_name": "Razorstrike_Lunge",
+			"rear_signature_attack_1_name": "Razorstrike_Slash",
+			"rear_signature_attack_2_name": "Razorstrike_Sweep",
+			"rear_signature_attack_3_name": "Razorstrike_Lunge",
 			"weapon_child": [
 				"Adamantite",
 				"Adamantite_Saurian",
@@ -102,13 +110,10 @@
 			"primary_attack_1_name": "Swing_Left",
 			"primary_attack_2_name": "Swing_Right",
 			"primary_attack_3_name": "Swing_Up_Left",
-			"primary_attack_4_name": "",
 			"charged_attack_1_name": "Swing_Left_Charged",
 			"charged_attack_2_name": "Swing_Right_Charged",
 			"charged_attack_3_name": "Swing_Up_Left_Charged",
 			"signature_attack_1_name": "Groundslam",
-			"signature_attack_2_name": "",
-			"signature_attack_3_name": "",
 			"weapon_child":  [
 				"Adamantite",
 				"Cobalt",
@@ -129,13 +134,9 @@
 			"primary_attack_1_name": "Swing_Left",
 			"primary_attack_2_name": "Swing_Right",
 			"primary_attack_3_name": "Swing_Down",
-			"primary_attack_4_name": "",
 			"charged_attack_1_name": "Thrust",
-			"charged_attack_2_name": "",
-			"charged_attack_3_name": "",
 			"signature_attack_1_name": "Vortexstrike_Spin",
 			"signature_attack_2_name": "Vortexstrike_Stab",
-			"signature_attack_3_name": "",
 			"weapon_child":  [
 				"Adamantite",
 				"Bone",
