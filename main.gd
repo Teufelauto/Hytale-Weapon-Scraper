@@ -315,6 +315,7 @@ func step_through_weapons() -> void:
 		var current_family_lower: String = current_family.to_lower()
 		weapon_compiled_dict.set(current_family_lower,{}) # Top level is Family
 		
+		## current_child is the descriptor, such as crude, or copper.
 		for current_child in weapon_dict.weapon_family[current_family].weapon_child:
 			current_table_row += 1
 			
