@@ -4,8 +4,10 @@ class_name Scraper
 ## 
 ## All GUI stuff shall start here.
 
-var wpns := Weapons.new() ## Instance of Weapons class
-var app_settings:Dictionary = {} ## Scraper App Settings Data from user://app_settings.json
+## Instance of Weapons class
+var wpns := Weapons.new() 
+## App Settings Data loaded from / saved to user://app_settings.json
+var app_settings:Dictionary = {} 
 static var asset_zip_path: String # the chosen data source
 static var csv_save_path: String # the chosen data output path
 static var compiled_json_save_path: String # Output json file location
@@ -48,7 +50,7 @@ func check_if_first_load() -> void:
 		
 		# copy app_settings to user. This has default data.
 		Utils.copy_file_from_source_to_destination(full_source, full_destination) 
-		wpns.first_load_auto_determine_assets_location() # get target path and save path data into JSON
+		first_load_auto_determine_assets_location() # get target path and save path data into JSON
 		
 	else:
 		print("User folder already contains app_settings.")
@@ -74,7 +76,7 @@ func load_app_settings_from_json() -> void:
 ## The first time app_settings is created, pre-fill file-path for assets.
 func first_load_auto_determine_assets_location()->void:
 	load_app_settings_from_json() # Load here so we can get default data, write over it, then save it.
-	var hytale_roaming_folder = Utils.retrieve_roaming_Hytale_folder_location(OS.get_user_data_dir())
+	var hytale_roaming_folder = Utils.retrieve_roaming_Hytale_folder_location()
 	
 	var _path:String = "/install/pre-release/package/game/latest/"
 	app_settings.assets.latest_prerelease.set("assets_path", hytale_roaming_folder + _path)

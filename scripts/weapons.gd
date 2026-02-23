@@ -4,7 +4,6 @@ class_name Weapons
 ## We create a table for storing the info in a spreadsheet first. After each row 
 ## is populated, the line of json is added. 
 
-
 ## The weapon dictionary is a JSON that can be user-changed as weapons are 
 ## added to game, or maneuvers changed.
 static var weapon_dict: Dictionary ={}
@@ -14,11 +13,9 @@ static var weapon_compiled_dict: Dictionary ={}
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
 
-
-static var item_template_dict: Dictionary = {} ## JSON as Dictionary of Weapon templates
-static var current_template_family: String ## Keeps track of the currently loaded template.
-static var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
-
+var item_template_dict: Dictionary = {} ## JSON as Dictionary of Weapon templates
+var current_template_family: String ## Keeps track of the currently loaded template.
+var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
 
 
 # Weapon Table construction
@@ -29,19 +26,15 @@ static var weapon_table_width: int = 0
 static var weapon_table_column_array: Array = []
 static var weapon_table: Array[Array] = [] ## Table to contain all the data
 
- 
-
-
 
 ##==================================================================================================
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ##==================================================================================================
 
-#func _ready() -> void:
-	#pass
-
 
 func headless_main() -> void:
+	
+	#Utils.backup_csv()
 	
 	## weapon_dict populated here.
 	weapon_dict = Utils.load_json_data_to_dict("user://weapon_dictionary.json")
@@ -58,7 +51,7 @@ func headless_main() -> void:
 	var diffs: Dictionary = Utils.diff_compare_weapons_table() # for testing diffing
 	Utils.save_array_as_csv(diffs.table) # for testing
 	
-	
+
 
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
@@ -167,7 +160,10 @@ func step_through_weapons() -> void:
 			#label_processing.queue_redraw()
 			#await get_tree().create_timer(0.001).timeout
 			
-			ItemsWeapon.scrape_weapon_item_data(current_family, current_family_lower, \
+			## Instance of ItemsWeapon class.
+			var iw := ItemsWeapon.new()
+			
+			iw.scrape_weapon_item_data(current_family, current_family_lower, \
 					current_child, current_child_lower, xref_family_tree, \
 					xref_common_table_headers, current_table_row)
 

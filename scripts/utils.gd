@@ -91,9 +91,22 @@ static func check_user_file_exists(file_name: String) -> bool:
 		return false
 
 
+## Returns true if the path/filename exists.
+static func check_os_file_exists(full_path: String) -> bool:
+	
+	# Check if the file exists
+	if FileAccess.file_exists(full_path):
+		print("File exists in folder: " + full_path)
+		return true
+	else:
+		print("File does not exist in folder: " + full_path)
+		return false
+
+
 # It copies a file from an absolute source path to an absolute destination path.
 # Can change name of new file.
-static func copy_file_from_source_to_destination(full_source: String, full_destination: String) -> void:
+static func copy_file_from_source_to_destination(full_source: String, 
+		full_destination: String) -> void:
 	# Use DirAccess.copy_absolute()
 	# It copies a file from an absolute source path to an absolute destination path.
 	# Note: The destination path should include the new file name.
@@ -106,10 +119,29 @@ static func copy_file_from_source_to_destination(full_source: String, full_desti
 
 
 ## Returns folder where Hytale data lives.
-static func retrieve_roaming_Hytale_folder_location(user_folder: String) -> String:
-	var path = OS.get_user_data_dir()
-	path = path.rstrip(user_folder)
-	return path + "Hytale"
+static func retrieve_roaming_Hytale_folder_location() -> String:
+	var path: String = OS.get_user_data_dir()
+	var count: int = path.get_slice_count("/") - 1 ## count - 1 is the index for .get_slice method.
+	var user_folder: String = path.get_slice("/",count) 
+	path = path.rstrip(user_folder) # strip off the user's folder
+	return path + "Hytale" # append the Hytale folder
+
+
+## Creates a copy of the weapons csv before it can be overwritten.
+static func backup_csv(auto_overwrite_old_csv: bool = true) -> void:
+	
+	## TODO Need to save 2nd backups with timestamp
+	if auto_overwrite_old_csv:
+		if Utils.check_os_file_exists(Scraper.csv_save_path):
+			print("Weapon CSV exists for backup.")
+			
+			var new_path: String = ""
+			Utils.copy_file_from_source_to_destination(Scraper.csv_save_path, new_path)
+			
+		else:
+			print("Weapon CSV does not exists for backup.")
+	else:
+		print("Need logic for this. Only for gui. Headless will crush it.") #
 
 
 ## ---------------- Diff Comparisons -------------------
