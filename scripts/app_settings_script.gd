@@ -88,8 +88,7 @@ func load_app_settings_from_json() -> void:
 func verify_settings_formatting() -> void:
 	var entries_with_errors: int = 0 ## Increment for each error found
 	
-	## Assets slashes
-	
+	## -- Assets slashes
 	if not settings.assets.user_defined.assets_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.assets.user_defined.assets_path = \
@@ -105,19 +104,44 @@ func verify_settings_formatting() -> void:
 		settings.assets.latest_release.assets_path = \
 				settings.assets.latest_release.assets_path + "/"
 	
-	
-	## Output slashes
+	## -- Output slashes
+	## json path
+	if not settings.output.user_defined.compiled_json_save_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.user_defined.compiled_json_save_path = \
+				settings.output.user_defined.compiled_json_save_path + "/"
 	
 	if not settings.output.latest_prerelease.compiled_json_save_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.output.latest_prerelease.compiled_json_save_path = \
 				settings.output.latest_prerelease.compiled_json_save_path + "/"
 	
+	if not settings.output.latest_release.compiled_json_save_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.latest_release.compiled_json_save_path = \
+				settings.output.latest_release.compiled_json_save_path + "/"
+	
+	## csv path
+	if not settings.output.user_defined.csv_save_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.user_defined.csv_save_path = \
+				settings.output.user_defined.csv_save_path + "/"
+	
+	if not settings.output.latest_prerelease.csv_save_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.latest_prerelease.csv_save_path = \
+				settings.output.latest_prerelease.csv_save_path + "/"
+	
+	if not settings.output.latest_release.csv_save_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.latest_release.csv_save_path = \
+				settings.output.latest_release.csv_save_path + "/"
+	
+	## -- Assets extensions (.zip)
 	
 	
 	
-	
-	## Output extensions - Need to deal with caps
+	## -- Output extensions (.csv) (.json) - Need to deal with caps
 	
 	if not settings.output.latest_prerelease.compiled_json_filename.ends_with(".json"):
 		entries_with_errors += 1
