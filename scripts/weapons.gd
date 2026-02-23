@@ -33,10 +33,10 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 
 func headless_main() -> void:
 	
-	#Utils.backup_csv()
+	#FileUtils.backup_csv()
 	
 	## weapon_dict populated here.
-	weapon_dict = Utils.load_json_data_to_dict("user://weapon_dictionary.json")
+	weapon_dict = FileUtils.load_json_data_to_dict("user://weapon_dictionary.json")
 	
 	initialize_weapon_table() # Create a mostly blank 2d array to hold csv data.
 	
@@ -44,11 +44,11 @@ func headless_main() -> void:
 
 	print_weapon_table_to_console()
 	
-	Utils.save_array_as_csv(weapon_table, Scraper.csv_save_path) # Export to csv
-	Utils.save_dict_to_json(weapon_compiled_dict, Scraper.compiled_json_save_path) # export to json
+	FileUtils.save_array_as_csv(weapon_table, Scraper.csv_save_path) # Export to csv
+	FileUtils.save_dict_to_json(weapon_compiled_dict, Scraper.compiled_json_save_path) # export to json
 	
-	var diffs: Dictionary = Utils.diff_compare_weapons_table() # for testing diffing
-	Utils.save_array_as_csv(diffs.table) # for testing
+	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # for testing diffing
+	FileUtils.save_array_as_csv(diffs.table) # for testing
 	
 
 

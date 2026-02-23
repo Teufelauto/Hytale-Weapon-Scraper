@@ -92,7 +92,7 @@ static func parse_weapon_item_info(weapon_family: String, weapon_id: String) -> 
 			+ "/Weapon_" + weapon_id + ".json"
 			
 	# Read json inside zip
-	var file_buffer: PackedByteArray = Utils.zip_reader.read_file(file_path_inside_zip)
+	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
 		print("Failed to read file or file is empty")
 		return {null:null}
@@ -117,7 +117,7 @@ static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary
 	#need the file path and name of the current weapon
 	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family + "/Template_Weapon_" + weapon_family + ".json" 
 	# Read json inside zip
-	var file_buffer: PackedByteArray = Utils.zip_reader.read_file(file_path_inside_zip)
+	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
 		print("Failed to read file or file is empty")
 		return {null:null}

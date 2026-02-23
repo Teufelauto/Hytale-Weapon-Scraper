@@ -17,7 +17,7 @@ func _ready() -> void:
 	
 	check_if_first_load()
 	load_app_settings_from_json()
-	Utils.open_assets_zip() # Open ZIP reader at Assets.zip filepath
+	FileUtils.open_assets_zip() # Open ZIP reader at Assets.zip filepath
 	
 	
 	if app_settings.get("run_app_headless"):
@@ -32,7 +32,7 @@ func _ready() -> void:
 		# TODO Allow Edit app_settings.json in app
 		## TODO if Headless=false, save_app_settings_to_json()
 	
-	Utils.zip_reader.close() # Close ZIP reader
+	FileUtils.zip_reader.close() # Close ZIP reader
 	get_tree().quit() # Closes app
 
 
@@ -41,7 +41,7 @@ func check_if_first_load() -> void:
 	# Need to copy the App Setttings into the user folder, 
 	# so they can be edited by the user by headless method.
 	var file_name: String = "app_settings.json"
-	var file_exists: bool = Utils.check_user_file_exists(file_name)
+	var file_exists: bool = FileUtils.check_user_file_exists(file_name)
 	var full_source: String
 	var full_destination: String
 	if not file_exists: 
@@ -49,7 +49,7 @@ func check_if_first_load() -> void:
 		full_destination = "user://" + file_name
 		
 		# copy app_settings to user. This has default data.
-		Utils.copy_file_from_source_to_destination(full_source, full_destination) 
+		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
 		first_load_auto_determine_assets_location() # get target path and save path data into JSON
 		
 	else:
@@ -57,11 +57,11 @@ func check_if_first_load() -> void:
 		
 	# Copy Weapon Dictionary to user so it can be edited by user.
 	file_name = "weapon_dictionary.json"
-	file_exists = Utils.check_user_file_exists(file_name)
+	file_exists = FileUtils.check_user_file_exists(file_name)
 	if not file_exists: 
 		full_source = "res://app_user_templates/" + file_name
 		full_destination = "user://" + file_name
-		Utils.copy_file_from_source_to_destination(full_source, full_destination) # copy weapons dictinary to user
+		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) # copy weapons dictinary to user
 	else:
 		print("User folder already contains weapon_dictionary.")
 
@@ -69,14 +69,14 @@ func check_if_first_load() -> void:
 ## Populate dictionary with data from the json and follow settings.
 func load_app_settings_from_json() -> void:
 	# Retrieve json data
-	app_settings = Utils.load_json_data_to_dict("user://app_settings.json")
+	app_settings = FileUtils.load_json_data_to_dict("user://app_settings.json")
 	choose_which_filepaths_to_process() 
 
 
 ## The first time app_settings is created, pre-fill file-path for assets.
 func first_load_auto_determine_assets_location()->void:
 	load_app_settings_from_json() # Load here so we can get default data, write over it, then save it.
-	var hytale_roaming_folder = Utils.retrieve_roaming_Hytale_folder_location()
+	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
 	
 	var _path:String = "/install/pre-release/package/game/latest/"
 	app_settings.assets.latest_prerelease.set("assets_path", hytale_roaming_folder + _path)
@@ -95,7 +95,7 @@ func first_load_auto_determine_assets_location()->void:
 	app_settings.output.latest_release.set("csv_save_path", _path)
 	
 	## Save the app settings to the user directory
-	Utils.save_dict_to_json(app_settings, "user://app_settings.json")
+	FileUtils.save_dict_to_json(app_settings, "user://app_settings.json")
 
 
 ## Assign load and save paths based upon data from app_settings.json
