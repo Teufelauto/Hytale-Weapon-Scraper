@@ -5,11 +5,17 @@ extends Object
 ## Various static functions for loading json, csv, or saving them. This class
 ## helps clean up the main scripts by containing oddball functions.
 
+static var zip_reader := ZIPReader.new()
 
 
 ## ---------------- File operations -------------------
 
-
+## Gets ZIP Reader going in this scope
+static func open_assets_zip()->void:
+	var error = zip_reader.open(Scraper.asset_zip_path)
+	if error != OK:
+		print("Failed to open ZIP file: ", error)
+		return
 
 static func load_json_data_to_dict(load_path: String) -> Dictionary:
 	var app_settings_string = FileAccess.get_file_as_string(load_path) # Retrieve json data
@@ -86,6 +92,7 @@ static func check_user_file_exists(file_name: String) -> bool:
 
 
 # It copies a file from an absolute source path to an absolute destination path.
+# Can change name of new file.
 static func copy_file_from_source_to_destination(full_source: String, full_destination: String) -> void:
 	# Use DirAccess.copy_absolute()
 	# It copies a file from an absolute source path to an absolute destination path.
@@ -109,15 +116,18 @@ static func retrieve_roaming_Hytale_folder_location(user_folder: String) -> Stri
 
 
 ## TODO Enable ability to specify Table names and versions
-## load and compare 2 weapons CSVs to see the diff
-static func diff_compare_weapons_table()->void:
+## Load and compare 2 weapons CSVs to see the diff.
+## Returns dictionary.textual, and dictionary.table. These are arrays.
+static func diff_compare_weapons_table() -> Dictionary:
 	var new_table: Array = load_csv_data_to_array("user://weapons_table_prerelease.csv")
 	var old_table: Array = load_csv_data_to_array("user://weapons_table_prerelease_old.csv")
 	
+	print()
 	# Compare new and old tables
 	var diffs: Dictionary = compare_weapons_arrays(new_table, old_table)
 	if diffs.textual.is_empty():
 		print("New and old are identical.")
+		return diffs
 	else:
 		print("Differences found between new and old:")
 		for diff in diffs.textual:
@@ -127,10 +137,10 @@ static func diff_compare_weapons_table()->void:
 		for diff in diffs.table:
 			print(diff)
 		print()
+		return diffs
 
 
-## TODO diff table
-## Returns a dictionary with two entries. "textual", and "table". An Array of diffs.
+## Returns a dictionary of weapon diffs with two entries. "textual", and "table". An Array of diffs.
 static func compare_weapons_arrays(new_table: Array, old_table: Array) -> Dictionary:
 	var differences: Array = []
 	var diff_table: Array = [[
@@ -239,7 +249,7 @@ static func compare_2d_arrays(array1: Array, array2: Array) -> Array:
 	return differences
 
 
-## Compare two jsons (poorly constructed output)
+## Prints comparison of two jsons (poorly constructed output)
 static func practical_application_json_compare()->void:
 	
 	# Retrieve json data

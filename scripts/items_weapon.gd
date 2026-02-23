@@ -1,7 +1,8 @@
 class_name ItemsWeapon
-extends Weapons
-## Processor for each individual weapon
+extends Weapons ## Allows this class to use variables from Weapons without Weapons.variable
+## Item processor for each individual weapon. Static functions 
 ##
+## This class processes all it can from the "Server/Item/Items/Weapon/" folder inside Assets.zip
 ## When main script needs to retrieve the values to fill the table, or json, it comes here.
 
 
@@ -10,23 +11,14 @@ const KEYS_WITH_INT_VALUES: Array = [
 	"MaxDurability",
 ]
 
-static var item_template_dict: Dictionary = {} ## JSON as Dictionary of Weapon templates
-static var current_template_family: String ## Keeps track of the currently loaded template.
-static var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
 
 ##==================================================================================================
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ##==================================================================================================
 
-## Gets ZIP Reader going in this scope
-static func open_assets_zip()->void:
-	var error = zip_reader.open(Weapons.asset_zip_path)
-	if error != OK:
-		print("Failed to open ZIP file: ", error)
-		return
 
-
-## Major Class function for getting data out of the Items/Weapons/(family folder)/(json file)
+## This function is called from weapons class. Other functions in this class result from it.
+## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
 static func scrape_weapon_item_data(current_family: String, current_family_lower: String, 
 		current_child: String, current_child_lower: String, 
@@ -65,10 +57,10 @@ static func scrape_weapon_item_data(current_family: String, current_family_lower
 	## TODO if column not in item_weapon_as_dict, inject template value...
 	
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
-	for current_column in Weapons.weapon_table_column_array.size():
+	for current_column in weapon_table_column_array.size():
 		
 		## The header that appears at the top of the Table for the column we're working on.
-		var column_header = Weapons.weapon_table_column_array[current_column]
+		var column_header = weapon_table_column_array[current_column]
 		
 		## PascalCase or Pascal_Snake_Case for attack moves. Loses data for back-stabbing.
 		## Get the value from the intermediate dict to make the key for the item weapon dict.
@@ -97,50 +89,14 @@ static func scrape_weapon_item_data(current_family: String, current_family_lower
 	weapon_compiled_dict[current_family_lower].set(current_child_lower, unique_weapon.duplicate())
 
 
-## Puts the found value in the correct place inside the unique weapon dictionary.
-static func assign_values_to_unique_dictionary(unique_weapon: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if key == "item_count": # We don't want Item Count in the JSON.
-		return unique_weapon # So we skip it and go back to scrape function without assigning value.
-	
-	# Determine if we need to enter primary attack branch.
-	if key.begins_with("primary_attack"):
-		unique_weapon = key_begins_with_primary_attack(unique_weapon, key, value)
-	
-	# Determine if we need to enter charged branch.
-	elif key.begins_with("charged_attack"):
-		unique_weapon = key_begins_with_charged_attack(unique_weapon, key, value)
-	
-	# Determine if we need to enter signature branch.
-	elif key.begins_with("signature_attack"):
-		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
-	
-	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_charged_attack"):
-		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
-	
-	# Determine if we need to make or enter rear signature branch.
-	elif key.begins_with("rear_signature_attack"):
-		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
-	
-	## Recipee integration may go here.
-	#elif key.begins_with("recipee"):
-		#unique_weapon.set(key, value)
-		
-	else:
-		unique_weapon.set(key, value)
-	
-	return unique_weapon
-
-
-
 ## Parse weapon server/item/items damage info json and turn it into a Dictionary 
 static func parse_weapon_item_info(weapon_family: String, weapon_id: String) -> Dictionary:
 	#need the file path and name of the current weapon. Holey Canolli, it's case-sensative.
-	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family + "/Weapon_" + weapon_id + ".json"
+	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family \
+			+ "/Weapon_" + weapon_id + ".json"
+			
 	# Read json inside zip
-	var file_buffer: PackedByteArray = zip_reader.read_file(file_path_inside_zip)
+	var file_buffer: PackedByteArray = Utils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
 		print("Failed to read file or file is empty")
 		return {null:null}
@@ -165,7 +121,7 @@ static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary
 	#need the file path and name of the current weapon
 	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family + "/Template_Weapon_" + weapon_family + ".json" 
 	# Read json inside zip
-	var file_buffer: PackedByteArray = zip_reader.read_file(file_path_inside_zip)
+	var file_buffer: PackedByteArray = Utils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
 		print("Failed to read file or file is empty")
 		return {null:null}
@@ -205,6 +161,8 @@ static func get_key_value(app_headers: Dictionary, key: String,
 	else:
 		print("Error: Couldn't find the key value to scrape!")
 		return null
+
+
 
 
 ## Deterimine if item weapon has key in top level. If not, tries to retrieve
@@ -427,4 +385,41 @@ static func key_begins_with_rear_signature_attack(unique_weapon: Dictionary,
 		unique_weapon.attack.rear_signature.resize(array_min_size)
 		
 	unique_weapon.attack.rear_signature[index] = value # Assign value to array in proper order.
+	return unique_weapon
+
+
+## Puts the found value in the correct place inside the unique weapon dictionary.
+static func assign_values_to_unique_dictionary(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if key == "item_count": # We don't want Item Count in the JSON.
+		return unique_weapon # So we skip it and go back to scrape function without assigning value.
+	
+	# Determine if we need to enter primary attack branch.
+	if key.begins_with("primary_attack"):
+		unique_weapon = key_begins_with_primary_attack(unique_weapon, key, value)
+	
+	# Determine if we need to enter charged branch.
+	elif key.begins_with("charged_attack"):
+		unique_weapon = key_begins_with_charged_attack(unique_weapon, key, value)
+	
+	# Determine if we need to enter signature branch.
+	elif key.begins_with("signature_attack"):
+		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_charged_attack"):
+		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear signature branch.
+	elif key.begins_with("rear_signature_attack"):
+		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
+	
+	## Recipee integration may go here.
+	#elif key.begins_with("recipee"):
+		#unique_weapon.set(key, value)
+		
+	else:
+		unique_weapon.set(key, value)
+	
 	return unique_weapon

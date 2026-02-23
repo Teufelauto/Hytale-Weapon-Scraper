@@ -1,25 +1,9 @@
-extends Control
 class_name Weapons
+## Process Weapons in the Assets.zip
+##
+## We create a table for storing the info in a spreadsheet first. After each row 
+## is populated, the line of json is added. 
 
-# We create a table for storing the info in a spreadsheet first. After each row 
-# is populated, the line of json is added. 
-
-var user_folder: String = "Hytale-Weapon-Scraper" # Where this app's user data lives
-var hytale_roaming_folder: String # Where THE Hytale game player data lives.
-
-## Get Classes running
-static var zip_reader := ZIPReader.new()
-static var json := JSON.new()
-
-@onready var main_gui = $"."
-@onready var label_processing = $Label_processing
-
-## App Settings Data from JSON
-var app_settings:Dictionary = {}
-
-static var asset_zip_path: String # the chosen data source
-var csv_save_path: String # the chosen data output path
-var compiled_json_save_path: String # Output json file location
 
 ## The weapon dictionary is a JSON that can be user-changed as weapons are 
 ## added to game, or maneuvers changed.
@@ -30,6 +14,13 @@ static var weapon_compiled_dict: Dictionary ={}
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
 
+
+static var item_template_dict: Dictionary = {} ## JSON as Dictionary of Weapon templates
+static var current_template_family: String ## Keeps track of the currently loaded template.
+static var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
+
+
+
 # Weapon Table construction
 # Determine how many rows are in the weapon_table by counting each weapon's descriptors
 static var total_number_of_weapons:int = 0
@@ -39,101 +30,15 @@ static var weapon_table_column_array: Array = []
 static var weapon_table: Array[Array] = [] ## Table to contain all the data
 
  
+
+
+
 ##==================================================================================================
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ##==================================================================================================
 
-func _ready() -> void:
-	
-	pass
-
-## Sets up app the first time it is loaded by copying files to user:// and defining assets location
-func check_if_first_load() -> void:
-	# Need to copy the App Setttings into the user folder, 
-	# so they can be edited by the user by headless method.
-	var file_name: String = "app_settings.json"
-	var file_exists: bool = Utils.check_user_file_exists(file_name)
-	var full_source: String
-	var full_destination: String
-	if not file_exists: 
-		full_source = "res://app_user_templates/" + file_name
-		full_destination = "user://" + file_name
-		
-		# copy app_settings to user. This has default data.
-		Utils.copy_file_from_source_to_destination(full_source, full_destination) 
-		first_load_auto_determine_assets_location() # get target path and save path data into JSON
-		
-	else:
-		print("User folder already contains app_settings.")
-		
-	# Copy Weapon Dictionary to user so it can be edited by user.
-	file_name = "weapon_dictionary.json"
-	file_exists = Utils.check_user_file_exists(file_name)
-	if not file_exists: 
-		full_source = "res://app_user_templates/" + file_name
-		full_destination = "user://" + file_name
-		Utils.copy_file_from_source_to_destination(full_source, full_destination) # copy weapons dictinary to user
-	else:
-		print("User folder already contains weapon_dictionary.")
-
-
-## The first time app_settings is created, pre-fill file-path for assets.
-func first_load_auto_determine_assets_location()->void:
-	load_app_settings_from_json() # Load here so we can get default data, write over it, then save it.
-	hytale_roaming_folder = Utils.retrieve_roaming_Hytale_folder_location(user_folder)
-	
-	var _path:String = "/install/pre-release/package/game/latest/"
-	app_settings.assets.latest_prerelease.set("assets_path", hytale_roaming_folder + _path)
-	app_settings.assets.user_defined.set("assets_path", hytale_roaming_folder + _path) # We give the user the most likely selection.
-	
-	_path = "/install/release/package/game/latest/"
-	app_settings.assets.latest_release.set("assets_path", hytale_roaming_folder + _path)
-	
-	# We fill in the user:// directery path so the user is not confused.
-	_path = OS.get_user_data_dir() + "/"
-	app_settings.output.latest_prerelease.set("compiled_json_save_path", _path)
-	app_settings.output.user_defined.set("compiled_json_save_path", _path)
-	app_settings.output.latest_release.set("compiled_json_save_path", _path)
-	app_settings.output.latest_prerelease.set("csv_save_path", _path)
-	app_settings.output.user_defined.set("csv_save_path", _path)
-	app_settings.output.latest_release.set("csv_save_path", _path)
-	
-	## Save the app settings to the user directory
-	Utils.save_dict_to_json(app_settings, "user://app_settings.json")
-
-
-
-## Populate dictionary with data from the json and follow settings.
-func load_app_settings_from_json() -> void:
-	# Retrieve json data
-	app_settings = Utils.load_json_data_to_dict("user://app_settings.json")
-	choose_which_filepaths_to_process() 
-
-
-## Assign load and save paths based upon data from app_settings.json
-func choose_which_filepaths_to_process() -> void:
-	var choice: String
-	# If pre-release
-	if app_settings.assets.latest_prerelease.get("scrape_assets"):
-		choice = "latest_prerelease"
-		
-	# If Release
-	elif app_settings.assets.latest_release.get("scrape_assets"):
-		choice = "latest_release"
-		
-	# if User defined
-	else:
-		choice = "user_defined"
-		
-	asset_zip_path = \
-			app_settings.assets[choice].assets_path \
-			+ app_settings.assets[choice].assets_filename
-	csv_save_path = \
-			app_settings.output[choice].csv_save_path \
-			+ app_settings.output[choice].csv_filename
-	compiled_json_save_path = \
-			app_settings.output[choice].compiled_json_save_path \
-		+ app_settings.output[choice].compiled_json_filename
+#func _ready() -> void:
+	#pass
 
 
 func headless_main() -> void:
@@ -141,18 +46,19 @@ func headless_main() -> void:
 	## weapon_dict populated here.
 	weapon_dict = Utils.load_json_data_to_dict("user://weapon_dictionary.json")
 	
-	ItemsWeapon.open_assets_zip() # Open ZIP reader at Assets.zip filepath
-	
 	initialize_weapon_table() # Create a mostly blank 2d array to hold csv data.
 	
 	step_through_weapons()
-	
-	ItemsWeapon.zip_reader.close() # Close ZIP reader
-	
+
 	print_weapon_table_to_console()
 	
-	Utils.save_array_as_csv(weapon_table, csv_save_path) # Export to csv
-	Utils.save_dict_to_json(weapon_compiled_dict, compiled_json_save_path) # export to json
+	Utils.save_array_as_csv(weapon_table, Scraper.csv_save_path) # Export to csv
+	Utils.save_dict_to_json(weapon_compiled_dict, Scraper.compiled_json_save_path) # export to json
+	
+	var diffs: Dictionary = Utils.diff_compare_weapons_table() # for testing diffing
+	Utils.save_array_as_csv(diffs.table) # for testing
+	
+	
 
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
