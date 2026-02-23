@@ -10,8 +10,9 @@ extends Object
 ## Load and compare 2 weapons CSVs to see the diff.
 ## Returns dictionary.textual, and dictionary.table. These are arrays.
 static func diff_compare_weapons_table() -> Dictionary:
-	var new_table: Array = FileUtils.load_csv_data_to_array("user://weapons_table_prerelease.csv")
-	var old_table: Array = FileUtils.load_csv_data_to_array("user://weapons_table_prerelease_old.csv")
+	var new_table: Array = FileUtils.load_csv_data_to_array(App.csv_save_path)
+	var _previous_path: String = App.csv_save_path.replace(".csv","_previous.csv")
+	var old_table: Array = FileUtils.load_csv_data_to_array(_previous_path)
 	
 	print()
 	# Compare new and old tables

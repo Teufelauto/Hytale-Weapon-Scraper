@@ -159,8 +159,6 @@ func get_key_value(app_headers: Dictionary, key: String,
 		return null
 
 
-
-
 ## Deterimine if item weapon has key in top level. If not, tries to retrieve
 ## from item template.
 func common_key_in_weapon_check(key: String) -> Variant:
@@ -175,6 +173,26 @@ func common_key_in_weapon_check(key: String) -> Variant:
 		print("No top level key, ", key, ", in weapon's json.")
 		
 		return "Unknown"
+
+
+## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
+## This is a lot
+func extract_attack_dmg(move_name:String) -> int:
+	if not item_weapon_as_dict.has("InteractionVars"): 
+		return 0
+	if not item_weapon_as_dict.InteractionVars.has(move_name):
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): # The [0] is to deal with the array inside json.
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.has("BaseDamage"):
+		return 0
+	
+	## We can finally see what kind of damage is done.
+	## Return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical # Does this allow null instead of 0?
+	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.get("Physical", 0)
+
 
 ## Back-Stabbing Daggers get a special function. AngledDamage is the brach to follow.
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
@@ -195,25 +213,6 @@ func extract_rear_attack_dmg(move_name:String) -> int:
 	## We can finally see what kind of damage is done.
 	## Return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical # Does this allow null instead of 0?
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0].DamageCalculator.BaseDamage.get("Physical", 0)
-
-
-## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-## This is a lot
-func extract_attack_dmg(move_name:String) -> int:
-	if not item_weapon_as_dict.has("InteractionVars"): 
-		return 0
-	if not item_weapon_as_dict.InteractionVars.has(move_name):
-		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): # The [0] is to deal with the array inside json.
-		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.has("BaseDamage"):
-		return 0
-	
-	## We can finally see what kind of damage is done.
-	## Return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical # Does this allow null instead of 0?
-	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.get("Physical", 0)
 
 
 ## Determine data to enter primary attack branch of json.

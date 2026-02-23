@@ -1,4 +1,5 @@
 class_name Weapons
+extends App
 ## Process Weapons in the Assets.zip
 ##
 ## We create a table for storing the info in a spreadsheet first. After each row 
@@ -33,7 +34,7 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 
 func headless_main() -> void:
 	
-	#FileUtils.backup_csv()
+	FileUtils.backup_csv() # So that it can be compared
 	
 	## weapon_dict populated here.
 	weapon_dict = FileUtils.load_json_data_to_dict("user://weapon_dictionary.json")
@@ -44,13 +45,11 @@ func headless_main() -> void:
 
 	print_weapon_table_to_console()
 	
-	FileUtils.save_array_as_csv(weapon_table, Scraper.csv_save_path) # Export to csv
-	FileUtils.save_dict_to_json(weapon_compiled_dict, Scraper.compiled_json_save_path) # export to json
+	FileUtils.save_array_as_csv(weapon_table, App.csv_save_path) # Export to csv
+	FileUtils.save_dict_to_json(weapon_compiled_dict, App.compiled_json_save_path) # export to json
 	
 	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # for testing diffing
-	FileUtils.save_array_as_csv(diffs.table) # for testing
-	
-
+	FileUtils.save_array_as_csv(diffs.table, diff_csv_save_path) # for testing
 
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.

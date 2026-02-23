@@ -1,16 +1,17 @@
 class_name FileUtils
-extends Object
+extends FileAccess
+
 ## Various file handling helper functions.
 ##
 ## Various static functions for loading json, csv, or saving them. This class
 ## helps clean up the main scripts by containing oddball functions.
 
 static var zip_reader := ZIPReader.new()
-
+#static var dir_a := DirAccess.new()
 
 ## Gets ZIP Reader going in this scope
 static func open_assets_zip()->void:
-	var error = zip_reader.open(Scraper.asset_zip_path)
+	var error = zip_reader.open(App.asset_zip_path)
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
 		return
@@ -131,13 +132,48 @@ static func backup_csv(auto_overwrite_old_csv: bool = true) -> void:
 	
 	## TODO Need to save 2nd backups with timestamp
 	if auto_overwrite_old_csv:
-		if check_os_file_exists(Scraper.csv_save_path):
+		if check_os_file_exists(App.diff_csv_save_path):
 			print("Weapon CSV exists for backup.")
 			
-			var new_path: String = ""
-			copy_file_from_source_to_destination(Scraper.csv_save_path, new_path)
+			var _previous_path: String = App.diff_csv_save_path.replace(".csv","_previous.csv")
+			
+			## Rename old file if it already exists for archiving.
+			if check_os_file_exists(_previous_path):
+				## Create timestamp for renaming file.
+				var date_time: String = Time.get_datetime_string_from_system()
+				date_time = date_time.replace(":", "-") # Need to replace : with -
+				var dated_suffix: String = "_old_" + date_time + ".csv"
+				var stamped_path: String = _previous_path.replace(
+						"_previous.csv", dated_suffix)
+				
+				copy_file_from_source_to_destination(_previous_path, stamped_path)
+			
+			copy_file_from_source_to_destination(App.diff_csv_save_path, _previous_path)
 			
 		else:
 			print("Weapon CSV does not exists for backup.")
 	else:
 		print("Need logic for this. Only for gui. Headless will crush it.") #
+
+
+static func create_user_data_folder(folder_name: String):
+	
+	# Construct the full path using the user:// protocol
+	var dir_path = "user://" + folder_name
+	
+	var dir_access = DirAccess.open("user://") ## standard method
+
+	# Check if the directory already exists
+	if not dir_access.dir_exists(dir_path):
+		# Create the directory and any necessary intermediate directories recursively
+		var error_code = dir_access.make_dir_recursive(dir_path)
+		if error_code == OK:
+			print("Successfully created directory: ", dir_path)
+		else:
+			printerr("Failed to create directory: ", dir_path, " Error code: ", error_code)
+	else:
+		print("Directory already exists: ", dir_path)
+
+
+
+	

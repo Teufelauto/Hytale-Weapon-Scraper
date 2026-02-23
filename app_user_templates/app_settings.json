@@ -16,18 +16,22 @@
 			"assets_filename": "Assets.zip"}},
 	"output":{
 		"user_defined":{
-			"compiled_json_save_path": "user://",
+			"compiled_json_save_path": "user://output/",
 			"compiled_json_filename": "weapons_encyclopedia_user_defined.json",
-			"csv_save_path": "user://",
-			"csv_filename": "weapons_table_user_defined.csv"},
+			"csv_save_path": "user://output/",
+			"csv_filename": "wpn_tbl_user.csv"},
 		"latest_prerelease":{
-			"compiled_json_save_path": "user://",
-			"compiled_json_filename": "weapons_encyclopedia_prerelease.json",
-			"csv_save_path": "user://",
-			"csv_filename": "weapons_table_prerelease.csv"},
+			"compiled_json_save_path": "user://output/",
+			"compiled_json_filename": "weapons_encyclopedia_pre-release.json",
+			"csv_save_path": "user://output/",
+			"csv_filename": "wpn_tbl_pre-rel.csv"},
 		"latest_release":{
-			"compiled_json_save_path": "user://",
+			"compiled_json_save_path": "user://output/",
 			"compiled_json_filename": "weapons_encyclopedia_release.json",
-			"csv_save_path": "user://",
-			"csv_filename": "weapons_table_release.csv"}}
+			"csv_save_path": "user://output/",
+			"csv_filename": "wpn_tbl_rel.csv"},
+		"weapon_diff":{
+			"json_filename":"wpn_diff_json.json",
+			"csv_filename":"wpn_diff_csv.csv"}
+	}
 }
