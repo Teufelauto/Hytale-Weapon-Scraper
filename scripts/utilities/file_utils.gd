@@ -174,6 +174,28 @@ static func create_user_data_folder(folder_name: String):
 	else:
 		print("Directory already exists: ", dir_path)
 
+## Replace the exension attached to file_name. The "." in preferred extension may
+## or may not be present.
+static func replace_file_extension(file_name: String, preferred_ext: String) -> String:
+	
+	## Strip off existing extension if so adorned.
+	## count - 1 is the right index for .get_slice method.
+	var count: int = file_name.get_slice_count(".") - 1 
+	
+	## The extension which could be any case like .ZiP
+	var ext_to_snip: String = file_name.get_slice(".",count)
+	 
+	# strip off the extension
+	file_name = file_name.rstrip(ext_to_snip) # "." remains at end
+	
+	# Deal with possible "." in preferred ext.
+	preferred_ext = preferred_ext.trim_prefix(".")
+	
+	return file_name + preferred_ext ## Add the preferred extension format
+
+
+
+
 
 
 	
