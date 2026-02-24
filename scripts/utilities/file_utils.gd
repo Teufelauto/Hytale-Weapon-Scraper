@@ -128,32 +128,35 @@ static func retrieve_roaming_Hytale_folder_location() -> String:
 
 
 ## Creates a copy of the weapons csv before it can be overwritten.
-static func backup_csv(auto_overwrite_old_csv: bool = true) -> void:
+static func backup_csv(auto_save_old_csv: bool = true) -> void:
 	
-	## TODO Need to save 2nd backups with timestamp
-	if auto_overwrite_old_csv:
-		if check_os_file_exists(App.diff_csv_save_path):
-			print("Weapon CSV exists for backup.")
-			
-			var _previous_path: String = App.diff_csv_save_path.replace(".csv","_previous.csv")
-			
-			## Rename old file if it already exists for archiving.
-			if check_os_file_exists(_previous_path):
-				## Create timestamp for renaming file.
-				var date_time: String = Time.get_datetime_string_from_system()
-				date_time = date_time.replace(":", "-") # Need to replace : with -
-				var dated_suffix: String = "_old_" + date_time + ".csv"
-				var stamped_path: String = _previous_path.replace(
-						"_previous.csv", dated_suffix)
+	if auto_save_old_csv:
+		var diff_path: String = App.diff_csv_save_path
+		var wpn_path: String = App.csv_save_path
+		
+		for filepath in [wpn_path, diff_path]:
+			if check_os_file_exists(filepath):
+				print(filepath + " exists for backup.")
 				
-				copy_file_from_source_to_destination(_previous_path, stamped_path)
-			
-			copy_file_from_source_to_destination(App.diff_csv_save_path, _previous_path)
-			
-		else:
-			print("Weapon CSV does not exists for backup.")
+				var _previous_path: String = filepath.replace(".csv","_prev.csv")
+				
+				## Rename old file if it already exists for archiving.
+				if check_os_file_exists(_previous_path):
+					## Create timestamp for renaming file.
+					var date_time: String = Time.get_datetime_string_from_system()
+					date_time = date_time.replace(":", "-") # Need to replace : with -
+					var dated_suffix: String = "_prev_" + date_time + ".csv"
+					var stamped_path: String = _previous_path.replace(
+							"_prev.csv", dated_suffix)
+					
+					copy_file_from_source_to_destination(_previous_path, stamped_path)
+				
+				copy_file_from_source_to_destination(filepath, _previous_path)
+				
+			else:
+				print(filepath + " does not exists for backup.")
 	else:
-		print("Need logic for this. Only for gui. Headless will crush it.") #
+		print("Need logic for this. Only for gui.") #
 
 
 static func create_user_data_folder(folder_name: String):
