@@ -9,7 +9,7 @@ extends App
 ## added to game, or maneuvers changed.
 static var weapon_dict: Dictionary ={}
 ## Dictionary equivalent of weapon_table output
-static var weapon_compiled_dict: Dictionary ={}
+static var weapon_encyclopedia: Dictionary ={}
 ## Dictionary of column name equivalents for weapon family 
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
@@ -34,9 +34,7 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 
 func headless_main() -> void:
 	
-	FileUtils.backup_csv() # So that it can be compared
-	
-	## weapon_dict populated here.
+	## static var weapon_dict populated here.
 	weapon_dict = FileUtils.load_json_data_to_dict("user://weapon_dictionary.json")
 	
 	initialize_weapon_table() # Create a mostly blank 2d array to hold csv data.
@@ -45,12 +43,14 @@ func headless_main() -> void:
 
 	print_weapon_table_to_console()
 	
+	FileUtils.backup_csv_and_json() # Backup files so they can be compared and archived.
 	FileUtils.save_array_as_csv(weapon_table, App.csv_save_path) # Export to csv
-	FileUtils.save_dict_to_json(weapon_compiled_dict, App.compiled_json_save_path) # export to json
+	FileUtils.save_dict_to_json(weapon_encyclopedia, App.compiled_json_save_path) # export to json
 	
-	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # for testing diffing
-	FileUtils.save_array_as_csv(diffs.table, diff_csv_save_path) # for testing
-
+	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # for diffing
+	FileUtils.save_array_as_csv(diffs.table, diff_csv_save_path) # Save diff csv
+	## TODO Save diff as json
+	
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
 ## The table can be exported as CSV or used internally. 
@@ -142,7 +142,7 @@ func step_through_weapons() -> void:
 		
 		## lower_case string version of current_Family  
 		var current_family_lower: String = current_family.to_lower()
-		weapon_compiled_dict.set(current_family_lower,{}) # Top level is Family
+		weapon_encyclopedia.set(current_family_lower,{}) # Top level is Family
 		
 		## current_child is the descriptor, such as crude, or copper.
 		for current_child in weapon_dict.weapon_family[current_family].weapon_child:
@@ -150,7 +150,7 @@ func step_through_weapons() -> void:
 			
 			## lower_case string version of current_Child
 			var current_child_lower: String = current_child.to_lower()
-			weapon_compiled_dict[current_family_lower].set(current_child_lower, {}) # Second level is child
+			weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) # Second level is child
 			
 			# EXPERIMENT for gui display----------------------------------------------------------------------------
 			#wpn_str = current_child + " " + current_family

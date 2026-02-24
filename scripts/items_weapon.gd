@@ -82,7 +82,7 @@ func scrape_weapon_item_data(current_family: String, current_family_lower: Strin
 		unique_weapon = assign_values_to_unique_dictionary(unique_weapon, column_header, value)
 		
 	## Add this child to the Big Dictionary under family.
-	weapon_compiled_dict[current_family_lower].set(current_child_lower, unique_weapon.duplicate())
+	weapon_encyclopedia[current_family_lower].set(current_child_lower, unique_weapon.duplicate())
 
 
 ## Parse weapon server/item/items damage info json and turn it into a Dictionary 

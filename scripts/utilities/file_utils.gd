@@ -127,36 +127,51 @@ static func retrieve_roaming_Hytale_folder_location() -> String:
 	return path + "Hytale" # append the Hytale folder
 
 
-## Creates a copy of the weapons csv before it can be overwritten.
-static func backup_csv(auto_save_old_csv: bool = true) -> void:
+## Creates a copy of the weapons csv and json before they can be overwritten.
+static func backup_csv_and_json(designator_for_old: String = "_old", 
+		auto_save_old_csv: bool = true, auto_save_old_json: bool = true) -> void:
+	## Array of arrays, so files can be cycled in for-loop
+	var path_array: Array = []
 	
 	if auto_save_old_csv:
-		var diff_path: String = App.diff_csv_save_path
-		var wpn_path: String = App.csv_save_path
-		
-		for filepath in [wpn_path, diff_path]:
-			if check_os_file_exists(filepath):
-				print(filepath + " exists for backup.")
+		## Save to var so both files can be cycled in for-loop
+		path_array.append([App.diff_csv_save_path, ".csv"])
+		path_array.append([App.csv_save_path, ".csv"])
+	
+	if auto_save_old_json:
+		## Save to var so both files can be cycled in for-loop
+		path_array.append([App.diff_json_save_path,".json"])
+		path_array.append([App.compiled_json_save_path, ".json"])
+	
+	## Array filepath[0] is Sting path to file, filepath[1] is String extension.
+	for filepath in path_array:
+		if check_os_file_exists(filepath[0]):
+			print(filepath[0] + " exists for backup.")
+			
+			## Looks like: _old.csv
+			var constructed_suffix: String = designator_for_old + filepath[1]
+			## Looks like: .../wpn_tbl_rel_old.csv
+			var _previous_path: String = filepath[0].replace(filepath[1], constructed_suffix)
+			
+			## Rename old file if it already exists for archiving.
+			if check_os_file_exists(_previous_path):
+				## timestamp for renaming old file to archive.
+				var date: String = Time.get_date_string_from_system()
+				var time: String = Time.get_time_string_from_system()
+				time = time.replace(":", ".") # Need to replace : with something else.
+				## looking like: _old_2026-02-23_21.32.18.csv
+				var dated_suffix: String = designator_for_old + "_" + date + "_" + time + filepath[1]
+				## Path looking like: .../wpn_tbl_rel_old_2026-02-23_21.32.18.csv
+				var stamped_path: String = _previous_path.replace(constructed_suffix, dated_suffix)
 				
-				var _previous_path: String = filepath.replace(".csv","_prev.csv")
+				## Copy old file to dated archive before it can be overwritten.
+				copy_file_from_source_to_destination(_previous_path, stamped_path)
 				
-				## Rename old file if it already exists for archiving.
-				if check_os_file_exists(_previous_path):
-					## Create timestamp for renaming file.
-					var date_time: String = Time.get_datetime_string_from_system()
-					date_time = date_time.replace(":", "-") # Need to replace : with -
-					var dated_suffix: String = "_prev_" + date_time + ".csv"
-					var stamped_path: String = _previous_path.replace(
-							"_prev.csv", dated_suffix)
-					
-					copy_file_from_source_to_destination(_previous_path, stamped_path)
-				
-				copy_file_from_source_to_destination(filepath, _previous_path)
-				
-			else:
-				print(filepath + " does not exists for backup.")
-	else:
-		print("Need logic for this. Only for gui.") #
+			## Copy current file to old, before it can be overwritten.
+			copy_file_from_source_to_destination(filepath[0], _previous_path)
+			
+		else:
+			print(filepath[0] + " does not exists for backup.")
 
 
 static func create_user_data_folder(folder_name: String):
