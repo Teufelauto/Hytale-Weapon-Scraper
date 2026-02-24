@@ -19,7 +19,7 @@ var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon 
 var current_template_family: String ## Keeps track of the currently loaded template.
 
 # Weapon Table construction
-# Determine how many rows are in the weapon_table by counting each weapon's descriptors
+## Determine how many rows are in the weapon_table by counting each weapon's descriptors
 static var total_number_of_weapons:int = 0
 static var weapon_table_height: int 
 static var weapon_table_width: int = 0

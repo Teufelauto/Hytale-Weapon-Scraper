@@ -9,19 +9,20 @@ extends Object
 ## TODO Enable ability to specify Table names and versions
 ## Load and compare 2 weapons CSVs to see the diff.
 ## Returns dictionary.textual, and dictionary.table. These are arrays.
-static func diff_compare_weapons_table() -> Dictionary:
+static func diff_compare_weapons_table(designator_for_old: String = "_old") -> Dictionary:
 	var new_table: Array = FileUtils.load_csv_data_to_array(App.csv_save_path)
-	var _previous_path: String = App.csv_save_path.replace(".csv","_previous.csv")
+	var old_end: String = designator_for_old + ".csv"
+	var _previous_path: String = App.csv_save_path.replace(".csv", old_end)
 	var old_table: Array = FileUtils.load_csv_data_to_array(_previous_path)
 	
 	print()
 	# Compare new and old tables
 	var diffs: Dictionary = compare_weapons_arrays(new_table, old_table)
 	if diffs.textual.is_empty():
-		print("New and old are identical.")
+		print("New and old weapons are identical.")
 		return diffs
 	else:
-		print("Differences found between new and old:")
+		print("Differences found between new and old weapons:")
 		for diff in diffs.textual:
 			print("- " + diff)
 		
