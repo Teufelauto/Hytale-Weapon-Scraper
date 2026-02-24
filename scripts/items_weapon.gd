@@ -95,7 +95,7 @@ static func parse_weapon_item_info(weapon_family: String, weapon_id: String) -> 
 	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
 		print("Failed to read file or file is empty")
-		return {null:null}
+		return { null:null }
 	else:
 		#print("Successfully read file: ", file_path_inside_zip)
 		# Convert Byte Array into String. utf8 for safety
@@ -104,7 +104,7 @@ static func parse_weapon_item_info(weapon_family: String, weapon_id: String) -> 
 		return _item_weapon_info_as_dict
 
 
-## If current family not= current_item_template, update current_template_family and item_template_dict
+## If current family not current_item_template, update current_template_family and item_template_dict
 func update_common_family_dictionaries(current_family: String) -> void:
 	#check if template is up to date for the current family
 	if current_family != current_template_family:
@@ -115,16 +115,17 @@ func update_common_family_dictionaries(current_family: String) -> void:
 ## Parse Template weapon server/item/itemsinfo json and turn it into a Dictionary 
 static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary:
 	#need the file path and name of the current weapon
-	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family + "/Template_Weapon_" + weapon_family + ".json" 
+	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" \
+			+ weapon_family + "/Template_Weapon_" + weapon_family + ".json" 
 	# Read json inside zip
 	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
 		print("Failed to read file or file is empty")
-		return {null:null}
+		return { null:null }
 	else:
 		#print("Successfully read file: ", file_path_inside_zip)
 		## Convert Byte Array into String. utf8 for safety
-		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()     # FileAccess.get_file_as_string(file_path)
+		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()
 		var _item_weapon_info_as_dict: Dictionary = JSON.parse_string(_item_weapon_info_string)
 		return _item_weapon_info_as_dict
 
@@ -184,14 +185,16 @@ func extract_attack_dmg(move_name:String) -> int:
 		return 0
 	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
 		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): # The [0] is to deal with the array inside json.
+	# The [0] is to deal with the array inside json.
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
 		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.has("BaseDamage"):
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
+			.has("BaseDamage"):
 		return 0
 	
 	## We can finally see what kind of damage is done.
-	## Return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical # Does this allow null instead of 0?
-	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.get("Physical", 0)
+	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
+			.BaseDamage.get("Physical", 0)
 
 
 ## Back-Stabbing Daggers get a special function. AngledDamage is the brach to follow.
@@ -203,16 +206,19 @@ func extract_rear_attack_dmg(move_name:String) -> int:
 		return 0
 	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
 		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("AngledDamage"): # The [0] is to deal with the array inside json.
+	# The [0] is to deal with the array inside json.
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("AngledDamage"): 
 		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0].has("DamageCalculator"):
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
+			.has("DamageCalculator"):
 		return 0
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0].DamageCalculator.has("BaseDamage"):
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
+			.DamageCalculator.has("BaseDamage"):
 		return 0
 	
 	## We can finally see what kind of damage is done.
-	## Return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator.BaseDamage.Physical # Does this allow null instead of 0?
-	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0].DamageCalculator.BaseDamage.get("Physical", 0)
+	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
+			.DamageCalculator.BaseDamage.get("Physical", 0)
 
 
 ## Determine data to enter primary attack branch of json.
