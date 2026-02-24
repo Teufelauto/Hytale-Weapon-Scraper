@@ -2,7 +2,7 @@ class_name App
 extends Object
 ## Class relating to user-configurable app_settings.
 ##
-## 
+## Loads, processes, verifies, corrects, saves. Becomes source for below static vars.
 
 ## App Settings Data loaded from / saved to user://app_settings.json
 static var settings:Dictionary = {} 
@@ -12,14 +12,11 @@ static var compiled_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
 
-func _init() -> void:
-	pass
-
 
 ## Sets up app the first time it is loaded by copying files to user:// and defining assets location
 func check_if_first_load() -> void:
-	# Need to copy the App Setttings into the user folder, 
-	# so they can be edited by the user by headless method.
+	## Need to copy the App Setttings into the user folder, 
+	## so they can be edited by the user by headless method.
 	var file_name: String = "app_settings.json"
 	var file_exists: bool = FileUtils.check_user_file_exists(file_name)
 	var full_source: String
@@ -35,19 +32,55 @@ func check_if_first_load() -> void:
 	else:
 		print("User folder already contains app_settings.")
 		
-	# Copy Weapon Dictionary to user so it can be edited by user.
+	## Copy Weapon Dictionary to user so it can be edited by user.
 	file_name = "weapon_dictionary.json"
 	file_exists = FileUtils.check_user_file_exists(file_name)
 	if not file_exists: 
 		full_source = "res://app_user_templates/" + file_name
 		full_destination = "user://" + file_name
-		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) # copy weapons dictinary to user
+		# copy weapons dictinary to user
+		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
 	else:
 		print("User folder already contains weapon_dictionary.")
 	
+	# Create documentation folder if necessary
+	FileUtils.create_user_data_folder("docs")
+	
+	## Copy Instructions to user so it can be read by user.
+	file_name = "docs/Instructions.txt"
+	file_exists = FileUtils.check_user_file_exists(file_name)
+	if not file_exists: 
+		full_source = "res://" + file_name
+		full_destination = "user://" + file_name
+		# copy instructions to user
+		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
+	else:
+		print("docs folder already contains Instructions.txt.")
+		
+	## Copy readme markdown to user so it can be read by user.
+	file_name = "docs/README.md"
+	file_exists = FileUtils.check_user_file_exists(file_name)
+	if not file_exists: 
+		full_source = "res://" + file_name
+		full_destination = "user://" + file_name
+		# copy instructions to user
+		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
+	else:
+		print("docs folder already contains Instructions.txt.")
+	
+	## Copy license to user so it can be read by user.
+	file_name = "docs/LICENSE.txt"
+	file_exists = FileUtils.check_user_file_exists(file_name)
+	if not file_exists: 
+		full_source = "res://" + file_name
+		full_destination = "user://" + file_name
+		# copy instructions to user
+		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
+	else:
+		print("docs folder already contains LICENSE.txt.")
+	
 	# Create Output folder if necessary
 	FileUtils.create_user_data_folder("output")
-	
 
 
 ## The first time app_settings is created, pre-fill file-path for assets.
@@ -82,6 +115,7 @@ func load_app_settings_from_json() -> void:
 	settings = FileUtils.load_json_data_to_dict("user://app_settings.json")
 	verify_settings_formatting()
 	choose_which_filepaths_to_process() 
+
 
 ## Ensure paths in app_settings.json that may have gotten tampered with by user 
 ## end with a slash "/". Also ensure correct file extensions.
