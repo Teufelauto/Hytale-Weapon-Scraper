@@ -2,7 +2,7 @@
 	"info_for_devs": "If new materials for weapons are introduced, add them to the weapon_child 
 		 array, being mindful of capitalization. New weapon families can be similiarly added, 
 		 as long as they have the same json structure. weapon_table_columns may be reordered by 
-		 changing only key values, without sorting, if desired.",
+		 changing only key values, without sorting, if desired. Do not change columns 0-3",
 	"weapon_table_columns": {
 		"0": "item_count",
 		"1": "id",

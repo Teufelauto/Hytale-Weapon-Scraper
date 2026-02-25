@@ -21,8 +21,9 @@ config/icon="res://icon.svg"
 [file_customization]
 
 folder_colors={
-"res://app_user_templates/": "red",
-"res://scripts/": "green"
+"res://app_user_templates/": "yellow",
+"res://scripts/": "red",
+"res://scripts/utilities/": "orange"
 }
 
 [physics]

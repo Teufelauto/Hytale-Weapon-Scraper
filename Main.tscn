@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://diy1us1nrhikn"]
 
-[ext_resource type="Script" uid="uid://5u2msmr4w1w8" path="res://main.gd" id="1_glv2v"]
+[ext_resource type="Script" uid="uid://5u2msmr4w1w8" path="res://scripts/main.gd" id="1_glv2v"]
 
 [node name="Control" type="Control" unique_id=1302697177]
 visible = false
@@ -56,6 +56,3 @@ offset_right = 683.0
 offset_bottom = 525.0
 theme_override_font_sizes/font_size = 38
 text = "Do It"
-
-[connection signal="pressed" from="Button_chng_assets_location" to="." method="_on_button_chng_assets_location_pressed"]
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
