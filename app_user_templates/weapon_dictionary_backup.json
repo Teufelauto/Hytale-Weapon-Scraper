@@ -14,23 +14,22 @@
 		"7": "item_level",
 		"8": "quality",
 		"9": "max_durability",
-		"10": "max_stack",
-		"11": "durability_loss_on_hit",
-		"12": "primary_attack_1_damage",
-		"13": "primary_attack_2_damage",
-		"14": "primary_attack_3_damage",
-		"15": "primary_attack_4_damage",
-		"16": "charged_attack_1_damage",
-		"17": "charged_attack_2_damage",
-		"18": "charged_attack_3_damage",
-		"19": "signature_attack_1_damage",
-		"20": "signature_attack_2_damage",
-		"21": "signature_attack_3_damage",
-		"22": "rear_charged_attack_1_name",
-		"23": "rear_charged_attack_2_name",
-		"24": "rear_signature_attack_1_name",
-		"25": "rear_signature_attack_2_name",
-		"26": "rear_signature_attack_3_name"
+		"10": "durability_loss_on_hit",
+		"11": "primary_attack_1_damage",
+		"12": "primary_attack_2_damage",
+		"13": "primary_attack_3_damage",
+		"14": "primary_attack_4_damage",
+		"15": "charged_attack_1_damage",
+		"16": "charged_attack_2_damage",
+		"17": "charged_attack_3_damage",
+		"18": "signature_attack_1_damage",
+		"19": "signature_attack_2_damage",
+		"20": "signature_attack_3_damage",
+		"21": "rear_charged_attack_1_name",
+		"22": "rear_charged_attack_2_name",
+		"23": "rear_signature_attack_1_name",
+		"24": "rear_signature_attack_2_name",
+		"25": "rear_signature_attack_3_name"
 	},
 	"common_table_headers": {
 		"item_count": "item_count",
@@ -43,8 +42,7 @@
 		"quality": "Quality",
 		"item_level": "ItemLevel",
 		"max_durability": "MaxDurability",
-		"durability_loss_on_hit": "DurabilityLossOnHit",
-		"max_stack": "MaxStack"
+		"durability_loss_on_hit": "DurabilityLossOnHit"
 	},
 	"weapon_family":{
 		"Battleaxe":{
@@ -163,113 +161,6 @@
 				"Stone_Trork",
 				"Thorium",
 				"Wood"
-			]
-		},
-		"Spear":{
-			"primary_attack_1_name": "Spear_Stab",
-			"weapon_child":  [
-				"Adamantite",
-				"Adamantite_Saurian",
-				"Bone",
-				"Bronze",
-				"Cobalt",
-				"Copper",
-				"Crude",
-				"Double_Incandescent",
-				"Fishbone",
-				"Iron",
-				"leaf",
-				"Mithril",
-				"Onyxium",
-				"Scrap",
-				"Stone_Trork",
-				"Thorium",
-				"Tribal"
-			]
-		},
-		"Axe":{
-			"parent": "Template_Weapon_Sword", 
-			"primary_attack_1_name": "Axe_Swing_Down_Left",
-			"primary_attack_2_name": "Axe_Swing_Up_Right",
-			"charged_attack_1_name": "Axe_Swing_Left_Charged",
-			"weapon_child":  [
-				"Adamantite",
-				"Bone",
-				"Cobalt",
-				"Copper",
-				"Crude",
-				"Doomed",
-				"Iron",
-				"Iron_Rusty",
-				"Mithril",
-				"Onyxium",
-				"Stone_Trork",
-				"Thorium",
-				"Tribal"
-			]
-		},
-		"Club":{
-			"primary_attack_1_name": "Club_Swing_Left",
-			"primary_attack_2_name": "Club_Swing_Right",
-			"charged_attack_1_name": "Club_Swing_Down_Charged",
-			"weapon_child":  [
-				"Adamantite",
-				"Cobalt",
-				"Copper",
-				"Crude",
-				"Doomed",
-				"Iron",
-				"Iron_Rusty",
-				"Mithril",
-				"Onyxium",
-				"Scrap",
-				"Steel_Flail_Rusty",
-				"Stone_Trork",
-				"Thorium",
-				"Tribal",
-				"Zombie_Arm",
-				"Zombie_Burnt_Arm",
-				"Zombie_Burnt_Leg",
-				"Zombie_Frost_Arm",
-				"Zombie_Frost_Leg",
-				"Zombie_Leg",
-				"Zombie_Sand_Arm",
-				"Zombie_Sand_Leg"
-			]
-		},
-		"Longsword":{
-			"primary_attack_1_name": "Longsword_Swing_Left",
-			"primary_attack_2_name": "Longsword_Swing_Right",
-			"primary_attack_3_name": "Longsword_Swing_Up_Left",
-			"charged_attack_1_name": "Longsword_Stab_Charged",
-			"weapon_child": [
-				"Adamantite",
-				"Adamantite_Saurian",
-				"Cobalt",
-				"Copper",
-				"Crude",
-				"Flame",
-				"Iron",
-				"Katana",
-				"Mithril",
-				"Onyxium",
-				"Praetorian",
-				"Praetorian_NPC",
-				"Scarab",
-				"Spectral",
-				"Stone_Trork",
-				"Thorium",
-				"Tribal",
-				"Void"
-			]
-		},
-		"Gun":{
-			"parent": "Template_Weapon_Sword", 
-			"primary_attack_1_name": "Gun_Swing_Left",
-			"weapon_child":[
-				"",
-				"Blunderbuss",
-				"Blunderbuss_Rusty"
 			]
 		}
 	},
