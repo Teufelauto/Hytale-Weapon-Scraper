@@ -6,8 +6,8 @@ extends FileAccess
 ## Various static functions for loading json, csv, or saving them. This class
 ## helps clean up the main scripts by containing oddball functions.
 
-static var zip_reader := ZIPReader.new()
-#static var dir_a := DirAccess.new()
+static var zip_reader := ZIPReader.new() ## Class to put Assets.zip in
+static var zip_files: PackedStringArray ## Path and File list inside zip. An array of strings.
 
 ## Gets ZIP Reader going in this scope
 static func open_assets_zip()->void:
@@ -15,6 +15,7 @@ static func open_assets_zip()->void:
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
 		return
+	zip_files = zip_reader.get_files() ## Obtain list of files in zip
 
 
 static func load_json_data_to_dict(load_path: String) -> Dictionary:
