@@ -17,7 +17,9 @@ static var diff_json_save_path: String ## Output diff file path follows json
 func check_if_first_load() -> void:
 	## Need to copy the App Setttings into the user folder, 
 	## so they can be edited by the user by headless method.
+	var file_folder: String
 	var file_name: String = "app_settings.json"
+	var file_short_path: String
 	var file_exists: bool = FileUtils.check_user_file_exists(file_name)
 	var full_source: String
 	var full_destination: String
@@ -47,33 +49,39 @@ func check_if_first_load() -> void:
 	FileUtils.create_user_data_folder("docs")
 	
 	## Copy Instructions to user so it can be read by user.
-	file_name = "docs/Instructions.txt"
-	file_exists = FileUtils.check_user_file_exists(file_name)
+	file_folder = "docs/"
+	file_name = "Instructions.txt"
+	file_short_path = file_folder + file_name
+	file_exists = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
 		full_source = "res://" + file_name
-		full_destination = "user://" + file_name
+		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
 	else:
 		print("docs folder already contains Instructions.txt.")
 		
 	## Copy readme markdown to user so it can be read by user.
-	file_name = "docs/README.md"
-	file_exists = FileUtils.check_user_file_exists(file_name)
+	file_folder = "docs/"
+	file_name = "README.md"
+	file_short_path = file_folder + file_name
+	file_exists = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
 		full_source = "res://" + file_name
-		full_destination = "user://" + file_name
+		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
 	else:
 		print("docs folder already contains Instructions.txt.")
 	
 	## Copy license to user so it can be read by user.
-	file_name = "docs/LICENSE.txt"
-	file_exists = FileUtils.check_user_file_exists(file_name)
+	file_folder = "docs/"
+	file_name = "LICENSE.txt"
+	file_short_path = file_folder + file_name
+	file_exists = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
 		full_source = "res://" + file_name
-		full_destination = "user://" + file_name
+		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
 	else:

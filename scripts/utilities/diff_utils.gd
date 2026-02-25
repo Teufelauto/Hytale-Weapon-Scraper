@@ -5,6 +5,15 @@ extends Object
 ## Various static functions for comparing two resources or files. This class
 ## helps clean up the main scripts by containing oddball functions.
 
+## Header row of diff table. Used for column indexing when converting array to dict.
+enum Header {
+		WEAPON_FAMILY,
+		DESCRIPTOR,
+		DIFF_PARAMETER,
+		OLD_VALUE,
+		NEW_VALUE
+		}
+
 
 ## TODO Enable ability to specify Table names and versions
 ## Load and compare 2 weapons CSVs to see the diff.
@@ -27,8 +36,8 @@ static func diff_compare_weapons_table(designator_for_old: String = "_old") -> D
 			print("- " + diff)
 		
 		print("---------------")
-		for diff in diffs.table:
-			print(diff)
+		#for diff in diffs.table:
+			#print(diff)
 		print()
 		return diffs
 
@@ -103,6 +112,41 @@ static func compare_weapons_arrays(new_table: Array, old_table: Array) -> Dictio
 				#differences.append("Difference at index [%d][%d]: %s vs %s" 
 						#% [i, j, str(row_new[j]), str(row_old[j])])
 	return diff_dict
+
+
+## Returns a Dictionary of diffs suitable for saving as json.
+static func convert_diff_table_array_to_dict(table: Array) -> Dictionary:
+	
+	table.remove_at(0) ## Strip row 0 (headers) out for simpler looping.
+	
+	var diff: Dictionary = {} ## Populated by weapon_family entries in table.
+	
+	## Create top-level keys for weapon family
+	for row in table:
+		## Skip if this family already added.
+		if not diff.has(row[Header.WEAPON_FAMILY]):
+			## Set family:empty-array as top level of dict. 
+			diff.set(row[Header.WEAPON_FAMILY], {}) 
+	
+	## Create level-2 for descriptors
+	for row in table:
+		## Skip if this descriptor already added.
+		if not diff[row[Header.WEAPON_FAMILY]].has(row[Header.DESCRIPTOR]):
+			diff[row[Header.WEAPON_FAMILY]].set(row[Header.DESCRIPTOR], {} )
+	
+	## Create level-3 for parameters
+	for row in table:
+		## These vars are for human readability.
+		var family_key: String = row[Header.WEAPON_FAMILY]
+		var descriptor_key: String = row[Header.DESCRIPTOR]
+		var parameter_key: String = row[Header.DIFF_PARAMETER]
+		var parameter_value: Array = [row[Header.OLD_VALUE], row[Header.NEW_VALUE]]
+		
+		## No need to skip, because there will not be a repeat. Assign key and values.
+		diff[family_key][descriptor_key].set(parameter_key, parameter_value)
+	
+	#print(diff)
+	return diff
 
 
 ## Generic table compare
