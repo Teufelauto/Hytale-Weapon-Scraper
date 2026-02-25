@@ -36,8 +36,11 @@ func _ready() -> void:
 	
 	## After run, close up shop.
 	FileUtils.zip_reader.close() # Close ZIP reader
-	queue_free()
+
+	#queue_free()
+	
 	get_tree().quit() # Closes app
+	
 
 
 func retrieve_app_settings() -> void:

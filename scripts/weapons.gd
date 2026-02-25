@@ -41,7 +41,7 @@ func headless_main() -> void:
 		
 	step_through_weapons()
 
-	print_weapon_table_to_console()
+	#print_weapon_table_to_console() # For troubleshooting
 	
 	FileUtils.backup_csv_and_json() # Backup files so they can be compared and archived.
 	FileUtils.save_array_as_csv(weapon_table, csv_save_path) # Export to csv
@@ -145,6 +145,27 @@ func step_through_weapons() -> void:
 		var current_family_lower: String = current_family.to_lower()
 		weapon_encyclopedia.set(current_family_lower,{}) # Top level is Family
 		
+		## -----------------------------------------------------------------------------------------
+		## Add newly found children to dictionary? Remove children from dictionary, entirely?
+		## Use json for diff if rows don't line up any more...
+		## Replace looking through dictionary with looking through existing files in zip.
+		
+		## Iterate through the files and check if they are in the target folder.
+		#for file_path in FileUtils.zip_files:
+		## Check if the file path starts with the desired folder path
+		## (e.g., "my_folder/" or "res://my_folder/").
+		## If target_folder is empty, it processes all files.
+			#if target_folder.is_empty() or file_path.begins_with(target_folder):
+				#print("Found file in target folder: ", file_path)
+			#
+			## You can read the file's content using read_file()
+		
+		## Example # Call the function to read files from the 'images/' folder inside 'res://data.zip'
+			# Example #read_zip_files("res://data.zip", "images/")
+		
+		
+		## -----------------------------------------------------------------------------------------
+		
 		## current_child is the descriptor, such as crude, or copper.
 		for current_child in weapon_dict.weapon_family[current_family].weapon_child:
 			current_table_row += 1
@@ -152,13 +173,7 @@ func step_through_weapons() -> void:
 			## lower_case string version of current_Child
 			var current_child_lower: String = current_child.to_lower()
 			weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) # Second level is child
-			
-			# EXPERIMENT for gui display----------------------------------------------------------------------------
-			#wpn_str = current_child + " " + current_family
-			#label_processing.text = wpn_str
-			#label_processing.queue_redraw()
-			#await get_tree().create_timer(0.001).timeout
-			
+						
 			## Instance of ItemsWeapon class.
 			var iw := ItemsWeapon.new()
 			

@@ -7,6 +7,7 @@ extends Weapons ## Allows this class to use variables from Weapons without Weapo
 const KEYS_WITH_INT_VALUES: Array = [
 	"ItemLevel",
 	"MaxDurability",
+	"MaxStack"
 ]
 
 ##==================================================================================================
@@ -46,11 +47,10 @@ func scrape_weapon_item_data(current_family: String, current_family_lower: Strin
 	print()# Seperates each iteration
 	print(current_row, ": ", weapon_id) # Display the current weapon being worked on.
 	
-	## === A Specific Weapon Dictionary from Assets.json ===
+	## === Read from ZIP, a Specific Weapon Dictionary from Assets.json ===
 	item_weapon_as_dict = parse_weapon_item_info(current_family, weapon_id)
 	
 	update_common_family_dictionaries(current_family)
-	## TODO if column not in item_weapon_as_dict, inject template value...
 	
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
@@ -120,7 +120,7 @@ static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary
 	# Read json inside zip
 	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
-		print("Failed to read file or file is empty")
+		#print("Failed to read file or file is empty")
 		return { null:null }
 	else:
 		#print("Successfully read file: ", file_path_inside_zip)
@@ -170,10 +170,11 @@ func common_key_in_weapon_check(key: String) -> Variant:
 		return item_weapon_as_dict.get(key)
 	elif item_template_dict.has(key):
 		return item_template_dict.get(key)
+	elif key == "MaxStack": ## Special case: If MaxStack is undefined, make it = 1 (unstackable)
+		return 1
 	else:
 		print("No top level key, ", key, ", in weapon's json.")
-		
-		return "Unknown"
+		return "undefined"
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
