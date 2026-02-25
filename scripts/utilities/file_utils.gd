@@ -124,7 +124,7 @@ static func retrieve_roaming_Hytale_folder_location() -> String:
 	var path: String = OS.get_user_data_dir()
 	var count: int = path.get_slice_count("/") - 1 ## count - 1 is the index for .get_slice method.
 	var user_folder: String = path.get_slice("/",count) 
-	path = path.rstrip(user_folder) # strip off the user's folder
+	path = path.trim_suffix(user_folder) # strip off the user's folder
 	return path + "Hytale" # append the Hytale folder
 
 
@@ -205,7 +205,7 @@ static func replace_file_extension(file_name: String, preferred_ext: String) -> 
 	var ext_to_snip: String = file_name.get_slice(".",count)
 	 
 	# strip off the extension
-	file_name = file_name.rstrip(ext_to_snip) # "." remains at end
+	file_name = file_name.trim_suffix(ext_to_snip) # "." remains at end
 	
 	# Deal with possible "." in preferred ext.
 	preferred_ext = preferred_ext.trim_prefix(".")
