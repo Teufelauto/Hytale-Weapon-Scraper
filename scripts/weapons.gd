@@ -62,7 +62,9 @@ func initialize_weapon_table() -> void:
 		#print("family: ", family)
 		total_number_of_weapons += weapon_dict.weapon_family[family].weapon_child.size()
 		#print(total_number_of_weapons)
-	weapon_table_height = total_number_of_weapons + 1 # Add 1 for the column headers
+		
+	## Temp - add bunches of extra rows because we may not be usung tables for base anymore...
+	weapon_table_height = total_number_of_weapons + 1 + 200 # Add 1 for the column headers
 	
 	# Determine Columns from weapon dictionary json
 	weapon_table_column_array = determine_weapon_table_columns()
@@ -150,36 +152,64 @@ func step_through_weapons() -> void:
 		## Use json for diff if rows don't line up any more...
 		## Replace looking through dictionary with looking through existing files in zip.
 		
+		var target_folder: String = "Server/Item/Items/Weapon/" + current_family + "/"
+		
 		## Iterate through the files and check if they are in the target folder.
-		#for file_path in FileUtils.zip_files:
+		for file_path in FileUtils.zip_files:
 		## Check if the file path starts with the desired folder path
 		## (e.g., "my_folder/" or "res://my_folder/").
 		## If target_folder is empty, it processes all files.
-			#if target_folder.is_empty() or file_path.begins_with(target_folder):
-				#print("Found file in target folder: ", file_path)
+			if target_folder.is_empty() or file_path.begins_with(target_folder):
+				print()
+				print("Found weapon file in target folder: ", file_path)
+				
+				current_table_row += 1
+				
+				## The below block pulls out the current_child String.
+				## count is the index for .get_slice method.
+				var count: int = file_path.get_slice_count("/")  - 1
+				## current_child is the descriptor, such as crude, or copper.
+				var current_child: String = file_path.get_slice("/",count) 
+				current_child = current_child.trim_suffix(".json")
+				var left_stripper: String = "Weapon_" + current_family + "_"
+				current_child = current_child.trim_prefix(left_stripper)
+				
+				print(current_child)
+				
+				## lower_case string version of current_Child
+				var current_child_lower: String = current_child.to_lower()
+				# Second level is child
+				weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) 
+							
+				## Instance of ItemsWeapon class.
+				var iw := ItemsWeapon.new()
+				
+				
+				iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, \
+						current_child, current_child_lower, xref_family_tree, \
+						xref_common_table_headers, current_table_row)
+				
+				
+			
+		
+		
+		## -------- Replace the below with above code ---------------------------------------------------------------------------------
+		
+		### current_child is the descriptor, such as crude, or copper.
+		#for current_child in weapon_dict.weapon_family[current_family].weapon_child:
 			#
-			## You can read the file's content using read_file()
-		
-		## Example # Call the function to read files from the 'images/' folder inside 'res://data.zip'
-			# Example #read_zip_files("res://data.zip", "images/")
-		
-		
-		## -----------------------------------------------------------------------------------------
-		
-		## current_child is the descriptor, such as crude, or copper.
-		for current_child in weapon_dict.weapon_family[current_family].weapon_child:
-			current_table_row += 1
-			
-			## lower_case string version of current_Child
-			var current_child_lower: String = current_child.to_lower()
-			weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) # Second level is child
-						
-			## Instance of ItemsWeapon class.
-			var iw := ItemsWeapon.new()
-			
-			iw.scrape_weapon_item_data(current_family, current_family_lower, \
-					current_child, current_child_lower, xref_family_tree, \
-					xref_common_table_headers, current_table_row)
+			#current_table_row += 1
+			#
+			### lower_case string version of current_Child
+			#var current_child_lower: String = current_child.to_lower()
+			#weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) # Second level is child
+						#
+			### Instance of ItemsWeapon class.
+			#var iw := ItemsWeapon.new()
+			#
+			#iw.scrape_weapon_item_data(current_family, current_family_lower, \
+					#current_child, current_child_lower, xref_family_tree, \
+					#xref_common_table_headers, current_table_row)
 
 
 ## Call this to print the table to console for troubleshooting

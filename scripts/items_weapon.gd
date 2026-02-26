@@ -17,8 +17,8 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## This function is called from weapons class. Other functions in this class result from it.
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
-func scrape_weapon_item_data(current_family: String, current_family_lower: String, 
-		current_child: String, current_child_lower: String, 
+func scrape_weapon_item_data(file_path: String, current_family: String, 
+		current_family_lower: String, current_child: String, current_child_lower: String, 
 		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	
@@ -48,7 +48,7 @@ func scrape_weapon_item_data(current_family: String, current_family_lower: Strin
 	print(current_row, ": ", weapon_id) # Display the current weapon being worked on.
 	
 	## === Read from ZIP, a Specific Weapon Dictionary from Assets.json ===
-	item_weapon_as_dict = parse_weapon_item_info(current_family, weapon_id)
+	item_weapon_as_dict = parse_weapon_item_info(file_path)
 	
 	update_common_family_dictionaries(current_family)
 	
@@ -83,23 +83,23 @@ func scrape_weapon_item_data(current_family: String, current_family_lower: Strin
 		
 	## Add this child to the Big Dictionary under family.
 	weapon_encyclopedia[current_family_lower].set(current_child_lower, unique_weapon.duplicate())
-
-
+	
+	
 ## Parse weapon server/item/items damage info json and turn it into a Dictionary 
-static func parse_weapon_item_info(weapon_family: String, weapon_id: String) -> Dictionary:
+static func parse_weapon_item_info(file_path: String) -> Dictionary:
 	#need the file path and name of the current weapon. Holey Canolli, it's case-sensative.
-	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family \
-			+ "/Weapon_" + weapon_id + ".json"
+	#var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family \
+			#+ "/Weapon_" + weapon_id + ".json"
 			
 	# Read json inside zip
-	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
+	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path)
 	if file_buffer.is_empty():
-		print("Failed to read file or file is empty")
+		print("Failed to read json weapon file or file is empty")
 		return { null:null }
 	else:
-		#print("Successfully read file: ", file_path_inside_zip)
+		print("Successfully read file: ", file_path)
 		# Convert Byte Array into String. utf8 for safety
-		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()     # FileAccess.get_file_as_string(file_path)
+		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()# FileAccess.get_file_as_string(file_path)
 		var _item_weapon_info_as_dict: Dictionary = JSON.parse_string(_item_weapon_info_string)
 		return _item_weapon_info_as_dict
 
@@ -117,10 +117,14 @@ static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary
 	#need the file path and name of the current weapon
 	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" \
 			+ weapon_family + "/Template_Weapon_" + weapon_family + ".json" 
+	## Prevent error by checking if exists.
+	if file_path_inside_zip not in FileUtils.zip_files:
+		print("Weapon Template file not in Assets")
+		return { null:null }
 	# Read json inside zip
 	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
-		#print("Failed to read file or file is empty")
+		print("Failed to read weapon template file or file is empty")
 		return { null:null }
 	else:
 		#print("Successfully read file: ", file_path_inside_zip)
