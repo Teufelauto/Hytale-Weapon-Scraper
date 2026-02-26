@@ -50,7 +50,9 @@ func scrape_weapon_item_data(file_path: String, current_family: String,
 	## === Read from ZIP, a Specific Weapon Dictionary from Assets.json ===
 	item_weapon_as_dict = parse_weapon_item_info(file_path)
 	
-	update_common_family_dictionaries(current_family)
+	## Skip default values if "Parent" does not exist in json.
+	if item_weapon_as_dict.has("Parent"):
+		update_common_family_dictionaries(current_family)
 	
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
@@ -86,7 +88,7 @@ func scrape_weapon_item_data(file_path: String, current_family: String,
 	
 	
 ## Parse weapon server/item/items damage info json and turn it into a Dictionary 
-static func parse_weapon_item_info(file_path: String) -> Dictionary:
+func parse_weapon_item_info(file_path: String) -> Dictionary:
 	#need the file path and name of the current weapon. Holey Canolli, it's case-sensative.
 	#var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family \
 			#+ "/Weapon_" + weapon_id + ".json"
@@ -110,13 +112,16 @@ func update_common_family_dictionaries(current_family: String) -> void:
 	if current_family != current_template_family:
 		item_template_dict = parse_template_weapon_item_info(current_family)
 		current_template_family = current_family
+	else:
+		return
 
 
 ## Parse Template weapon server/item/itemsinfo json and turn it into a Dictionary 
-static func parse_template_weapon_item_info(weapon_family: String) -> Dictionary:
+func parse_template_weapon_item_info(weapon_family: String) -> Dictionary:
 	#need the file path and name of the current weapon
+	var parent: String = item_weapon_as_dict.get("Parent")
 	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" \
-			+ weapon_family + "/Template_Weapon_" + weapon_family + ".json" 
+			+ weapon_family + "/" + parent + ".json" 
 	## Prevent error by checking if exists.
 	if file_path_inside_zip not in FileUtils.zip_files:
 		print("Weapon Template file not in Assets")
@@ -172,7 +177,7 @@ func common_key_in_weapon_check(key: String) -> Variant:
 	
 	if item_weapon_as_dict.has(key):
 		return item_weapon_as_dict.get(key)
-	elif item_template_dict.has(key):
+	elif item_template_dict.has(key) and not item_weapon_as_dict.has("Parent"): ## Deal with non-parented children.
 		return item_template_dict.get(key)
 	elif key == "MaxStack": ## Special case: If MaxStack is undefined, make it = 1 (unstackable)
 		return 1
@@ -226,8 +231,45 @@ func extract_rear_attack_dmg(move_name:String) -> int:
 			.DamageCalculator.BaseDamage.get("Physical", 0)
 
 
+## Puts the found value in the correct place inside the unique weapon dictionary.
+func assign_values_to_unique_dictionary(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if key == "item_count": # We don't want Item Count in the JSON.
+		return unique_weapon # So we skip it and go back to scrape function without assigning value.
+	
+	# Determine if we need to enter primary attack branch.
+	if key.begins_with("primary_attack"):
+		unique_weapon = key_begins_with_primary_attack(unique_weapon, key, value)
+	
+	# Determine if we need to enter charged branch.
+	elif key.begins_with("charged_attack"):
+		unique_weapon = key_begins_with_charged_attack(unique_weapon, key, value)
+	
+	# Determine if we need to enter signature branch.
+	elif key.begins_with("signature_attack"):
+		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_charged_attack"):
+		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear signature branch.
+	elif key.begins_with("rear_signature_attack"):
+		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
+	
+	## Recipee integration may go here.
+	#elif key.begins_with("recipee"):
+		#unique_weapon.set(key, value)
+		
+	else:
+		unique_weapon.set(key, value)
+	
+	return unique_weapon
+
+
 ## Determine data to enter primary attack branch of json.
-static func key_begins_with_primary_attack(unique_weapon: Dictionary, 
+func key_begins_with_primary_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
 	if value is String: # We don't need to add to array, as move does not exist.
@@ -259,7 +301,7 @@ static func key_begins_with_primary_attack(unique_weapon: Dictionary,
 
 
 ## Determine data to enter charged attack branch of json.
-static func key_begins_with_charged_attack(unique_weapon: Dictionary, 
+func key_begins_with_charged_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
 	if value is String: # We don't need to add to array, as move does not exist.
@@ -291,7 +333,7 @@ static func key_begins_with_charged_attack(unique_weapon: Dictionary,
 
 
 ## Determine data to enter signature attack branch of json.
-static func key_begins_with_signature_attack(unique_weapon: Dictionary, 
+func key_begins_with_signature_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
 	if value is String: # We don't need to add to array, as move does not exist.
@@ -323,7 +365,7 @@ static func key_begins_with_signature_attack(unique_weapon: Dictionary,
 
 
 ## Determine data to enter rear charged attack branch of json.
-static func key_begins_with_rear_charged_attack(unique_weapon: Dictionary, 
+func key_begins_with_rear_charged_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
 	if value is String: # We don't need to add to array, as move does not exist.
@@ -359,7 +401,7 @@ static func key_begins_with_rear_charged_attack(unique_weapon: Dictionary,
 
 
 ## Determine data to enter rear signature attack branch of json.
-static func key_begins_with_rear_signature_attack(unique_weapon: Dictionary, 
+func key_begins_with_rear_signature_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
 	if value is String: # We don't need to add to array, as move does not exist.
@@ -391,41 +433,4 @@ static func key_begins_with_rear_signature_attack(unique_weapon: Dictionary,
 		unique_weapon.attack.rear_signature.resize(array_min_size)
 		
 	unique_weapon.attack.rear_signature[index] = value # Assign value to array in proper order.
-	return unique_weapon
-
-
-## Puts the found value in the correct place inside the unique weapon dictionary.
-static func assign_values_to_unique_dictionary(unique_weapon: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if key == "item_count": # We don't want Item Count in the JSON.
-		return unique_weapon # So we skip it and go back to scrape function without assigning value.
-	
-	# Determine if we need to enter primary attack branch.
-	if key.begins_with("primary_attack"):
-		unique_weapon = key_begins_with_primary_attack(unique_weapon, key, value)
-	
-	# Determine if we need to enter charged branch.
-	elif key.begins_with("charged_attack"):
-		unique_weapon = key_begins_with_charged_attack(unique_weapon, key, value)
-	
-	# Determine if we need to enter signature branch.
-	elif key.begins_with("signature_attack"):
-		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
-	
-	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_charged_attack"):
-		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
-	
-	# Determine if we need to make or enter rear signature branch.
-	elif key.begins_with("rear_signature_attack"):
-		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
-	
-	## Recipee integration may go here.
-	#elif key.begins_with("recipee"):
-		#unique_weapon.set(key, value)
-		
-	else:
-		unique_weapon.set(key, value)
-	
 	return unique_weapon
