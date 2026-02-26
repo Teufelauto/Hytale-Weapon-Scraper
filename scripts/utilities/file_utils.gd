@@ -6,8 +6,8 @@ extends FileAccess
 ## Various static functions for loading json, csv, or saving them. This class
 ## helps clean up the main scripts by containing oddball functions.
 
-static var zip_reader := ZIPReader.new()
-#static var dir_a := DirAccess.new()
+static var zip_reader := ZIPReader.new() ## Class to put Assets.zip in
+static var zip_files: PackedStringArray ## Path and File list inside zip. An array of strings.
 
 ## Gets ZIP Reader going in this scope
 static func open_assets_zip()->void:
@@ -15,6 +15,7 @@ static func open_assets_zip()->void:
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
 		return
+	zip_files = zip_reader.get_files() ## Obtain list of files in zip
 
 
 static func load_json_data_to_dict(load_path: String) -> Dictionary:
@@ -123,7 +124,7 @@ static func retrieve_roaming_Hytale_folder_location() -> String:
 	var path: String = OS.get_user_data_dir()
 	var count: int = path.get_slice_count("/") - 1 ## count - 1 is the index for .get_slice method.
 	var user_folder: String = path.get_slice("/",count) 
-	path = path.rstrip(user_folder) # strip off the user's folder
+	path = path.trim_suffix(user_folder) # strip off the user's folder
 	return path + "Hytale" # append the Hytale folder
 
 
@@ -204,7 +205,7 @@ static func replace_file_extension(file_name: String, preferred_ext: String) -> 
 	var ext_to_snip: String = file_name.get_slice(".",count)
 	 
 	# strip off the extension
-	file_name = file_name.rstrip(ext_to_snip) # "." remains at end
+	file_name = file_name.trim_suffix(ext_to_snip) # "." remains at end
 	
 	# Deal with possible "." in preferred ext.
 	preferred_ext = preferred_ext.trim_prefix(".")
