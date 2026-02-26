@@ -16,7 +16,7 @@ static var weapon_move_Xref_dict: Dictionary = {}
 
 var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
 var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
-var current_template_family: String ## Keeps track of the currently loaded template.
+var current_template_parent: String ## Keeps track of the currently loaded template.
 
 # Weapon Table construction
 ## Determine how many rows are in the weapon_table by counting each weapon's files

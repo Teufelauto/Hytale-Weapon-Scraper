@@ -51,8 +51,8 @@ func scrape_weapon_item_data(file_path: String, current_family: String,
 	item_weapon_as_dict = parse_weapon_item_info(file_path)
 	
 	## Skip default values if "Parent" does not exist in json.
-	if item_weapon_as_dict.has("Parent"):
-		update_common_family_dictionaries(current_family)
+	var current_parent: String = item_weapon_as_dict.get("Parent", "undefined")
+	update_common_family_dictionaries(current_family, current_parent)
 	
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
@@ -107,36 +107,38 @@ func parse_weapon_item_info(file_path: String) -> Dictionary:
 
 
 ## If current family not current_item_template, update current_template_family and item_template_dict
-func update_common_family_dictionaries(current_family: String) -> void:
+func update_common_family_dictionaries(current_family: String, current_parent: String) -> void:
 	#check if template is up to date for the current family
-	if current_family != current_template_family:
-		item_template_dict = parse_template_weapon_item_info(current_family)
-		current_template_family = current_family
+	if current_parent != current_template_parent:
+		item_template_dict = parse_template_weapon_item_info(current_family, current_parent)
+		current_template_parent = current_parent
 	else:
 		return
 
 
 ## Parse Template weapon server/item/itemsinfo json and turn it into a Dictionary 
-func parse_template_weapon_item_info(weapon_family: String) -> Dictionary:
-	#need the file path and name of the current weapon
-	var parent: String = item_weapon_as_dict.get("Parent")
+func parse_template_weapon_item_info(weapon_family: String, parent: String) -> Dictionary:
+	
+	if parent == "undefined":
+		return { null: null }
+	
 	var file_path_inside_zip: String = "Server/Item/Items/Weapon/" \
 			+ weapon_family + "/" + parent + ".json" 
 	## Prevent error by checking if exists.
 	if file_path_inside_zip not in FileUtils.zip_files:
-		print("Weapon Template file not in Assets")
-		return { null:null }
+		print("Weapon Parent file not in Assets")
+		return { null: null }
 	# Read json inside zip
 	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path_inside_zip)
 	if file_buffer.is_empty():
 		print("Failed to read weapon template file or file is empty")
-		return { null:null }
+		return { null: null }
 	else:
 		#print("Successfully read file: ", file_path_inside_zip)
 		## Convert Byte Array into String. utf8 for safety
-		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()
-		var _item_weapon_info_as_dict: Dictionary = JSON.parse_string(_item_weapon_info_string)
-		return _item_weapon_info_as_dict
+		var item_weapon_info_string: String = file_buffer.get_string_from_utf8()
+		var item_weapon_info_as_dict: Dictionary = JSON.parse_string(item_weapon_info_string)
+		return item_weapon_info_as_dict
 
 
 ## Get value for the table cell
@@ -177,8 +179,10 @@ func common_key_in_weapon_check(key: String) -> Variant:
 	
 	if item_weapon_as_dict.has(key):
 		return item_weapon_as_dict.get(key)
-	elif item_template_dict.has(key) and not item_weapon_as_dict.has("Parent"): ## Deal with non-parented children.
+		
+	elif item_template_dict.has(key):
 		return item_template_dict.get(key)
+		
 	elif key == "MaxStack": ## Special case: If MaxStack is undefined, make it = 1 (unstackable)
 		return 1
 	else:
