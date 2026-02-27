@@ -61,7 +61,7 @@ static func export_dict_to_json(dict: Dictionary, save_path: String = "user://ne
 
 
 ## Save Table Array into CSV at specified location
-static func save_array_as_csv(table_data: Array, path: String = "user://new.csv") -> void:
+static func export_array_as_csv(table_data: Array, path: String = "user://new.csv") -> void:
 	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		print("Error opening file: ", FileAccess.get_open_error())
