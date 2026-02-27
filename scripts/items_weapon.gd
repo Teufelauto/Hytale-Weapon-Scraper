@@ -30,7 +30,7 @@ func scrape_weapon_item_data(file_path: String, current_family: String,
 			"charged": [],
 			"signature": [],
 		},
-		#"recipee":{},
+		#"recipe":{}, ## This is where recipe brach could be added.
 	}
 	
 	## "Sword_Crude" or "Mace_Copper" etc
