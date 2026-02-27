@@ -188,23 +188,18 @@ static func compare_2d_arrays(array1: Array, array2: Array) -> Array:
 
 ## TODO Designate correct files to compare
 ## Prints comparison of two jsons (poorly constructed output)
-static func trial_json_compare()->void:
-	
+static func diff_json_compare(path_old_1: String, path_new_2: String) -> Dictionary:
 	## Retrieve the two json files
-	var _app_settings_string = FileAccess.get_file_as_string(
-			"user://output/weapons_encyclopedia_pre-release_oldy.json") ## unique on purpose for testing--------------------------
+	
+	var _app_settings_string = FileAccess.get_file_as_string(path_old_1)
 	var dict_a = JSON.parse_string(_app_settings_string) # Define Dictionary
 	
-	_app_settings_string = FileAccess.get_file_as_string(
-			"user://output/weapons_encyclopedia_pre-release.json") 
+	_app_settings_string = FileAccess.get_file_as_string(path_new_2) 
 	var dict_b = JSON.parse_string(_app_settings_string) # Define Dictionary
 	
-	## Run the compare
-	var differences: Dictionary = compare_deep_dictionaries(dict_a, dict_b)
-	#print(differences)
-	## Export to json
-	FileUtils.export_dict_to_json(differences)
-	
+	## Run the comparison function
+	return compare_deep_dictionaries(dict_a, dict_b)
+
 
 ## Compares 2 dictionaries, and recursively calls itself to follow branches.
 static func compare_deep_dictionaries(dict1: Dictionary, dict2: Dictionary) -> Dictionary:

@@ -23,9 +23,13 @@ func _ready() -> void:
 	
 	##--------- Temp For Testing JSON diffing. -------------
 	
-	DiffUtils.trial_json_compare()
+	var differences: Dictionary = DiffUtils.diff_json_compare(
+			"user://output/weapons_encyclopedia_pre-release_oldy.json", 
+			"user://output/weapons_encyclopedia_pre-release.json")
+	#print(differences)
+	## Export to json for testing
+	FileUtils.export_dict_to_json(differences)
 	
-
 	##-------------------------------------------------------
 
 
