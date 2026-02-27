@@ -214,8 +214,7 @@ static func compare_deep_dictionaries(dict1: Dictionary, dict2: Dictionary) -> D
 				"_status": "missing_in_json2", 
 				"_value_json1": dict1[key],
 				}
-		## For typed dictionary... idk that it's necessary here. Might catch 
-		## errors in new features if I forget to define an array during dict construction.
+		## Shows when value goes from "undefined" to 0.45 etc.
 		elif typeof(dict1[key]) != typeof(dict2[key]):
 			differences[key] = {
 				"_status": "type_mismatch", 
