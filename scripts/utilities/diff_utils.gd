@@ -18,6 +18,8 @@ enum Header {
 ## TODO Enable ability to specify Table names and versions
 ## Load and compare 2 weapons CSVs to see the diff.
 ## Returns dictionary.textual, and dictionary.table. These are arrays.
+## Trouble when array grows or shrinks. json is preferred for comparison. Could be 
+## corrected with logic to match weapon ids.
 static func diff_compare_weapons_table(designator_for_old: String = "_old") -> Dictionary:
 	var new_table: Array = FileUtils.load_csv_data_to_array(App.csv_save_path)
 	var old_end: String = designator_for_old + ".csv"
@@ -41,7 +43,7 @@ static func diff_compare_weapons_table(designator_for_old: String = "_old") -> D
 		print()
 		return diffs
 
-
+## TODO Fix so row is aligned with complementary row (weapon_id) in other array. (both ways)
 ## Returns a dictionary of weapon diffs with two entries. "textual", and "table". An Array of diffs.
 static func compare_weapons_arrays(new_table: Array, old_table: Array) -> Dictionary:
 	var differences: Array = []
