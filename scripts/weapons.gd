@@ -31,8 +31,8 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ##==================================================================================================
 
-
-func headless_main() -> void:
+## Process new Assets, not old.
+func headless_new_main() -> void:
 	
 	## static var weapon_dict populated here.
 	weapon_dict = FileUtils.load_json_data_to_dict("user://weapon_dictionary.json")

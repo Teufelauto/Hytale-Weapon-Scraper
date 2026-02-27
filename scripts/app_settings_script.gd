@@ -6,7 +6,8 @@ extends Object
 
 ## App Settings Data loaded from / saved to user://app_settings.json
 static var settings:Dictionary = {} 
-static var asset_zip_path: String ## the chosen Assets.zip data source
+static var asset_2_zip_path: String ## the new chosen Assets.zip data source
+static var asset_1_zip_path: String ## old, or previous zip - Not used yet
 static var csv_save_path: String ## Output csv file path
 static var compiled_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
@@ -359,7 +360,7 @@ func choose_which_filepaths_to_process() -> void:
 	else:
 		choice = "user_defined"
 		
-	asset_zip_path = settings.assets[choice].assets_path \
+	asset_2_zip_path = settings.assets[choice].assets_path \
 			+ settings.assets[choice].assets_filename
 	csv_save_path = settings.output[choice].csv_save_path \
 			+ settings.output[choice].csv_filename

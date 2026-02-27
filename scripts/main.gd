@@ -18,7 +18,7 @@ func _ready() -> void:
 	
 	retrieve_app_settings()
 	
-	FileUtils.open_assets_zip() # Open ZIP reader at Assets.zip filepath
+	FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
 	
 	
 	##--------- Temp For Testing JSON diffing. -------------
@@ -33,18 +33,18 @@ func _ready() -> void:
 	##-------------------------------------------------------
 
 
-	### Check app settings to see whether to run headless.
-	#if app.settings.get("run_app_headless"):
-		#
-		#wpns.headless_main()
-		#
-	## TODO  Check if NOT Headless from App_Settings, and deal with that in a seperate main-loop.
-	#else:
-		#print("Error- Not Headless.")
-		##main_gui.set_visible(true)
-		## wait for go from button
-		## TODO Allow Edit app_settings.json in app
-		### TODO if Headless=false, save_app_settings_to_json()
+	## Check app settings to see whether to run headless.
+	if app.settings.get("run_app_headless"):
+		
+		wpns.headless_new_main()
+		
+	# TODO  Check if NOT Headless from App_Settings, and deal with that in a seperate main-loop.
+	else:
+		print("Error- Not Headless.")
+		#main_gui.set_visible(true)
+		# wait for go from button
+		# TODO Allow Edit app_settings.json in app
+		## TODO if Headless=false, save_app_settings_to_json()
 	
 	
 	## After run, close up shop.

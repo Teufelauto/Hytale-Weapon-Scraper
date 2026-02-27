@@ -9,13 +9,13 @@ extends FileAccess
 static var zip_reader := ZIPReader.new() ## Class to put Assets.zip in
 static var zip_files: PackedStringArray ## Path and File list inside zip. An array of strings.
 
-## Gets ZIP Reader going in this scope
-static func open_assets_zip()->void:
-	var error = zip_reader.open(App.asset_zip_path)
+## Gets ZIP Reader going in this scope with specified file
+static func open_assets_zip(path_to_zip)->void:
+	var error = zip_reader.open(path_to_zip)
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
 		return
-	zip_files = zip_reader.get_files() ## Obtain list of files in zip
+	zip_files = zip_reader.get_files() ## Obtain list of files contained in zip
 
 
 static func load_json_data_to_dict(load_path: String) -> Dictionary:
