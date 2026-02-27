@@ -49,7 +49,7 @@ static func load_csv_data_to_array(load_path: String, strip_header: bool = false
 
 
 ## Save a dictionary to a json file.
-static func save_dict_to_json(dict: Dictionary, save_path: String = "user://new.json") -> void:
+static func export_dict_to_json(dict: Dictionary, save_path: String = "user://new.json") -> void:
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
 		var json_string = JSON.stringify(dict,"  ",false)

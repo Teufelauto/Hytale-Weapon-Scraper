@@ -114,7 +114,7 @@ func first_load_auto_determine_assets_location()->void:
 	settings.output.latest_release.set("csv_save_path", output_path)
 	
 	## Save the app settings to the user directory
-	FileUtils.save_dict_to_json(settings, "user://app_settings.json")
+	FileUtils.export_dict_to_json(settings, "user://app_settings.json")
 
 
 ## Populate dictionary with data from the json and follow settings.
@@ -341,7 +341,7 @@ func verify_settings_formatting() -> void:
 	if entries_with_errors > 0:
 		print("Corrected %d simple formatting error(s) in app_settings.json" % entries_with_errors)
 		## Save the app settings to the user directory
-		FileUtils.save_dict_to_json(settings, "user://app_settings.json")
+		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
 
 
 ## Assign load and save paths based upon data from app_settings.json

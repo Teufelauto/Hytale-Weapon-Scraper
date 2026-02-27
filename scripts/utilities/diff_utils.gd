@@ -186,68 +186,124 @@ static func compare_2d_arrays(array1: Array, array2: Array) -> Array:
 	return differences
 
 
+## TODO Designate correct files to compare
 ## Prints comparison of two jsons (poorly constructed output)
-static func practical_application_json_compare()->void:
+static func trial_json_compare()->void:
 	
-	# Retrieve json data
+	## Retrieve the two json files
 	var _app_settings_string = FileAccess.get_file_as_string(
-			"user://weapons_encyclopedia_prerelease.json")
+			"user://output/weapons_encyclopedia_pre-release_oldy.json") ## unique on purpose for testing--------------------------
 	var dict_a = JSON.parse_string(_app_settings_string) # Define Dictionary
 	
 	_app_settings_string = FileAccess.get_file_as_string(
-			"user://weapons_encyclopedia_prerelease_old.json")
+			"user://output/weapons_encyclopedia_pre-release.json") 
 	var dict_b = JSON.parse_string(_app_settings_string) # Define Dictionary
 	
-	var differences = compare_deep_dictionaries(dict_a, dict_b)
-	print(differences)
-
-
-static func compare_deep_dictionaries(dict1: Dictionary, dict2: Dictionary) -> Dictionary:
+	## Run the compare
+	var differences: Dictionary = compare_deep_dictionaries(dict_a, dict_b)
+	#print(differences)
+	## Export to json
+	FileUtils.export_dict_to_json(differences)
 	
+
+## Compares 2 dictionaries, and recursively calls itself to follow branches.
+static func compare_deep_dictionaries(dict1: Dictionary, dict2: Dictionary) -> Dictionary:
+	## Dictionary formed of differences
 	var differences: Dictionary = {}
 	
-	# Check keys present in dict1 but missing or different in dict2
+	## For each key at the current depth within branches.
 	for key in dict1.keys():
+		## Check keys present in dict1 but missing or different in dict2
 		if not dict2.has(key):
-			differences[key] = {"status": "missing in dict2", "value_dict1": dict1[key]}
+			differences[key] = {
+				"_status": "missing_in_json2", 
+				"_value_json1": dict1[key],
+				}
+		## For typed dictionary... idk that it's necessary here. Might catch 
+		## errors in new features if I forget to define an array during dict construction.
 		elif typeof(dict1[key]) != typeof(dict2[key]):
-			differences[key] = {"status": "type mismatch", "value_dict1": dict1[key], "value_dict2": dict2[key]}
+			differences[key] = {
+				"_status": "type_mismatch", 
+				"_value_dict1": dict1[key], 
+				"_value_dict2": dict2[key],
+				}
+		## If this key's value is a dictionary, need to follow the branch to expand.
 		elif typeof(dict1[key]) == TYPE_DICTIONARY:
+			## Funcion calls itself
 			var sub_differences: Dictionary = compare_deep_dictionaries(dict1[key], dict2[key])
 			if not sub_differences.is_empty():
-				differences[key] = {"status": "sub-differences", "details": sub_differences}
+				differences[key] = {
+					"_status": "sub-differences", 
+					"_details": sub_differences,
+					}
+		## If this key's value is an array, like attack damage, need to check each index.
 		elif typeof(dict1[key]) == TYPE_ARRAY:
 			var array_differences: Dictionary = compare_deep_arrays(dict1[key], dict2[key])
 			if not array_differences.is_empty():
-				differences[key] = {"status": "array-differences", "details": array_differences}
+				differences[key] = {
+					"_status": "array-differences",
+					"_details": array_differences,
+					}
+		## Finally, if the values are different:
 		elif dict1[key] != dict2[key]:
-			differences[key] = {"status": "value mismatch", "value_dict1": dict1[key], "value_dict2": dict2[key]}
-
+			differences[key] = {
+				"_status": "value_mismatch",
+				"_value_json1": dict1[key], 
+				"_value_json2": dict2[key],
+				}
 	# Check keys present in dict2 but missing in dict1
 	for key in dict2.keys():
 		if not dict1.has(key):
-			differences[key] = {"status": "missing in dict1", "value_dict2": dict2[key]}
+			differences[key] = {
+				"_status": "missing_in_json1",
+				"_value_json2": dict2[key],
+				}
+	return differences 
 
-	return differences
 
-
-# Helper function for array comparison (simple version) in compare_deep_dictionaries
+## Helper function for array comparison (simple version) in compare_deep_dictionaries().
 static func compare_deep_arrays(arr1: Array, arr2: Array) -> Dictionary:
+	## Dictionary formed of differences
 	var differences : Dictionary = {}
+	
+	## Detect if there are more or less values in the array.
 	if arr1.size() != arr2.size():
-		differences["_size"] = {"status": "size mismatch", "size_arr1": arr1.size(), "size_arr2": arr2.size()}
-
+		differences["_size"] = {
+			"_status": "size_mismatch",
+			"_size_arr1": arr1.size(),
+			"_size_arr2": arr2.size(),
+			}
+	## Iterate through each index
 	var max_size: int = mini(arr1.size(), arr2.size())
 	for i in range(max_size):
+		## If the index is a dictionary, call deep_dict funcion
 		if typeof(arr1[i]) == TYPE_DICTIONARY:
 			var sub_differences: Dictionary = compare_deep_dictionaries(arr1[i], arr2[i])
 			if not sub_differences.is_empty():
-				differences[i] = {"status": "sub-differences at index", "details": sub_differences}
+				differences[i] = {
+					"_status": "sub-differences_at_index",
+					"_details": sub_differences,
+					}
+		## if the index is another array, inception
 		elif typeof(arr1[i]) == TYPE_ARRAY:
 			var sub_differences: Dictionary = compare_deep_arrays(arr1[i], arr2[i])
 			if not sub_differences.is_empty():
-				differences[i] = {"status": "sub-differences at index", "details": sub_differences}
+				differences[i] = {
+					"_status": "sub-differences_at_index",
+					"_details": sub_differences,
+					}
+		## Finally, if the values are different, create key = index:
 		elif arr1[i] != arr2[i]:
-			differences[i] = {"status": "value mismatch at index", "value_arr1": arr1[i], "value_arr2": arr2[i]}
-			
+			differences[i] = {
+				"_status": "value mismatch_at_index",
+				"_value_arr1": arr1[i],
+				"_value_arr2": arr2[i],
+				}
 	return differences
+	
+	
+	
+	
+	
+	
+		

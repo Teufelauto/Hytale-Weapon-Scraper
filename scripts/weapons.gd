@@ -45,12 +45,12 @@ func headless_main() -> void:
 	
 	FileUtils.backup_csv_and_json() # Backup files so they can be compared and archived.
 	FileUtils.save_array_as_csv(weapon_table, csv_save_path) # Export to csv
-	FileUtils.save_dict_to_json(weapon_encyclopedia, compiled_json_save_path) # export to json
+	FileUtils.export_dict_to_json(weapon_encyclopedia, compiled_json_save_path) # export to json
 	
 	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # Do the diff compare
 	FileUtils.save_array_as_csv(diffs.table, diff_csv_save_path) # Save diff to csv
 	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
-	FileUtils.save_dict_to_json(diff_dict_for_json, diff_json_save_path) # export to json
+	FileUtils.export_dict_to_json(diff_dict_for_json, diff_json_save_path) # export to json
 
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
