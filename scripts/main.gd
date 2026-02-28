@@ -21,16 +21,7 @@ func _ready() -> void:
 	FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
 	
 	
-	##--------- Temp For Testing JSON diffing. -------------
 	
-	var differences: Dictionary = DiffUtils.diff_json_compare(
-			"user://output/weapons_encyclopedia_pre-release_old.json", 
-			"user://output/weapons_encyclopedia_pre-release.json")
-	#print(differences)
-	## Export to json for testing
-	FileUtils.export_dict_to_json(differences)
-	
-	##-------------------------------------------------------
 
 
 	## Check app settings to see whether to run headless.

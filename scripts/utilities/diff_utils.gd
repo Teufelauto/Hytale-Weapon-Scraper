@@ -13,7 +13,16 @@ enum Header {
 		OLD_VALUE,
 		NEW_VALUE
 		}
-
+## Header row of json diff table. Used for column indexing when converting Dict to Array
+enum Diff_Header {
+		WEAPON_FAMILY,
+		DESCRIPTOR,
+		DIFF_PARAMETER,
+		PARAMETER_INDEX,
+		STATUS,
+		OLD_VALUE,
+		NEW_VALUE
+		}
 
 ## TODO Enable ability to specify Table names and versions
 ## Load and compare 2 weapons CSVs to see the diff.
@@ -69,11 +78,21 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 		
 		# 2. Iterate through rows (outer array) i is row
 	for i in range(table_2.size()):
+		## Row of interest in the new table (table2)
 		var row_new: Array = table_2[i]
 		
-		## Find matching row 
+		## Find matching row in table_1
 		
-		var row_old: Array = table_1[i]
+		## Unique identifier of Family_Desriptor to look for.
+		var id_of_row: String = row_new[1]
+		var row_of_old: int
+		for j in range(table_1.size()):
+			if table_1[j][1] != id_of_row:
+				continue
+			else:
+				row_of_old = j
+		## Row in old table that matches id of new table's row we are interested in.
+		var row_old: Array = table_1[row_of_old]
 
 			# Check if the current elements are arrays (expected 2D structure)
 		if typeof(row_new) != TYPE_ARRAY or typeof(row_old) != TYPE_ARRAY:
@@ -295,14 +314,22 @@ static func compare_deep_arrays(arr1: Array, arr2: Array) -> Dictionary:
 		## Finally, if the values are different, create key = index:
 		elif arr1[i] != arr2[i]:
 			differences[i] = {
-				"_status": "value mismatch_at_index",
+				"_status": "value_mismatch_at_index",
 				"_value_arr1": arr1[i],
 				"_value_arr2": arr2[i],
 				}
 	return differences
 	
 	
+## Returns an Array of differences from a dictionary comprised of json data.
+static func convert_diffs_dict_to_array(differences: Dictionary) -> Array:
 	
+	
+	
+	
+	
+	
+	return []
 	
 	
 	
