@@ -21,14 +21,15 @@ enum Header {
 ## Trouble when array grows or shrinks. json is preferred for comparison. Could be 
 ## corrected with logic to match weapon ids.
 static func diff_compare_weapons_table(designator_for_old: String = "_old") -> Dictionary:
-	var new_table: Array = FileUtils.load_csv_data_to_array(App.csv_save_path)
+	
 	var old_end: String = designator_for_old + ".csv"
 	var _previous_path: String = App.csv_save_path.replace(".csv", old_end)
-	var old_table: Array = FileUtils.load_csv_data_to_array(_previous_path)
+	var table_1: Array = FileUtils.load_csv_data_to_array(_previous_path)
+	var table_2: Array = FileUtils.load_csv_data_to_array(App.csv_save_path)
 	
 	print()
 	# Compare new and old tables
-	var diffs: Dictionary = compare_weapons_arrays(new_table, old_table)
+	var diffs: Dictionary = compare_weapons_arrays(table_1, table_2)
 	if diffs.textual.is_empty():
 		print("New and old weapons are identical.")
 		return diffs
@@ -45,7 +46,7 @@ static func diff_compare_weapons_table(designator_for_old: String = "_old") -> D
 
 ## TODO Fix so row is aligned with complementary row (weapon_id) in other array. (both ways)
 ## Returns a dictionary of weapon diffs with two entries. "textual", and "table". An Array of diffs.
-static func compare_weapons_arrays(new_table: Array, old_table: Array) -> Dictionary:
+static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary:
 	var differences: Array = []
 	var diff_table: Array = [[
 		"weapon_family",
@@ -60,16 +61,19 @@ static func compare_weapons_arrays(new_table: Array, old_table: Array) -> Dictio
 		}
 	
 		# 1. Check if the overall array sizes are different
-	if new_table.size() != old_table.size():
+	if table_2.size() != table_1.size():
 		differences.append("Array sizes are different: %d vs %d" 
-				% [new_table.size(), old_table.size()])
+				% [table_2.size(), table_1.size()])
 		diff_dict.set("textual", differences)
 		return diff_dict
 		
 		# 2. Iterate through rows (outer array) i is row
-	for i in range(new_table.size()):
-		var row_new: Array = new_table[i]
-		var row_old: Array = old_table[i]
+	for i in range(table_2.size()):
+		var row_new: Array = table_2[i]
+		
+		## Find matching row 
+		
+		var row_old: Array = table_1[i]
 
 			# Check if the current elements are arrays (expected 2D structure)
 		if typeof(row_new) != TYPE_ARRAY or typeof(row_old) != TYPE_ARRAY:
@@ -91,8 +95,8 @@ static func compare_weapons_arrays(new_table: Array, old_table: Array) -> Dictio
 			if row_new[j] != row_old[j]:
 				
 				## Get header value for weapon-id and differing parameter.
-				var id: String = new_table[i][1] # Same row, 2nd column for weapon-id
-				var parameter: String = new_table[0][j] # Header row, same column
+				var id: String = table_2[i][1] # Same row, 2nd column for weapon-id
+				var parameter: String = table_2[0][j] # Header row, same column
 				
 				## Create row in the textual array.
 				differences.append("Difference in %s with %s: (Old) %s vs %s (New)" 
@@ -101,9 +105,9 @@ static func compare_weapons_arrays(new_table: Array, old_table: Array) -> Dictio
 				
 				## Create a row on the diff_table
 				diff_table.append([
-					new_table[i][2],
-					new_table[i][3],
-					new_table[0][j],
+					table_2[i][2],
+					table_2[i][3],
+					table_2[0][j],
 					row_old[j],
 					row_new[j],
 					])

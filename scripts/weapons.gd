@@ -163,7 +163,7 @@ func step_through_weapons() -> void:
 		## (e.g., "my_folder/" or "res://my_folder/").
 		## If target_folder is empty, it processes all files.
 			if target_folder.is_empty() or file_path.begins_with(target_folder):
-				print()
+				#print()
 				print("Found weapon file in target folder: ", file_path)
 				
 				current_table_row += 1

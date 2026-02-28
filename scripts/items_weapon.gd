@@ -44,7 +44,7 @@ func scrape_weapon_item_data(file_path: String, current_family: String,
 		"descriptor": current_child,
 		}
 	
-	print()# Seperates each iteration
+	#print()# Seperates each iteration
 	print(current_row, ": ", weapon_id) # Display the current weapon being worked on.
 	
 	## === Read from ZIP, a Specific Weapon Dictionary from Assets.json ===
