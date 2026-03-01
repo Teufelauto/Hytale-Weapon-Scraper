@@ -98,7 +98,8 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 		differences.append("Array sizes are different: %d vs %d" 
 				% [table_2.size(), table_1.size()])
 		diff_dict.set("textual", differences)
-		return diff_dict
+		
+		#return diff_dict ## keep going, though different size noted.
 		
 		# 2. Iterate through rows (outer array) i is row
 	for i in range(table_2.size()):
