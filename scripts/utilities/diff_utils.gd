@@ -67,7 +67,7 @@ static func diff_compare_weapons_table(designator_for_old: String = "_old") -> D
 		print("New and old weapons are identical.")
 		return diffs
 	else:
-		print("Differences found between new and old weapons:")
+		print("Differences found between old and new weapons:")
 		for diff in diffs.textual:
 			print("- " + diff)
 		
@@ -96,16 +96,17 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 		# 1. Check if the overall array sizes are different
 	if table_2.size() != table_1.size():
 		differences.append("Array sizes are different: %d vs %d" 
-				% [table_2.size(), table_1.size()])
+				% [table_1.size(), table_2.size()])
 		diff_dict.set("textual", differences)
-		return diff_dict
+		
+		#return diff_dict ## keep going, though different size noted.
 		
 		# 2. Iterate through rows (outer array) i is row
 	for i in range(table_2.size()):
 		## Row of interest in the new table (table2)
 		var row_new: Array = table_2[i]
 		
-		## Find matching row in table_1
+		## ----- Find matching row in table_1 -----
 		
 		## Unique identifier of Family_Desriptor to look for.
 		var id_of_row: String = row_new[1]
@@ -116,9 +117,12 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 			else:
 				row_of_old = j
 		## Row in old table that matches id of new table's row we are interested in.
-		var row_old: Array = table_1[row_of_old]
-
-			# Check if the current elements are arrays (expected 2D structure)
+		var row_old: Array  = table_1[row_of_old]
+			
+		
+		## ----- End of special section -----
+		
+		# Check if the current elements are arrays (expected 2D structure)
 		if typeof(row_new) != TYPE_ARRAY or typeof(row_old) != TYPE_ARRAY:
 			if row_new != row_old:
 				differences.append("Non-array element difference at row %d" % i)
@@ -133,9 +137,13 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 			continue
 			
 			# 4. Iterate through columns (inner array elements) j is column
-		for j in range(row_new.size()):
+		for j in range(1, row_new.size()): ## Exclude column 0, which is irrelevant
 				# Compare individual elements
 			if row_new[j] != row_old[j]:
+				
+				## To remove row 0 text from value
+				if row_of_old == 0:
+					row_old.set(j, "")
 				
 				## Get header value for weapon-id and differing parameter.
 				var id: String = table_2[i][1] # Same row, 2nd column for weapon-id
@@ -155,11 +163,82 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 					row_new[j],
 					])
 				
-				## Reset the definition of the Dictionary entry for "table".
+				## Re-set the definition of the Dictionary entry for "table" with new additions.
 				diff_dict.set("table", diff_table)
+	
+	## -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	## Repeat previous for loop, but backwards to detect when 
+	## table_2 is missing an item that is in table_1.
+	## From here, new and old are reversed.
+	## 2. Iterate through rows (outer array) i is row
+	for i in range(table_1.size()):
+		## Row of interest in the new table (table2)
+		var row_new: Array = table_1[i]
+		
+		## ----- Find matching row in table_1 -----
+		
+		## Unique identifier of Family_Desriptor to look for.
+		var id_of_row: String = row_new[1]
+		var row_of_old: int
+		for j in range(table_2.size()):
+			if table_2[j][1] != id_of_row:
+				continue
+			else:
+				row_of_old = j
+		## Row in old table that matches id of new table's row we are interested in.
+		var row_old: Array = table_2[row_of_old]
+		
+		## This will prevent duplicate entries in diff.
+		if id_of_row == row_old[1]:
+			continue
+		## ==== End of anti-dupe section ====
+		
+		# Check if the current elements are arrays (expected 2D structure)
+		if typeof(row_new) != TYPE_ARRAY or typeof(row_old) != TYPE_ARRAY:
+			if row_new != row_old:
+				differences.append("Non-array element difference at row %d" % i)
+				diff_dict.set("textual", differences)
+			continue
+			
+			# 3. Check if the inner array (row) sizes are different
+		if row_new.size() != row_old.size():
+			differences.append("Row %d size difference: %d vs %d" 
+					% [i, row_new.size(), row_old.size()])
+			diff_dict.set("textual", differences)
+			continue
+			
+			# 4. Iterate through columns (inner array elements) j is column
+		for j in range(1, row_new.size()): ## exclude column 0
+				# Compare individual elements
+			if row_new[j] != row_old[j]:
 				
-				#differences.append("Difference at index [%d][%d]: %s vs %s" 
-						#% [i, j, str(row_new[j]), str(row_old[j])])
+				## To remove row 0 text from value
+				if row_of_old == 0:
+					row_old.set(j, "")
+				
+				## Get header value for weapon-id and differing parameter.
+				var id: String = table_1[i][1] # Same row, 2nd column for weapon-id
+				var parameter: String = table_1[0][j] # Header row, same column
+				
+				## Create row in the textual array.
+				differences.append("Difference in %s with %s: (Old) %s vs %s (New)" 
+						% [id, parameter, str(row_new[j]), str(row_old[j]) ]) ## backward dur to code reuse
+				diff_dict.set("textual", differences) # Reset the definition
+				
+				## Create a row on the diff_table
+				diff_table.append([
+					table_1[i][2],
+					table_1[i][3],
+					table_1[0][j],
+					row_new[j],
+					row_old[j],
+					])
+				
+				## Re-set the definition of the Dictionary entry for "table" with new additions.
+				diff_dict.set("table", diff_table)
+	
+	
+						
 	return diff_dict
 
 
@@ -345,84 +424,84 @@ static func compare_deep_arrays(arr1: Array, arr2: Array) -> Dictionary:
 	return differences
 	
 	
-## Returns an Array of differences from a dictionary comprised of json data.
-## Cannot create simple table during dictionary creation easily, because recursion.
-static func convert_diffs_dict_to_array(diffs_dict: Dictionary) -> Array:
-	## The constructed Array that will be the output of this function.
-	var diffs_arr: Array = [[]]
-	var working_row_index: int = 0
-	## Initialize 2D Array for convert_diffs_dict_to_array.
-	diffs_arr[working_row_index] = DIFF_COLUMNS
-	#print(diffs_arr)
-	## Populate new rows with data from dictionary
-	working_row_index = 1
-	
-	var arr1: Array = conv_dict_fam(diffs_dict)
-	#print(arr1)
-
-	return diffs_arr
-	
-	
-	
-	
-static func conv_dict_fam(dict: Dictionary) -> Array:
-	
-	for family in dict.keys():
-		var family_values: Array = dict[family].values()
-		
-		print(family_values)
-		
-		
-		### Check keys present in dict
-		#if dict1[key] == :
-			#differences[key] = {
-				#"_status": "missing_in_json2", 
-				#"_value_json1": dict1[key],
-				#}
-		### Shows when value goes from "undefined" to 0.45 etc.
-		#elif typeof(dict1[key]) != typeof(dict2[key]):
-			#differences[key] = {
-				#"_status": "type_mismatch", 
-				#"_value_dict1": dict1[key], 
-				#"_value_dict2": dict2[key],
-				#}
-		### If this key's value is a dictionary, need to follow the branch to expand.
-		#elif typeof(dict1[key]) == TYPE_DICTIONARY:
-			### Funcion calls itself
-			#var sub_differences: Dictionary = compare_deep_dictionaries(dict1[key], dict2[key])
-			#if not sub_differences.is_empty():
-				#differences[key] = {
-					#"_status": "sub-differences", 
-					#"_details": sub_differences,
-					#}
-		### If this key's value is an array, like attack damage, need to check each index.
-		#elif typeof(dict1[key]) == TYPE_ARRAY:
-			#var array_differences: Dictionary = compare_deep_arrays(dict1[key], dict2[key])
-			#if not array_differences.is_empty():
-				#differences[key] = {
-					#"_status": "array-differences",
-					#"_details": array_differences,
-					#}
-		### Finally, if the values are different:
-		#elif dict1[key] != dict2[key]:
-			#differences[key] = {
-				#"_status": "value_mismatch",
-				#"_value_json1": dict1[key], 
-				#"_value_json2": dict2[key],
-				#}
-	## Check keys present in dict2 but missing in dict1
-	#for key in dict2.keys():
-		#if not dict1.has(key):
-			#differences[key] = {
-				#"_status": "missing_in_json1",
-				#"_value_json2": dict2[key],
-				#}
+### Returns an Array of differences from a dictionary comprised of json data.
+### Cannot create simple table during dictionary creation easily, because recursion.
+#static func convert_diffs_dict_to_array(diffs_dict: Dictionary) -> Array:
+	### The constructed Array that will be the output of this function.
+	#var diffs_arr: Array = [[]]
+	#var working_row_index: int = 0
+	### Initialize 2D Array for convert_diffs_dict_to_array.
+	#diffs_arr[working_row_index] = DIFF_COLUMNS
+	##print(diffs_arr)
+	### Populate new rows with data from dictionary
+	#working_row_index = 1
 	#
-	
-	
-	
-	
-	return []
+	##var arr1: Array = conv_dict_fam(diffs_dict)
+	##print(arr1)
+#
+	#return diffs_arr
+	#
+	#
+	#
+	#
+#static func conv_dict_fam(dict: Dictionary) -> Array:
+	#
+	#for family in dict.keys():
+		#var family_values: Array = dict[family].values()
+		#
+		#print(family_values)
+		#
+		#
+		#### Check keys present in dict
+		##if dict1[key] == :
+			##differences[key] = {
+				##"_status": "missing_in_json2", 
+				##"_value_json1": dict1[key],
+				##}
+		#### Shows when value goes from "undefined" to 0.45 etc.
+		##elif typeof(dict1[key]) != typeof(dict2[key]):
+			##differences[key] = {
+				##"_status": "type_mismatch", 
+				##"_value_dict1": dict1[key], 
+				##"_value_dict2": dict2[key],
+				##}
+		#### If this key's value is a dictionary, need to follow the branch to expand.
+		##elif typeof(dict1[key]) == TYPE_DICTIONARY:
+			#### Funcion calls itself
+			##var sub_differences: Dictionary = compare_deep_dictionaries(dict1[key], dict2[key])
+			##if not sub_differences.is_empty():
+				##differences[key] = {
+					##"_status": "sub-differences", 
+					##"_details": sub_differences,
+					##}
+		#### If this key's value is an array, like attack damage, need to check each index.
+		##elif typeof(dict1[key]) == TYPE_ARRAY:
+			##var array_differences: Dictionary = compare_deep_arrays(dict1[key], dict2[key])
+			##if not array_differences.is_empty():
+				##differences[key] = {
+					##"_status": "array-differences",
+					##"_details": array_differences,
+					##}
+		#### Finally, if the values are different:
+		##elif dict1[key] != dict2[key]:
+			##differences[key] = {
+				##"_status": "value_mismatch",
+				##"_value_json1": dict1[key], 
+				##"_value_json2": dict2[key],
+				##}
+	### Check keys present in dict2 but missing in dict1
+	##for key in dict2.keys():
+		##if not dict1.has(key):
+			##differences[key] = {
+				##"_status": "missing_in_json1",
+				##"_value_json2": dict2[key],
+				##}
+	##
+	#
+	#
+	#
+	#
+	#return []
 	
 	
 	
