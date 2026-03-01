@@ -23,29 +23,43 @@ static func load_json_data_to_dict(load_path: String) -> Dictionary:
 	return JSON.parse_string(app_settings_string) # Define Dictionary
 
 
-## Accept version as "release", or "pre_release". return integer build number.
-static func determine_previous_build(version: String) -> int:
-	var build_number: int = 0
+## Accept version as "release", or "pre_release". return Array of [old,new] build number.
+static func determine_assets_build() -> Array:
+	## Array contains: [pre-prior, pre-latest, release-prior, release-latest]
+	var build_numbers: Array = [0,0,0,0]
 	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
-	match version:
-		"pre_release":
-			var latest_pre_release_build_path: String = "/install/pre-release/package/sig/"# + "build-?/"
-			#var previous_pre_release_path: String = "/install/pre-release/package/game/" #+ "build-?/"
-			#var previous_pre_release_build: String
-			var latest_path: String = hytale_base_folder + latest_pre_release_build_path
-			get_folder_names(latest_path)
-			
-			
-		"release":
-			
-			pass
-			
 	
-	return build_number
+	var pre_release_build_path: String = hytale_base_folder + "/install/pre-release/package/sig/"
+	var folder_names_pre: Array = get_folder_names(pre_release_build_path)
+	
+	var release_build_path: String = hytale_base_folder + "/install/release/package/sig/"
+	var folder_names_rel: Array  = get_folder_names(release_build_path)
+	
+	## sort folder names, then put in array.
+	folder_names_pre[0] = folder_names_pre[0].trim_prefix("build-")
+	folder_names_pre[1] = folder_names_pre[1].trim_prefix("build-")
+	folder_names_rel[0] = folder_names_rel[0].trim_prefix("build-")
+	folder_names_rel[1] = folder_names_rel[1].trim_prefix("build-")
+	
+	## INT
+	folder_names_pre.sort()
+	folder_names_rel.sort()
+	
+	build_numbers[0] = folder_names_pre[0]
+	build_numbers[1] = folder_names_pre[1]
+	build_numbers[2] = folder_names_rel[0]
+	build_numbers[3] = folder_names_rel[1]
+	
+	
+	
+	return build_numbers
 
-static func get_folder_names(path: String):
+
+## Returns Array of folder names
+static func get_folder_names(path: String) -> Array:
 	# Open the directory
 	var dir = DirAccess.open(path)
+	var folder_names: Array = []
 	
 	if dir:
 		# Start iterating through the directory contents
@@ -56,16 +70,17 @@ static func get_folder_names(path: String):
 			# Check if the current item is a directory
 			if dir.current_is_dir():
 				print("Found directory: " + item_name)
-			
+				folder_names.append(item_name)
+				
 			# Move to the next item
 			item_name = dir.get_next()
 			
 		# Stop iterating
 		dir.list_dir_end()
+		return folder_names
 	else:
-		print("An error occurred when trying to access the path.")
-
-
+		print("An error occurred when trying to access the path to retrieve folder names.")
+		return []
 
 
 ## Load a csv file, and return it as a 2d array. Stripping header is optional.

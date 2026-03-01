@@ -20,7 +20,8 @@ func _ready() -> void:
 	
 	FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
 	
-	FileUtils.determine_previous_build("pre_release") ## TEST
+	var builds: Array = FileUtils.determine_assets_build() ## TEST Returns [old,new] build numbers.
+	print(builds)
 	
 	## Check app settings to see whether to run headless.
 	if app.settings.get("run_app_headless"):
