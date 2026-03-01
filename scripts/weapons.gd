@@ -47,7 +47,7 @@ func headless_new_main() -> void:
 	FileUtils.export_array_as_csv(weapon_table, csv_save_path) # Export to csv
 	FileUtils.export_dict_to_json(weapon_encyclopedia, compiled_json_save_path) # export to json
 	
-	## Csv based diffs - INFERIOR due to worse comparison algorythim
+	##  ------ Csv based diffs ------------
 	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # Do the diff compare
 	FileUtils.export_array_as_csv(diffs.table, diff_csv_save_path) # Save diff to csv
 	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
@@ -58,14 +58,8 @@ func headless_new_main() -> void:
 	var differences_dict: Dictionary = DiffUtils.diff_json_compare(json_old_path, 
 			compiled_json_save_path)
 	#print(differences_dict)
-	
 	## Export to json.
 	FileUtils.export_dict_to_json(differences_dict, "user://json_diff.json")
-	
-	## convert the json diff data to a table fit for easy human reading.
-	var differences_arr: Array = DiffUtils.convert_diffs_dict_to_array(differences_dict)
-	## Export to csv.
-	FileUtils.export_array_as_csv(differences_arr, "user://csv_diff.csv")
 	##-------------------------------------
 	
 	
