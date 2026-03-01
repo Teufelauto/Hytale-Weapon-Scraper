@@ -46,24 +46,12 @@ func headless_new_main() -> void:
 	FileUtils.backup_csv_and_json() # Backup files so they can be compared and archived.
 	FileUtils.export_array_as_csv(weapon_table, csv_save_path) # Export to csv
 	FileUtils.export_dict_to_json(weapon_encyclopedia, compiled_json_save_path) # export to json
+	if FileUtils.check_os_file_exists("user://output/wpn_tbl_pre-rel_old.csv"): ## Catch if no file to compare
+		DiffUtils.do_csv_based_diff("user://output/wpn_tbl_pre-rel_old.csv", App.csv_save_path) ## Creates Diff in csv table and as json
+	if FileUtils.check_os_file_exists("user://output/weapons_encyclopedia_pre-release_old.json"):  ## Catch if no file to compare
+		DiffUtils.do_json_based_diff("user://output/weapons_encyclopedia_pre-release_old.json", 
+				App.compiled_json_save_path) ## Creates Diff in hard to read json
 	
-	##  ------ Csv based diffs ------------
-	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # Do the diff compare
-	FileUtils.export_array_as_csv(diffs.table, diff_csv_save_path) # Save diff to csv
-	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
-	FileUtils.export_dict_to_json(diff_dict_for_json, diff_json_save_path) # export to json
-	
-	##--------- JSON diffing. -------------
-	var json_old_path: String = "user://output/weapons_encyclopedia_pre-release_old.json"
-	var differences_dict: Dictionary = DiffUtils.diff_json_compare(json_old_path, 
-			compiled_json_save_path)
-	#print(differences_dict)
-	## Export to json.
-	FileUtils.export_dict_to_json(differences_dict, "user://json_diff.json")
-	##-------------------------------------
-	
-	
-
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
 ## The table can be exported as CSV or used internally. 

@@ -31,7 +31,8 @@
 			"csv_save_path": "user://output/",
 			"csv_filename": "wpn_tbl_rel.csv"},
 		"weapon_diff":{
-			"json_filename":"wpn_diff_json.json",
-			"csv_filename":"wpn_diff_csv.csv"}
+			"json_filename": "wpn_diff_json.json",
+			"csv_filename": "wpn_diff_csv.csv",
+			"json_from_csv_filename": "wpn_diff_json_from_csv.json"}
 	}
 }

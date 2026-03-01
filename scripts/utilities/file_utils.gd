@@ -135,9 +135,11 @@ static func backup_csv_and_json(designator_for_old: String = "_old",
 	var path_array: Array = []
 	
 	if auto_save_old_csv:
-		## Save to var so both files can be cycled in for-loop
+		## Save to var so all files can be cycled in for-loop
 		path_array.append([App.diff_csv_save_path, ".csv"])
+		path_array.append([App.diff_json_from_csv_save_path, ".json"])
 		path_array.append([App.csv_save_path, ".csv"])
+		
 	
 	if auto_save_old_json:
 		## Save to var so both files can be cycled in for-loop

@@ -16,20 +16,22 @@ enum Header {
 
 
 ## Csv based diffs - For creating easy to read table
-static func do_csv_based_diff() -> void:
+static func do_csv_based_diff(
+		csv_old_1_path: String = "user://output/wpn_tbl_pre-rel_old.csv",
+		csv_new_2_path:String = App.csv_save_path) -> void:
 	## Do the diff compare, and return two Arrays inside Dictionary.
 	## diffs.table is Array for export as csv.
 	## diffs.textual is Array for displaying plain-text message of differences.
-	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table()
+	var diffs: Dictionary = diff_compare_weapons_table(csv_old_1_path, csv_new_2_path)
 	
 	## Save diff table-Array to csv
 	FileUtils.export_array_as_csv(diffs.table, App.diff_csv_save_path) 
 	
 	## Make Dictionary from Array
-	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
+	var diff_dict_for_json: Dictionary = convert_diff_table_array_to_dict(diffs.table)
 	
 	## Export Dictionary as json
-	FileUtils.export_dict_to_json(diff_dict_for_json, App.diff_json_save_path) 
+	FileUtils.export_dict_to_json(diff_dict_for_json, App.diff_json_from_csv_save_path) 
 
 
 ## JSON based diffs - For creating diff based upon json outputs. Very verbose
@@ -39,22 +41,23 @@ static func do_json_based_diff(
 		json_new_path: String = App.compiled_json_save_path) -> void:
 	
 	## Do the Diff compare, and return Dictionary.
-	var differences_dict: Dictionary = DiffUtils.diff_json_compare(
+	var differences_dict: Dictionary = diff_json_compare(
 			json_old_path, json_new_path)
 	
 	## Export Dictionary as json.
-	FileUtils.export_dict_to_json(differences_dict, "user://json_diff.json")
+	FileUtils.export_dict_to_json(differences_dict, App.diff_json_save_path)
 
 
 ## Load and compare 2 weapons CSVs to see the diff.
 ## Returns dictionary of arrays: dictionary.textual, and dictionary.table.
 static func diff_compare_weapons_table(
-		csv_old_path: String = "user://output/wpn_tbl_pre-rel.csv",
-		csv_new_path:String = App.csv_save_path) -> Dictionary:
+		csv_old_1_path: String, csv_new_2_path:String ) -> Dictionary:
 	
 	## Load csv files in to Arrays.
-	var table_1: Array = FileUtils.load_csv_data_to_array(csv_old_path)
-	var table_2: Array = FileUtils.load_csv_data_to_array(csv_new_path)
+	if not FileUtils.check_os_file_exists(csv_old_1_path):
+		return {}
+	var table_1: Array = FileUtils.load_csv_data_to_array(csv_old_1_path)
+	var table_2: Array = FileUtils.load_csv_data_to_array(csv_new_2_path)
 	
 	print()
 	## Compare new and old tables

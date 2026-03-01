@@ -16,30 +16,29 @@ func _ready() -> void:
 	#print("CPU: " + OS.get_processor_name())
 	print()
 	
-	retrieve_app_settings()
-
-	DiffUtils.do_csv_based_diff() ## Creates Diff in csv table and as json
-	DiffUtils.do_json_based_diff() ## Creates Diff in hard to read json
+	retrieve_app_settings() ## Load up all the settings saved in json
 	
-	#FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
-	#
-	#
-	### Check app settings to see whether to run headless.
-	#if app.settings.get("run_app_headless"):
-		#
-		#wpns.headless_new_main()
-		#
-	## TODO  Check if NOT Headless from App_Settings, and deal with that in a seperate main-loop.
-	#else:
-		#print("Error- Not Headless.")
-		##main_gui.set_visible(true)
+	FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
+	
+	## Check app settings to see whether to run headless.
+	if app.settings.get("run_app_headless"):
+		
+		wpns.headless_new_main() ## Run through all the weapons to create csv and json
+		
+		
+		
+	# TODO  Check if NOT Headless from App_Settings, and deal with that in a seperate main-loop.
+	else:
+		print("Error- Not Headless.")
+		#main_gui.set_visible(true)
+		
 		## wait for go from button
 		## TODO Allow Edit app_settings.json in app
-		### TODO if Headless=false, save_app_settings_to_json()
-	#
-	#
-	### After run, close up shop.
-	#FileUtils.zip_reader.close() # Close ZIP reader
+		## TODO if Headless=false, save_app_settings_to_json()
+	
+	
+	## After run, close up shop.
+	FileUtils.zip_reader.close() # Close ZIP reader
 	
 	get_tree().quit() # Closes app
 	

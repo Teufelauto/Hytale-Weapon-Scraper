@@ -11,6 +11,7 @@ static var asset_1_zip_path: String ## old, or previous zip - Not used yet
 static var csv_save_path: String ## Output csv file path
 static var compiled_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
+static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
 
 
@@ -338,6 +339,18 @@ func verify_settings_formatting() -> void:
 			settings.output.weapon_diff.set("csv_filename", 
 					FileUtils.replace_file_extension(filename, ".csv"))
 	
+	if not settings.output.weapon_diff.json_from_csv_filename.ends_with(".json"):
+		entries_with_errors += 1
+		var filename: String = settings.output.weapon_diff.json_from_csv_filename
+		
+		## Add extension if missing
+		if not filename.contains("."):
+			settings.output.weapon_diff.json_from_csv_filename = filename + ".json"
+		## Correct the extension.
+		else:
+			settings.output.weapon_diff.set("json_from_csv_filename", 
+					FileUtils.replace_file_extension(filename, ".json"))
+	
 	## Save changes to file if errors found.
 	if entries_with_errors > 0:
 		print("Corrected %d simple formatting error(s) in app_settings.json" % entries_with_errors)
@@ -368,10 +381,10 @@ func choose_which_filepaths_to_process() -> void:
 			+ settings.output[choice].compiled_json_filename
 	
 	## saving the diffs with thier respectively formatted output.
-	diff_csv_save_path = settings.output[choice].csv_save_path \
-			+ settings.output.weapon_diff.csv_filename
 	diff_json_save_path = settings.output[choice].compiled_json_save_path \
 			+ settings.output.weapon_diff.json_filename
-	
-	
+	diff_csv_save_path = settings.output[choice].csv_save_path \
+			+ settings.output.weapon_diff.csv_filename
+	diff_json_from_csv_save_path = settings.output[choice].csv_save_path \
+			+ settings.output.weapon_diff.json_from_csv_filename
 	
