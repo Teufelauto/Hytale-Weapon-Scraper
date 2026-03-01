@@ -6,8 +6,9 @@ extends Object
 
 ## App Settings Data loaded from / saved to user://app_settings.json
 static var settings:Dictionary = {} 
+static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
-static var asset_1_zip_path: String ## old, or previous zip - Not used yet
+
 static var csv_save_path: String ## Output csv file path
 static var compiled_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
@@ -98,13 +99,20 @@ func first_load_auto_determine_assets_location()->void:
 	load_app_settings_from_json() # Load here so we can get default data, write over it, then save it.
 	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
 	
-	## Pre-save paths
-	var prerelease_path:String = "/install/pre-release/package/game/latest/"
-	settings.assets.latest_prerelease.set("assets_path", hytale_roaming_folder + prerelease_path)
-	settings.assets.user_defined.set("assets_path", hytale_roaming_folder + prerelease_path) # We give the user the most likely selection.
+	## Pre-save paths. User defined pre-set to pre_release
+	
+	var latest_pre_release_path:String = "/install/pre-release/package/game/latest/"
+	settings.assets.pre_release.latest_pre_release.set("assets_path", hytale_roaming_folder + latest_pre_release_path)
+	settings.assets.user.user_defined_2.set("assets_path", hytale_roaming_folder + latest_pre_release_path) # We give the user the most likely selection.
+	
+	## TODO determine previous version number to create path for pre_release
+	
 	
 	var release_path = "/install/release/package/game/latest/"
-	settings.assets.latest_release.set("assets_path", hytale_roaming_folder + release_path)
+	settings.assets.release.latest_release.set("assets_path", hytale_roaming_folder + release_path)
+	
+	## TODO determine previous version number to create path for release
+	
 	
 	# We fill in the user://output/ directery path so the user is not confused by "user://"
 	var output_path = OS.get_user_data_dir() + "/output/"
@@ -123,7 +131,7 @@ func first_load_auto_determine_assets_location()->void:
 func load_app_settings_from_json() -> void:
 	# Retrieve json data
 	settings = FileUtils.load_json_data_to_dict("user://app_settings.json")
-	verify_settings_formatting()
+	#verify_settings_formatting()
 	choose_which_filepaths_to_process() 
 
 
@@ -362,7 +370,7 @@ func verify_settings_formatting() -> void:
 func choose_which_filepaths_to_process() -> void:
 	var choice: String
 	# If pre-release
-	if settings.assets.latest_prerelease.get("scrape_assets"):
+	if settings.assets.pre_release.latest_pre_release.get("scrape_assets"):
 		choice = "latest_prerelease"
 		
 	# If Release

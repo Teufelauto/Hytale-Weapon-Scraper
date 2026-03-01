@@ -23,6 +23,31 @@ static func load_json_data_to_dict(load_path: String) -> Dictionary:
 	return JSON.parse_string(app_settings_string) # Define Dictionary
 
 
+## Accept version as "release", or "pre_release". return integer build number.
+static func determine_previous_build(version: String) -> int:
+	var build_number: int
+	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
+	match version:
+		"pre_release":
+			var latest_pre_release_build_path: String = "/install/pre-release/package/sig/" + "build-?/"
+			var previous_pre_release_path: String = "/install/pre-release/package/game/" + "build-?/"
+			var previous_pre_release_build: String
+			
+			pass
+			
+		"release":
+			
+			pass
+			
+	
+	
+	
+	
+	
+	
+	return build_number
+
+
 ## Load a csv file, and return it as a 2d array. Stripping header is optional.
 static func load_csv_data_to_array(load_path: String, strip_header: bool = false) -> Array:
 	var data: Array = []
