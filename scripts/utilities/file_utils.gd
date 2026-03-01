@@ -9,13 +9,13 @@ extends FileAccess
 static var zip_reader := ZIPReader.new() ## Class to put Assets.zip in
 static var zip_files: PackedStringArray ## Path and File list inside zip. An array of strings.
 
-## Gets ZIP Reader going in this scope
-static func open_assets_zip()->void:
-	var error = zip_reader.open(App.asset_zip_path)
+## Gets ZIP Reader going in this scope with specified file
+static func open_assets_zip(path_to_zip)->void:
+	var error = zip_reader.open(path_to_zip)
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
 		return
-	zip_files = zip_reader.get_files() ## Obtain list of files in zip
+	zip_files = zip_reader.get_files() ## Obtain list of files contained in zip
 
 
 static func load_json_data_to_dict(load_path: String) -> Dictionary:
@@ -49,7 +49,7 @@ static func load_csv_data_to_array(load_path: String, strip_header: bool = false
 
 
 ## Save a dictionary to a json file.
-static func save_dict_to_json(dict: Dictionary, save_path: String = "user://new.json") -> void:
+static func export_dict_to_json(dict: Dictionary, save_path: String = "user://new.json") -> void:
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
 		var json_string = JSON.stringify(dict,"  ",false)
@@ -60,8 +60,8 @@ static func save_dict_to_json(dict: Dictionary, save_path: String = "user://new.
 		print("Failed to save dictionary as json.")
 
 
-## Save Table Array into CSV at specified location
-static func save_array_as_csv(table_data: Array, path: String = "user://new.csv") -> void:
+## Save Table Array into CSV at a specified location
+static func export_array_as_csv(table_data: Array, path: String = "user://new.csv") -> void:
 	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		print("Error opening file: ", FileAccess.get_open_error())
@@ -135,9 +135,11 @@ static func backup_csv_and_json(designator_for_old: String = "_old",
 	var path_array: Array = []
 	
 	if auto_save_old_csv:
-		## Save to var so both files can be cycled in for-loop
+		## Save to var so all files can be cycled in for-loop
 		path_array.append([App.diff_csv_save_path, ".csv"])
+		path_array.append([App.diff_json_from_csv_save_path, ".json"])
 		path_array.append([App.csv_save_path, ".csv"])
+		
 	
 	if auto_save_old_json:
 		## Save to var so both files can be cycled in for-loop

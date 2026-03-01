@@ -54,8 +54,7 @@
 			"primary_attack_2_name": "Swing_Down_Right",
 			"primary_attack_3_name": "Swing_Down",
 			"charged_attack_1_name": "Downstrike",
-			"signature_attack_1_name": "Signature_Whirlwind",
-			"weapon_child": []
+			"signature_attack_1_name": "Signature_Whirlwind"
 		},
 		"Daggers": {
 			"primary_attack_1_name": "Swing_Left",
@@ -71,8 +70,7 @@
 			"signature_attack_3_name": "Razorstrike_Lunge",
 			"rear_signature_attack_1_name": "Razorstrike_Slash",
 			"rear_signature_attack_2_name": "Razorstrike_Sweep",
-			"rear_signature_attack_3_name": "Razorstrike_Lunge",
-			"weapon_child": []
+			"rear_signature_attack_3_name": "Razorstrike_Lunge"
 		},
 		"Mace": {
 			"primary_attack_1_name": "Swing_Left",
@@ -81,8 +79,7 @@
 			"charged_attack_1_name": "Swing_Left_Charged",
 			"charged_attack_2_name": "Swing_Right_Charged",
 			"charged_attack_3_name": "Swing_Up_Left_Charged",
-			"signature_attack_1_name": "Groundslam",
-			"weapon_child":  []
+			"signature_attack_1_name": "Groundslam"
 		},
 		"Sword":{
 			"primary_attack_1_name": "Swing_Left",
@@ -90,37 +87,31 @@
 			"primary_attack_3_name": "Swing_Down",
 			"charged_attack_1_name": "Thrust",
 			"signature_attack_1_name": "Vortexstrike_Spin",
-			"signature_attack_2_name": "Vortexstrike_Stab",
-			"weapon_child":  []
+			"signature_attack_2_name": "Vortexstrike_Stab"
 		},
 		"Spear":{
-			"primary_attack_1_name": "Spear_Stab",
-			"weapon_child":  []
+			"primary_attack_1_name": "Spear_Stab"
 		},
 		"Axe":{
 			"parent": "Template_Weapon_Sword", 
 			"primary_attack_1_name": "Axe_Swing_Down_Left",
 			"primary_attack_2_name": "Axe_Swing_Up_Right",
-			"charged_attack_1_name": "Axe_Swing_Left_Charged",
-			"weapon_child":  []
+			"charged_attack_1_name": "Axe_Swing_Left_Charged"
 		},
 		"Club":{
 			"primary_attack_1_name": "Club_Swing_Left",
 			"primary_attack_2_name": "Club_Swing_Right",
-			"charged_attack_1_name": "Club_Swing_Down_Charged",
-			"weapon_child":  []
+			"charged_attack_1_name": "Club_Swing_Down_Charged"
 		},
 		"Longsword":{
 			"primary_attack_1_name": "Longsword_Swing_Left",
 			"primary_attack_2_name": "Longsword_Swing_Right",
 			"primary_attack_3_name": "Longsword_Swing_Up_Left",
-			"charged_attack_1_name": "Longsword_Stab_Charged",
-			"weapon_child": []
+			"charged_attack_1_name": "Longsword_Stab_Charged"
 		},
 		"Gun":{
 			"parent": "Template_Weapon_Sword", 
-			"primary_attack_1_name": "Gun_Swing_Left",
-			"weapon_child":[]
+			"primary_attack_1_name": "Gun_Swing_Left"
 		}
 	},
 	"Template":[
