@@ -19,6 +19,18 @@ func _ready() -> void:
 	retrieve_app_settings()
 	
 	
+	
+	
+	## Csv based diffs - INFERIOR due to worse comparison algorythim
+	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # Do the diff compare
+	FileUtils.export_array_as_csv(diffs.table, App.diff_csv_save_path) # Save diff to csv
+	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
+	FileUtils.export_dict_to_json(diff_dict_for_json, App.diff_json_save_path) # export to json
+	
+	
+	
+	
+	
 	##--------- JSON diffing. -------------
 	
 	
