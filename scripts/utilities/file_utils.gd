@@ -30,9 +30,10 @@ static func determine_previous_build(version: String) -> int:
 	match version:
 		"pre_release":
 			var latest_pre_release_build_path: String = "/install/pre-release/package/sig/"# + "build-?/"
-			var previous_pre_release_path: String = "/install/pre-release/package/game/" #+ "build-?/"
-			var previous_pre_release_build: String
-			get_folder_names(latest_pre_release_build_path)
+			#var previous_pre_release_path: String = "/install/pre-release/package/game/" #+ "build-?/"
+			#var previous_pre_release_build: String
+			var latest_path: String = hytale_base_folder + latest_pre_release_build_path
+			get_folder_names(latest_path)
 			
 			
 		"release":

@@ -25,6 +25,7 @@ func _ready() -> void:
 	## Check app settings to see whether to run headless.
 	if app.settings.get("run_app_headless"):
 		print()
+		
 		#wpns.headless_new_main() ## Run through all the weapons to create csv and json
 		
 		
