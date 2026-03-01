@@ -25,27 +25,46 @@ static func load_json_data_to_dict(load_path: String) -> Dictionary:
 
 ## Accept version as "release", or "pre_release". return integer build number.
 static func determine_previous_build(version: String) -> int:
-	var build_number: int
+	var build_number: int = 0
 	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
 	match version:
 		"pre_release":
-			var latest_pre_release_build_path: String = "/install/pre-release/package/sig/" + "build-?/"
-			var previous_pre_release_path: String = "/install/pre-release/package/game/" + "build-?/"
+			var latest_pre_release_build_path: String = "/install/pre-release/package/sig/"# + "build-?/"
+			var previous_pre_release_path: String = "/install/pre-release/package/game/" #+ "build-?/"
 			var previous_pre_release_build: String
+			get_folder_names(latest_pre_release_build_path)
 			
-			pass
 			
 		"release":
 			
 			pass
 			
 	
-	
-	
-	
-	
-	
 	return build_number
+
+static func get_folder_names(path: String):
+	# Open the directory
+	var dir = DirAccess.open(path)
+	
+	if dir:
+		# Start iterating through the directory contents
+		dir.list_dir_begin()
+		var item_name: String = dir.get_next()
+		
+		while item_name != "":
+			# Check if the current item is a directory
+			if dir.current_is_dir():
+				print("Found directory: " + item_name)
+			
+			# Move to the next item
+			item_name = dir.get_next()
+			
+		# Stop iterating
+		dir.list_dir_end()
+	else:
+		print("An error occurred when trying to access the path.")
+
+
 
 
 ## Load a csv file, and return it as a 2d array. Stripping header is optional.

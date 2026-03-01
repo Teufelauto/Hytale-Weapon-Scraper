@@ -16,7 +16,7 @@
 		},
 		"pre_release":{
 			"previous_pre_release":{
-				"scrape_assets": true,
+				"scrape_assets": false,
 				"assets_path": "user://",
 				"assets_filename": "Assets.zip"
 			},
@@ -44,7 +44,7 @@
 			"compiled_json_filename": "weapons_encyclopedia_user_defined.json",
 			"csv_save_path": "user://output/",
 			"csv_filename": "wpn_tbl_user.csv"},
-		"latest_prerelease":{
+		"latest_pre_release":{
 			"compiled_json_save_path": "user://output/",
 			"compiled_json_filename": "weapons_encyclopedia_pre-release.json",
 			"csv_save_path": "user://output/",
