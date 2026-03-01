@@ -16,7 +16,7 @@ static var weapon_move_Xref_dict: Dictionary = {}
 
 var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
 var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
-var current_template_family: String ## Keeps track of the currently loaded template.
+var current_template_parent: String ## Keeps track of the currently loaded template.
 
 # Weapon Table construction
 ## Determine how many rows are in the weapon_table by counting each weapon's files
@@ -31,8 +31,8 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ##==================================================================================================
 
-
-func headless_main() -> void:
+## Process new Assets, not old.
+func headless_new_main() -> void:
 	
 	## static var weapon_dict populated here.
 	weapon_dict = FileUtils.load_json_data_to_dict("user://weapon_dictionary.json")
@@ -44,14 +44,14 @@ func headless_main() -> void:
 	#print_weapon_table_to_console() # For troubleshooting
 	
 	FileUtils.backup_csv_and_json() # Backup files so they can be compared and archived.
-	FileUtils.save_array_as_csv(weapon_table, csv_save_path) # Export to csv
-	FileUtils.save_dict_to_json(weapon_encyclopedia, compiled_json_save_path) # export to json
+	FileUtils.export_array_as_csv(weapon_table, csv_save_path) # Export to csv
+	FileUtils.export_dict_to_json(weapon_encyclopedia, compiled_json_save_path) # export to json
+	if FileUtils.check_os_file_exists("user://output/wpn_tbl_pre-rel_old.csv"): ## Catch if no file to compare
+		DiffUtils.do_csv_based_diff("user://output/wpn_tbl_pre-rel_old.csv", App.csv_save_path) ## Creates Diff in csv table and as json
+	if FileUtils.check_os_file_exists("user://output/weapons_encyclopedia_pre-release_old.json"):  ## Catch if no file to compare
+		DiffUtils.do_json_based_diff("user://output/weapons_encyclopedia_pre-release_old.json", 
+				App.compiled_json_save_path) ## Creates Diff in hard to read json
 	
-	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # Do the diff compare
-	FileUtils.save_array_as_csv(diffs.table, diff_csv_save_path) # Save diff to csv
-	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
-	FileUtils.save_dict_to_json(diff_dict_for_json, diff_json_save_path) # export to json
-
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
 ## The table can be exported as CSV or used internally. 
@@ -161,7 +161,7 @@ func step_through_weapons() -> void:
 		## (e.g., "my_folder/" or "res://my_folder/").
 		## If target_folder is empty, it processes all files.
 			if target_folder.is_empty() or file_path.begins_with(target_folder):
-				print()
+				#print()
 				print("Found weapon file in target folder: ", file_path)
 				
 				current_table_row += 1
