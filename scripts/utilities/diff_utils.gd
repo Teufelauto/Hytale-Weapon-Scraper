@@ -23,7 +23,8 @@ enum Diff_Columns_Index {
 	OLD_VALUE,
 	NEW_VALUE,
 	}
-const DIFF_COLUMNS := [
+## Row 0 of differences_arr
+const DIFF_COLUMNS: Array = [
 	"weapon_family",
 	"descriptor",
 	"diff_parameter",
@@ -32,6 +33,19 @@ const DIFF_COLUMNS := [
 	"old_value",
 	"new_value",
 ]
+## 2D Array equivalent of dictionary differences. Static here because it is 
+## built from inside recursive functions.
+static var differences_arr: Array = [[DIFF_COLUMNS]]
+## Dictionary of values to put in the current row of differences_arr
+static var diff_row_dict: Dictionary = {
+	"weapon_family": null,
+	"descriptor": null,
+	"diff_parameter": null,
+	"parameter_index": null,
+	"status": null,
+	"old_value": null,
+	"new_value": null,
+	}
 
 
 ## TODO Enable ability to specify Table names and versions

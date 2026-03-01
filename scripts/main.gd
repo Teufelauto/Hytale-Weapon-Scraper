@@ -21,10 +21,13 @@ func _ready() -> void:
 	
 	##--------- JSON diffing. -------------
 	
-	#var differences_arr: Array = [[]]
+	
 	var json_old_path: String = "user://output/weapons_encyclopedia_pre-release_old.json"
 	var differences_dict: Dictionary = DiffUtils.diff_json_compare(json_old_path, 
 			App.compiled_json_save_path)
+	
+	
+	
 	#print(differences_dict)
 	
 	## Export to json.
