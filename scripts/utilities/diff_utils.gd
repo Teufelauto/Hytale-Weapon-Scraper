@@ -15,23 +15,52 @@ enum Header {
 	}
 
 
-## TODO Enable ability to specify Table names and versions
-## Load and compare 2 weapons CSVs to see the diff.
-## Returns dictionary.textual, and dictionary.table. These are arrays.
-## Trouble when array grows or shrinks. json is preferred for comparison. Could be 
-## corrected with logic to match weapon ids.
-static func diff_compare_weapons_table(designator_for_old: String = "_old") -> Dictionary:
+## Csv based diffs - For creating easy to read table
+static func do_csv_based_diff() -> void:
+	## Do the diff compare, and return two Arrays inside Dictionary.
+	## diffs.table is Array for export as csv.
+	## diffs.textual is Array for displaying plain-text message of differences.
+	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table()
 	
-	var old_end: String = designator_for_old + ".csv"
-	var _previous_path: String = App.csv_save_path.replace(".csv", old_end)
-	var table_1: Array = FileUtils.load_csv_data_to_array(_previous_path)
-	var table_2: Array = FileUtils.load_csv_data_to_array(App.csv_save_path)
+	## Save diff table-Array to csv
+	FileUtils.export_array_as_csv(diffs.table, App.diff_csv_save_path) 
+	
+	## Make Dictionary from Array
+	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
+	
+	## Export Dictionary as json
+	FileUtils.export_dict_to_json(diff_dict_for_json, App.diff_json_save_path) 
+
+
+## JSON based diffs - For creating diff based upon json outputs. Very verbose
+## and hard to read by human. Does not produce csv output.
+static func do_json_based_diff(
+		json_old_path: String = "user://output/weapons_encyclopedia_pre-release_old.json", 
+		json_new_path: String = App.compiled_json_save_path) -> void:
+	
+	## Do the Diff compare, and return Dictionary.
+	var differences_dict: Dictionary = DiffUtils.diff_json_compare(
+			json_old_path, json_new_path)
+	
+	## Export Dictionary as json.
+	FileUtils.export_dict_to_json(differences_dict, "user://json_diff.json")
+
+
+## Load and compare 2 weapons CSVs to see the diff.
+## Returns dictionary of arrays: dictionary.textual, and dictionary.table.
+static func diff_compare_weapons_table(
+		csv_old_path: String = "user://output/wpn_tbl_pre-rel.csv",
+		csv_new_path:String = App.csv_save_path) -> Dictionary:
+	
+	## Load csv files in to Arrays.
+	var table_1: Array = FileUtils.load_csv_data_to_array(csv_old_path)
+	var table_2: Array = FileUtils.load_csv_data_to_array(csv_new_path)
 	
 	print()
-	# Compare new and old tables
+	## Compare new and old tables
 	var diffs: Dictionary = compare_weapons_arrays(table_1, table_2)
 	if diffs.textual.is_empty():
-		print("New and old weapons are identical.")
+		print("Old and new weapons are identical.")
 		return diffs
 	else:
 		print("Differences found between old and new weapons:")
@@ -39,13 +68,14 @@ static func diff_compare_weapons_table(designator_for_old: String = "_old") -> D
 			print("- " + diff)
 		
 		print("---------------")
-		#for diff in diffs.table:
+		#for diff in diffs.table: ## Outputs the table version to terminal
 			#print(diff)
 		print()
 		return diffs
 
-## TODO Fix so row is aligned with complementary row (weapon_id) in other array. (both ways)
-## Returns a dictionary of weapon diffs with two entries. "textual", and "table". An Array of diffs.
+
+## Returns a dictionary of weapon diffs with two entries. 
+## "textual", and "table". Two arrays of diffs in one Dict.
 static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary:
 	var differences: Array = []
 	var diff_table: Array = [[
@@ -74,7 +104,7 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 		var row_new: Array = table_2[i]
 		
 		## ----- Find matching row in table_1 -----
-		
+		## This section aligns matching rows
 		## Unique identifier of Family_Desriptor to look for.
 		var id_of_row: String = row_new[1]
 		var row_of_old: int
@@ -85,8 +115,7 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 				row_of_old = j
 		## Row in old table that matches id of new table's row we are interested in.
 		var row_old: Array  = table_1[row_of_old]
-			
-		
+
 		## ----- End of special section -----
 		
 		# Check if the current elements are arrays (expected 2D structure)
@@ -108,7 +137,7 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 				# Compare individual elements
 			if row_new[j] != row_old[j]:
 				
-				## To remove row 0 text from value
+				## To remove row 0 text from value. This is for when a row is missing from table
 				if row_of_old == 0:
 					row_old.set(j, "")
 				
@@ -143,7 +172,6 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 		var row_new: Array = table_1[i]
 		
 		## ----- Find matching row in table_1 -----
-		
 		## Unique identifier of Family_Desriptor to look for.
 		var id_of_row: String = row_new[1]
 		var row_of_old: int
@@ -179,7 +207,7 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 				# Compare individual elements
 			if row_new[j] != row_old[j]:
 				
-				## To remove row 0 text from value
+				## To remove row 0 text from value (if missing row)
 				if row_of_old == 0:
 					row_old.set(j, "")
 				
@@ -204,8 +232,6 @@ static func compare_weapons_arrays(table_1: Array, table_2: Array) -> Dictionary
 				## Re-set the definition of the Dictionary entry for "table" with new additions.
 				diff_dict.set("table", diff_table)
 	
-	
-						
 	return diff_dict
 
 

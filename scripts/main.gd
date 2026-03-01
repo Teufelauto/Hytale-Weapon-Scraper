@@ -18,21 +18,8 @@ func _ready() -> void:
 	
 	retrieve_app_settings()
 
-	
-	## Csv based diffs - INFERIOR due to worse comparison algorythim
-	var diffs: Dictionary = DiffUtils.diff_compare_weapons_table() # Do the diff compare
-	FileUtils.export_array_as_csv(diffs.table, App.diff_csv_save_path) # Save diff to csv
-	var diff_dict_for_json: Dictionary = DiffUtils.convert_diff_table_array_to_dict(diffs.table)
-	FileUtils.export_dict_to_json(diff_dict_for_json, App.diff_json_save_path) # export to json
-
-	##--------- JSON diffing. -------------
-	var json_old_path: String = "user://output/weapons_encyclopedia_pre-release_old.json"
-	var differences_dict: Dictionary = DiffUtils.diff_json_compare(json_old_path, 
-			App.compiled_json_save_path)
-	#print(differences_dict)
-	## Export to json.
-	FileUtils.export_dict_to_json(differences_dict, "user://json_diff.json")
-
+	DiffUtils.do_csv_based_diff() ## Creates Diff in csv table and as json
+	DiffUtils.do_json_based_diff() ## Creates Diff in hard to read json
 	
 	#FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
 	#
