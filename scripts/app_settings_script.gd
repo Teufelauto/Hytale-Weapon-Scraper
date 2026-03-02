@@ -6,19 +6,24 @@ extends Object
 
 ## App Settings Data loaded from / saved to user://app_settings.json
 static var settings:Dictionary = {}
-## [previous_pre_release, latest_pre_release, previous_release, latest_release] build numbers.
-static var build_numbers: Array[int] = [0, 0, 0, 0]
-static var build_folders: Array = ["", "", "", ""]
+
 static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
-
 static var csv_save_path: String ## Output csv file path
 static var exported_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
-## Index for build_numbers and build_folders Arrays. Also for choosing active track.
-enum { 
+## Build numbers in order:
+## [previous_pre_release, latest_pre_release, previous_release, latest_release] 
+static var build_numbers: Array[int] = [0, 0, 0, 0]
+## Names of build folders in order:
+## [previous_pre_release, latest_pre_release, previous_release, latest_release]
+static var build_folders: Array = ["", "", "", ""]
+## The Assets being examined. Set by app_settings. [index of Assets, index of Assets]
+static var active_assets: Array = [null, null]
+## Index for build_numbers and build_folders Arrays. Also for choosing active Assets.
+enum Assets{ 
 	PREVIOUS_PRE_RELEASE, 
 	LATEST_PRE_RELEASE, 
 	PREVIOUS_RELEASE, 
@@ -114,7 +119,7 @@ func first_load_auto_determine_assets_location()->void:
 	## Pre-save paths. User defined pre-set to pre_release
 	
 	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
-			+ build_folders[PREVIOUS_PRE_RELEASE] + "/"
+			+ build_folders[Assets.PREVIOUS_PRE_RELEASE] + "/"
 	
 	settings.assets.pre_release.previous_pre_release.set("assets_path", 
 			hytale_roaming_folder + previous_pre_release_path)
@@ -131,7 +136,7 @@ func first_load_auto_determine_assets_location()->void:
 			hytale_roaming_folder + latest_pre_release_path) 
 	
 	var previous_release_path: String = "/install/release/package/game/" \
-			+ build_folders[PREVIOUS_RELEASE] + "/"
+			+ build_folders[Assets.PREVIOUS_RELEASE] + "/"
 	settings.assets.release.previous_release.set("assets_path", 
 			hytale_roaming_folder + previous_release_path)
 	
@@ -404,16 +409,20 @@ func verify_settings_formatting() -> void:
 
 func convert_build_numbers_to_names() -> void:
 	## PREVIOUS_PRE_RELEASE value
-	build_folders[PREVIOUS_PRE_RELEASE] = "build-" + str(build_numbers[PREVIOUS_PRE_RELEASE])
+	build_folders[Assets.PREVIOUS_PRE_RELEASE] = \
+			"build-" + str(build_numbers[Assets.PREVIOUS_PRE_RELEASE])
 	
 	## LATEST_PRE_RELEASE value
-	build_folders[LATEST_PRE_RELEASE] = "build-" + str(build_numbers[LATEST_PRE_RELEASE])
+	build_folders[Assets.LATEST_PRE_RELEASE] = \
+			"build-" + str(build_numbers[Assets.LATEST_PRE_RELEASE])
 	
 	## PREVIOUS_RELEASE value
-	build_folders[PREVIOUS_RELEASE] = "build-" + str(build_numbers[PREVIOUS_RELEASE])
+	build_folders[Assets.PREVIOUS_RELEASE] = \
+			"build-" + str(build_numbers[Assets.PREVIOUS_RELEASE])
 	
 	## LATEST_RELEASE value
-	build_folders[LATEST_RELEASE] = "build-" + str(build_numbers[LATEST_RELEASE])
+	build_folders[Assets.LATEST_RELEASE] = \
+			"build-" + str(build_numbers[Assets.LATEST_RELEASE])
 	
 	print(build_folders)
 
@@ -423,40 +432,47 @@ func choose_which_filepaths_to_process() -> void:
 	var choice: String
 	var output_choice: String
 	var branch: Dictionary
-	
 
-	# If pre-release
-	if settings.assets.pre_release.previous_pre_release.scrape_assets[1]:
-		branch = settings.assets.get("pre_release")
-		choice = "previous_pre_release"
-		output_choice = "pre_release"
-	
-	elif settings.assets.pre_release.latest_pre_release.scrape_assets[1]:
-		branch = settings.assets.get("pre_release")
-		choice = "latest_pre_release"
-		output_choice = "pre_release"
-	
-	# If Release
-	elif settings.assets.release.previous_release.scrape_assets[1]:
-		branch = settings.assets.get("release")
-		choice = "previous_release"
-		output_choice = "release"
-	
-	elif settings.assets.release.latest_release.scrape_assets[1]:
-		branch = settings.assets.get("release")
-		choice = "latest_release"
-		output_choice = "release"
+	for i in 2:
+		# If pre-release
+		if settings.assets.pre_release.previous_pre_release.scrape_assets[i]:
+			branch = settings.assets.get("pre_release")
+			choice = "previous_pre_release"
+			output_choice = "pre_release"
+			active_assets[i] = Assets.PREVIOUS_PRE_RELEASE
 		
-	# if User defined
-	elif settings.assets.user.user_defined_1.scrape_assets[1]:
-		branch = settings.assets.get("user")
-		choice = "user_defined_1"
-		output_choice = "user_defined"
-	
-	elif settings.assets.user.user_defined_2.scrape_assets[1]:
-		branch = settings.assets.get("user")
-		choice = "user_defined_2"
-		output_choice = "user_defined"
+		elif settings.assets.pre_release.latest_pre_release.scrape_assets[i]:
+			branch = settings.assets.get("pre_release")
+			choice = "latest_pre_release"
+			output_choice = "pre_release"
+			active_assets[i] = Assets.LATEST_PRE_RELEASE
+		
+		# If Release
+		elif settings.assets.release.previous_release.scrape_assets[i]:
+			branch = settings.assets.get("release")
+			choice = "previous_release"
+			output_choice = "release"
+			active_assets[i] = Assets.PREVIOUS_RELEASE
+		
+		elif settings.assets.release.latest_release.scrape_assets[i]:
+			branch = settings.assets.get("release")
+			choice = "latest_release"
+			output_choice = "release"
+			active_assets[i] = Assets.LATEST_RELEASE
+			
+		# if User defined
+		elif settings.assets.user.user_defined_1.scrape_assets[i]:
+			branch = settings.assets.get("user")
+			choice = "user_defined_1"
+			output_choice = "user_defined"
+			active_assets[i] = Assets.USER_DEFINED_1
+		
+		elif settings.assets.user.user_defined_2.scrape_assets[i]:
+			branch = settings.assets.get("user")
+			choice = "user_defined_2"
+			output_choice = "user_defined"
+			active_assets[i] = Assets.USER_DEFINED_2
+	#print(active_assets)
 	
 	## Inputs
 	asset_2_zip_path = branch[choice].assets_path \

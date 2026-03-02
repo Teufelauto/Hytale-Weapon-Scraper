@@ -10,7 +10,7 @@
 	"assets": {
 		"pre_release": {
 			"previous_pre_release": {
-				"scrape_assets": [false, false],
+				"scrape_assets": [true, false],
 				"assets_path": "user://",
 				"assets_filename": "Assets.zip"
 			},
@@ -48,21 +48,21 @@
 	"output": {
 		"pre_release": {
 			"exported_json_save_path": "user://output/",
-			"exported_json_filename": "weapons_book_pre-release.json",
+			"exported_json_filename": "weapon_book_pre-release.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_pre-rel.csv"
+			"csv_filename": "weapon_table_pre-release.csv"
 		},
 		"release": {
 			"exported_json_save_path": "user://output/",
-			"exported_json_filename": "weapons_book_release.json",
+			"exported_json_filename": "weapon_book_release.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_rel.csv"
+			"csv_filename": "weapon_table_release.csv"
 		},
 		"user_defined": {
 			"exported_json_save_path": "user://output/",
-			"exported_json_filename": "weapons_book_user_defined.json",
+			"exported_json_filename": "weapon_book_user-defined.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_user.csv"
+			"csv_filename": "weapon_table_user-defined.csv"
 		},
 		"weapon_diff": {
 			"json_filename": "wpn_diff_json.json",
