@@ -140,7 +140,9 @@ func load_app_settings_from_json() -> void:
 	
 	## Determine build numbers currently installed on system.
 	build_numbers = FileUtils.determine_assets_builds()
-	#print(builds)
+	
+	convert_build_numbers_to_names()
+	
 	choose_which_filepaths_to_process() 
 
 
@@ -379,10 +381,19 @@ func verify_settings_formatting() -> void:
 
 
 func convert_build_numbers_to_names() -> void:
+	## PREVIOUS_PRE_RELEASE value
+	build_folders[PREVIOUS_PRE_RELEASE] = "build-" + str(build_numbers[PREVIOUS_PRE_RELEASE])
 	
-	var a = build_numbers[0]
+	## LATEST_PRE_RELEASE value
+	build_folders[LATEST_PRE_RELEASE] = "build-" + str(build_numbers[LATEST_PRE_RELEASE])
 	
+	## PREVIOUS_RELEASE value
+	build_folders[PREVIOUS_RELEASE] = "build-" + str(build_numbers[PREVIOUS_RELEASE])
 	
+	## LATEST_RELEASE value
+	build_folders[LATEST_RELEASE] = "build-" + str(build_numbers[LATEST_RELEASE])
+	
+	#print(build_folders)
 
 
 ## Assign load and save paths based upon data from app_settings.json
