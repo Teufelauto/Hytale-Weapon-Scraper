@@ -73,7 +73,7 @@ static func get_folder_names(path: String) -> Array:
 		while item_name != "":
 			# Check if the current item is a directory
 			if dir.current_is_dir():
-				print("Found directory: " + item_name)
+				#print("Found directory: " + item_name)
 				folder_names.append(item_name)
 				
 			# Move to the next item

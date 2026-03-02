@@ -17,7 +17,7 @@ static var compiled_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
-
+## Index for build_numbers and build_folders Arrays.
 enum { PREVIOUS_PRE_RELEASE, LATEST_PRE_RELEASE, PREVIOUS_RELEASE, LATEST_RELEASE }
 
 ## Sets up app the first time it is loaded by copying files to user:// and defining assets location
@@ -140,7 +140,6 @@ func load_app_settings_from_json() -> void:
 	
 	## Determine build numbers currently installed on system.
 	build_numbers = FileUtils.determine_assets_builds()
-	
 	convert_build_numbers_to_names()
 	
 	choose_which_filepaths_to_process() 
@@ -393,7 +392,7 @@ func convert_build_numbers_to_names() -> void:
 	## LATEST_RELEASE value
 	build_folders[LATEST_RELEASE] = "build-" + str(build_numbers[LATEST_RELEASE])
 	
-	#print(build_folders)
+	print(build_folders)
 
 
 ## Assign load and save paths based upon data from app_settings.json
