@@ -13,7 +13,7 @@ static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
 
 static var csv_save_path: String ## Output csv file path
-static var compiled_json_save_path: String ## Output json file path
+static var exported_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
@@ -49,8 +49,8 @@ func check_if_first_load() -> void:
 		full_destination = "user://" + file_name
 		# copy weapons dictinary to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	else:
-		print("User folder already contains weapon_dictionary.")
+	#else:
+		#print("User folder already contains weapon_dictionary.")
 	
 	# Create documentation folder if necessary
 	FileUtils.create_user_data_folder("docs")
@@ -65,8 +65,8 @@ func check_if_first_load() -> void:
 		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	else:
-		print("docs folder already contains Instructions.txt.")
+	#else:
+		#print("docs folder already contains Instructions.txt.")
 		
 	## Copy readme markdown to user so it can be read by user.
 	file_folder = "docs/"
@@ -78,8 +78,8 @@ func check_if_first_load() -> void:
 		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	else:
-		print("docs folder already contains Instructions.txt.")
+	#else:
+		#print("docs folder already contains Instructions.txt.")
 	
 	## Copy license to user so it can be read by user.
 	file_folder = "docs/"
@@ -91,8 +91,8 @@ func check_if_first_load() -> void:
 		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	else:
-		print("docs folder already contains LICENSE.txt.")
+	#else:
+		#print("docs folder already contains LICENSE.txt.")
 	
 	# Create Output folder if necessary
 	FileUtils.create_user_data_folder("output")
@@ -100,32 +100,48 @@ func check_if_first_load() -> void:
 
 ## The first time app_settings is created, pre-fill file-path for assets.
 func first_load_auto_determine_assets_location()->void:
-	load_app_settings_from_json() # Load here so we can get default data, write over it, then save it.
+	## Load here so we can get default data, write over it, then save it.
+	load_app_settings_from_json() 
 	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
 	
 	## Pre-save paths. User defined pre-set to pre_release
 	
-	var latest_pre_release_path:String = "/install/pre-release/package/game/latest/"
-	settings.assets.pre_release.latest_pre_release.set("assets_path", hytale_roaming_folder + latest_pre_release_path)
-	settings.assets.user.user_defined_2.set("assets_path", hytale_roaming_folder + latest_pre_release_path) # We give the user the most likely selection.
+	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
+			+ build_folders[PREVIOUS_PRE_RELEASE] + "/"
 	
-	## TODO determine previous version number to create path for pre_release
+	settings.assets.pre_release.previous_pre_release.set("assets_path", 
+			hytale_roaming_folder + previous_pre_release_path)
 	
+	settings.assets.user.user_defined_1.set("assets_path", 
+			hytale_roaming_folder + previous_pre_release_path) 
 	
-	var release_path = "/install/release/package/game/latest/"
-	settings.assets.release.latest_release.set("assets_path", hytale_roaming_folder + release_path)
+	var latest_pre_release_path: String = "/install/pre-release/package/game/latest/"
 	
-	## TODO determine previous version number to create path for release
+	settings.assets.pre_release.latest_pre_release.set("assets_path", 
+			hytale_roaming_folder + latest_pre_release_path)
+	
+	settings.assets.user.user_defined_2.set("assets_path", 
+			hytale_roaming_folder + latest_pre_release_path) 
+	
+	var previous_release_path: String = "/install/release/package/game/" \
+			+ build_folders[PREVIOUS_RELEASE] + "/"
+	settings.assets.release.previous_release.set("assets_path", 
+			hytale_roaming_folder + previous_release_path)
+	
+	var latest_release_path: String = "/install/release/package/game/latest/"
+	settings.assets.release.latest_release.set("assets_path", 
+			hytale_roaming_folder + latest_release_path)
+	
 	
 	
 	# We fill in the user://output/ directery path so the user is not confused by "user://"
 	var output_path = OS.get_user_data_dir() + "/output/"
-	settings.output.latest_pre_release.set("compiled_json_save_path", output_path)
-	settings.output.user_defined.set("compiled_json_save_path", output_path)
-	settings.output.latest_release.set("compiled_json_save_path", output_path)
-	settings.output.latest_pre_release.set("csv_save_path", output_path)
+	settings.output.pre_release.set("exported_json_save_path", output_path)
+	settings.output.user_defined.set("exported_json_save_path", output_path)
+	settings.output.release.set("exported_json_save_path", output_path)
+	settings.output.pre_release.set("csv_save_path", output_path)
 	settings.output.user_defined.set("csv_save_path", output_path)
-	settings.output.latest_release.set("csv_save_path", output_path)
+	settings.output.release.set("csv_save_path", output_path)
 	
 	## Save the app settings to the user directory
 	FileUtils.export_dict_to_json(settings, "user://app_settings.json")
@@ -229,20 +245,20 @@ func verify_settings_formatting() -> void:
 	
 	## -- Output slashes
 	## json path
-	if not settings.output.user_defined.compiled_json_save_path.ends_with("/"):
+	if not settings.output.user_defined.exported_json_save_path.ends_with("/"):
 		entries_with_errors += 1
-		settings.output.user_defined.compiled_json_save_path = \
-				settings.output.user_defined.compiled_json_save_path + "/"
+		settings.output.user_defined.exported_json_save_path = \
+				settings.output.user_defined.exported_json_save_path + "/"
 	
-	if not settings.output.latest_pre_release.compiled_json_save_path.ends_with("/"):
+	if not settings.output.pre_release.exported_json_save_path.ends_with("/"):
 		entries_with_errors += 1
-		settings.output.latest_pre_release.compiled_json_save_path = \
-				settings.output.latest_pre_release.compiled_json_save_path + "/"
+		settings.output.pre_release.exported_json_save_path = \
+				settings.output.pre_release.exported_json_save_path + "/"
 	
-	if not settings.output.latest_release.compiled_json_save_path.ends_with("/"):
+	if not settings.output.release.exported_json_save_path.ends_with("/"):
 		entries_with_errors += 1
-		settings.output.latest_release.compiled_json_save_path = \
-				settings.output.latest_release.compiled_json_save_path + "/"
+		settings.output.release.exported_json_save_path = \
+				settings.output.release.exported_json_save_path + "/"
 	
 	## csv path
 	if not settings.output.user_defined.csv_save_path.ends_with("/"):
@@ -250,52 +266,52 @@ func verify_settings_formatting() -> void:
 		settings.output.user_defined.csv_save_path = \
 				settings.output.user_defined.csv_save_path + "/"
 	
-	if not settings.output.latest_pre_release.csv_save_path.ends_with("/"):
+	if not settings.output.pre_release.csv_save_path.ends_with("/"):
 		entries_with_errors += 1
-		settings.output.latest_pre_release.csv_save_path = \
-				settings.output.latest_pre_release.csv_save_path + "/"
+		settings.output.pre_release.csv_save_path = \
+				settings.output.pre_release.csv_save_path + "/"
 	
-	if not settings.output.latest_release.csv_save_path.ends_with("/"):
+	if not settings.output.release.csv_save_path.ends_with("/"):
 		entries_with_errors += 1
-		settings.output.latest_release.csv_save_path = \
-				settings.output.latest_release.csv_save_path + "/"
+		settings.output.release.csv_save_path = \
+				settings.output.release.csv_save_path + "/"
 	
 	## -- Output extensions (.csv) (.json) - Need to deal with caps
 	## json extension
-	if not settings.output.user_defined.compiled_json_filename.ends_with(".json"):
+	if not settings.output.user_defined.exported_json_filename.ends_with(".json"):
 		entries_with_errors += 1
-		var filename: String = settings.output.user_defined.compiled_json_filename
+		var filename: String = settings.output.user_defined.exported_json_filename
 		
 		## Add extension if missing
 		if not filename.contains("."):
-			settings.output.user_defined.compiled_json_filename = filename + ".json"
+			settings.output.user_defined.exported_json_filename = filename + ".json"
 		## Correct the extension.
 		else:
-			settings.output.user_defined.set("compiled_json_filename", 
+			settings.output.user_defined.set("exported_json_filename", 
 					FileUtils.replace_file_extension(filename, ".json"))
 	
-	if not settings.output.latest_pre_release.compiled_json_filename.ends_with(".json"):
+	if not settings.output.pre_release.exported_json_filename.ends_with(".json"):
 		entries_with_errors += 1
-		var filename: String = settings.output.latest_pre_release.compiled_json_filename
+		var filename: String = settings.output.pre_release.exported_json_filename
 		
 		## Add extension if missing
 		if not filename.contains("."):
-			settings.output.latest_pre_release.compiled_json_filename = filename + ".json"
+			settings.output.pre_release.exported_json_filename = filename + ".json"
 		## Correct the extension.
 		else:
-			settings.output.latest_pre_release.set("compiled_json_filename", 
+			settings.output.pre_release.set("exported_json_filename", 
 					FileUtils.replace_file_extension(filename, ".json"))
 	
-	if not settings.output.latest_release.compiled_json_filename.ends_with(".json"):
+	if not settings.output.release.exported_json_filename.ends_with(".json"):
 		entries_with_errors += 1
-		var filename: String = settings.output.latest_release.compiled_json_filename
+		var filename: String = settings.output.release.exported_json_filename
 		
 		## Add extension if missing
 		if not filename.contains("."):
-			settings.output.latest_release.compiled_json_filename = filename + ".json"
+			settings.output.release.exported_json_filename = filename + ".json"
 		## Correct the extension.
 		else:
-			settings.output.latest_release.set("compiled_json_filename", 
+			settings.output.release.set("exported_json_filename", 
 					FileUtils.replace_file_extension(filename, ".json"))
 	
 	## csv extension
@@ -311,28 +327,28 @@ func verify_settings_formatting() -> void:
 			settings.output.user_defined.set("csv_filename", 
 					FileUtils.replace_file_extension(filename, ".csv"))
 	
-	if not settings.output.latest_pre_release.csv_filename.ends_with(".csv"):
+	if not settings.output.pre_release.csv_filename.ends_with(".csv"):
 		entries_with_errors += 1
-		var filename: String = settings.output.latest_pre_release.csv_filename
+		var filename: String = settings.output.pre_release.csv_filename
 		
 		## Add extension if missing
 		if not filename.contains("."):
-			settings.output.latest_pre_release.csv_filename = filename + ".csv"
+			settings.output.pre_release.csv_filename = filename + ".csv"
 		## Correct the extension.
 		else:
-			settings.output.latest_pre_release.set("csv_filename", 
+			settings.output.pre_release.set("csv_filename", 
 					FileUtils.replace_file_extension(filename, ".csv"))
 	
-	if not settings.output.latest_release.csv_filename.ends_with(".csv"):
+	if not settings.output.release.csv_filename.ends_with(".csv"):
 		entries_with_errors += 1
-		var filename: String = settings.output.latest_release.csv_filename
+		var filename: String = settings.output.release.csv_filename
 		
 		## Add extension if missing
 		if not filename.contains("."):
-			settings.output.latest_release.csv_filename = filename + ".csv"
+			settings.output.release.csv_filename = filename + ".csv"
 		## Correct the extension.
 		else:
-			settings.output.latest_release.set("csv_filename", 
+			settings.output.release.set("csv_filename", 
 					FileUtils.replace_file_extension(filename, ".csv"))
 	
 	## -- Weapon diff
@@ -398,34 +414,55 @@ func convert_build_numbers_to_names() -> void:
 ## Assign load and save paths based upon data from app_settings.json
 func choose_which_filepaths_to_process() -> void:
 	var choice: String
+	var output_choice: String
 	var branch: Dictionary
 	# If pre-release
-	if settings.assets.pre_release.latest_pre_release.get("scrape_assets"):
+	if settings.assets.pre_release.previous_pre_release.scrape_assets[1]:
+		branch = settings.assets.get("pre_release")
+		choice = "previous_pre_release"
+		output_choice = "pre_release"
+	
+	elif settings.assets.pre_release.latest_pre_release.scrape_assets[1]:
 		branch = settings.assets.get("pre_release")
 		choice = "latest_pre_release"
-		
+		output_choice = "pre_release"
+	
 	# If Release
-	elif settings.assets.latest_release.get("scrape_assets"):
+	elif settings.assets.release.previous_release.scrape_assets[1]:
+		branch = settings.assets.get("release")
+		choice = "previous_release"
+		output_choice = "release"
+	
+	elif settings.assets.release.latest_release.scrape_assets[1]:
 		branch = settings.assets.get("release")
 		choice = "latest_release"
+		output_choice = "release"
 		
 	# if User defined
-	else:
+	elif settings.assets.user.user_defined_1.scrape_assets[1]:
+		branch = settings.assets.get("user")
+		choice = "user_defined_1"
+		output_choice = "user_defined"
+	
+	elif settings.assets.user.user_defined_2.scrape_assets[1]:
 		branch = settings.assets.get("user")
 		choice = "user_defined_2"
-		
+		output_choice = "user_defined"
+	
+	## Inputs
 	asset_2_zip_path = branch[choice].assets_path \
 			+ branch[choice].assets_filename
-	csv_save_path = settings.output[choice].csv_save_path \
-			+ settings.output[choice].csv_filename
-	compiled_json_save_path = settings.output[choice].compiled_json_save_path \
-			+ settings.output[choice].compiled_json_filename
+	## Outputs
+	csv_save_path = settings.output[output_choice].csv_save_path \
+			+ settings.output[output_choice].csv_filename
+	exported_json_save_path = settings.output[output_choice].exported_json_save_path \
+			+ settings.output[output_choice].exported_json_filename
 	
 	## saving the diffs with thier respectively formatted output.
-	diff_json_save_path = settings.output[choice].compiled_json_save_path \
+	diff_json_save_path = settings.output[output_choice].exported_json_save_path \
 			+ settings.output.weapon_diff.json_filename
-	diff_csv_save_path = settings.output[choice].csv_save_path \
+	diff_csv_save_path = settings.output[output_choice].csv_save_path \
 			+ settings.output.weapon_diff.csv_filename
-	diff_json_from_csv_save_path = settings.output[choice].csv_save_path \
+	diff_json_from_csv_save_path = settings.output[output_choice].csv_save_path \
 			+ settings.output.weapon_diff.json_from_csv_filename
 	

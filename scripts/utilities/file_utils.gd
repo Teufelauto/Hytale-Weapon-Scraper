@@ -211,7 +211,7 @@ static func backup_csv_and_json(
 	if auto_save_old_json:
 		## Save to var so both files can be cycled in for-loop
 		path_array.append([App.diff_json_save_path, ".json"])
-		path_array.append([App.compiled_json_save_path, ".json"])
+		path_array.append([App.exported_json_save_path, ".json"])
 	
 	## Array filepath[0] is Sting path to file, filepath[1] is String extension.
 	for filepath in path_array:

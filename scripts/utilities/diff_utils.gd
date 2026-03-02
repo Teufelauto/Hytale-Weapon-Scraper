@@ -38,7 +38,7 @@ static func do_csv_based_diff(
 ## and hard to read by human. Does not produce csv output.
 static func do_json_based_diff(
 		json_old_path: String = "user://output/weapons_encyclopedia_pre-release_old.json", 
-		json_new_path: String = App.compiled_json_save_path) -> void:
+		json_new_path: String = App.exported_json_save_path) -> void:
 	
 	## Do the Diff compare, and return Dictionary.
 	var differences_dict: Dictionary = diff_json_compare(
