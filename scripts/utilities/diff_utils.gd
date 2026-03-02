@@ -17,12 +17,12 @@ enum {
 
 ## Csv based diffs - For creating easy to read table
 static func do_csv_based_diff(
-		csv_old_1_path: String = "user://output/wpn_tbl_pre-rel_old.csv",
-		csv_new_2_path:String = App.csv_2_save_path) -> void:
+		csv_1_path: String = App.exported_csv_1_save_path,
+		csv_2_path:String = App.exported_csv_2_save_path) -> void:
 	## Do the diff compare, and return two Arrays inside Dictionary.
 	## diffs.table is Array for export as csv.
 	## diffs.textual is Array for displaying plain-text message of differences.
-	var diffs: Dictionary = diff_compare_weapons_table(csv_old_1_path, csv_new_2_path)
+	var diffs: Dictionary = diff_compare_weapons_table(csv_1_path, csv_2_path)
 	
 	## Save diff table-Array to csv
 	FileUtils.export_array_as_csv(diffs.table, App.diff_csv_save_path) 
@@ -51,13 +51,13 @@ static func do_json_based_diff(
 ## Load and compare 2 weapons CSVs to see the diff.
 ## Returns dictionary of arrays: dictionary.textual, and dictionary.table.
 static func diff_compare_weapons_table(
-		csv_old_1_path: String, csv_new_2_path:String ) -> Dictionary:
+		csv_1_path: String, csv_2_path:String ) -> Dictionary:
 	
 	## Load csv files in to Arrays.
-	if not FileUtils.check_os_file_exists(csv_old_1_path):
+	if not FileUtils.check_os_file_exists(csv_1_path):
 		return {}
-	var table_1: Array = FileUtils.load_csv_data_to_array(csv_old_1_path)
-	var table_2: Array = FileUtils.load_csv_data_to_array(csv_new_2_path)
+	var table_1: Array = FileUtils.load_csv_data_to_array(csv_1_path)
+	var table_2: Array = FileUtils.load_csv_data_to_array(csv_2_path)
 	
 	print()
 	## Compare new and old tables
@@ -310,15 +310,14 @@ static func compare_2d_arrays(array1: Array, array2: Array) -> Array:
 	return differences
 
 
-## TODO Designate correct files to compare
-## Prints comparison of two jsons (poorly constructed output)
-static func diff_json_compare(path_old_1: String, path_new_2: String) -> Dictionary:
+## Prints comparison of two jsons
+static func diff_json_compare(path_1: String, path_2: String) -> Dictionary:
 	## Retrieve the two json files
 	
-	var _app_settings_string = FileAccess.get_file_as_string(path_old_1)
+	var _app_settings_string = FileAccess.get_file_as_string(path_1)
 	var dict_a = JSON.parse_string(_app_settings_string) # Define Dictionary
 	
-	_app_settings_string = FileAccess.get_file_as_string(path_new_2) 
+	_app_settings_string = FileAccess.get_file_as_string(path_2) 
 	var dict_b = JSON.parse_string(_app_settings_string) # Define Dictionary
 	
 	## Run the comparison function

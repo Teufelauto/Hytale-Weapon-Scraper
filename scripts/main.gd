@@ -7,7 +7,7 @@ class_name Scraper
 ## Instance of App settings class.
 var app := App.new()
 ## Instance of Weapons class.
-var wpns := Weapons.new() 
+#var wpns := Weapons.new() 
 
 
 func _ready() -> void:
@@ -18,7 +18,7 @@ func _ready() -> void:
 	
 	retrieve_app_settings() ## Load up all the settings saved in json
 	
-	FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
+	
 	
 	
 	
@@ -26,8 +26,19 @@ func _ready() -> void:
 	if app.settings.get("run_app_headless"):
 		print()
 		
-		#wpns.headless_new_main() ## Run through all the weapons to create csv and json
-		
+		## Process first Asset
+		if not app.assets_processed[0]:
+			FileUtils.open_assets_zip(App.asset_1_zip_path) # Open ZIP reader at Assets.zip filepath
+			var wpns := Weapons.new() ## Instance of Weapons class.
+			wpns.headless_main(1) ## Run through all the weapons to create csv and json
+			FileUtils.zip_reader.close() # Close ZIP reader
+			
+		## Process second Asset
+		if not app.assets_processed[1]:
+			FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
+			var wpns := Weapons.new() ## Instance of Weapons class.
+			wpns.headless_main(2) ## Run through all the weapons to create csv and json
+			FileUtils.zip_reader.close() # Close ZIP reader
 		
 		
 	# TODO  Check if NOT Headless from App_Settings, and deal with that in a seperate main-loop.
@@ -41,7 +52,7 @@ func _ready() -> void:
 	
 	
 	## After run, close up shop.
-	FileUtils.zip_reader.close() # Close ZIP reader
+	
 	
 	get_tree().quit() # Closes app
 	
@@ -50,7 +61,7 @@ func _ready() -> void:
 func retrieve_app_settings() -> void:
 	app.check_if_first_load()
 	app.load_app_settings_from_json()
-	
+	app.check_for_processed_books()
 	
 
 

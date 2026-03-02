@@ -9,8 +9,8 @@ static var settings:Dictionary = {}
 
 static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
-static var csv_1_save_path: String ## Output csv file path
-static var csv_2_save_path: String ## Output csv file path
+static var exported_csv_1_save_path: String ## Output csv file path
+static var exported_csv_2_save_path: String ## Output csv file path
 static var exported_json_1_save_path: String ## Output json file path
 static var exported_json_2_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
@@ -28,11 +28,13 @@ static var active_build_folders: Array = ["", ""]
 static var active_build_type: Array = ["", ""]
 ## Active build numbers for diff
 static var active_build_numbers: Array = [0, 0]
-## The Assets being examined. Set by app_settings. [index of Assets, index of Assets]
+## The Assets being examined. Set by app_settings. [index of enum Assets, index of enum Assets]
 static var active_assets: Array = [null, null]
+## True if both exported csv and json files exist for that index. 
+static var assets_processed: Array = [false, false]
 
 ## Index for build_numbers and build_folders Arrays. Also for choosing active Assets.
-enum Assets{ 
+enum Assets { 
 	PREVIOUS_PRE_RELEASE, 
 	LATEST_PRE_RELEASE, 
 	PREVIOUS_RELEASE, 
@@ -40,6 +42,9 @@ enum Assets{
 	USER_DEFINED_1,
 	USER_DEFINED_2,
 }
+
+enum Track { ASSETS_1, ASSETS_2,  DIFF_1, DIFF_2 }
+
 
 ## Sets up app the first time it is loaded by copying files to user:// and defining assets location
 func check_if_first_load() -> void:
@@ -180,6 +185,8 @@ func load_app_settings_from_json() -> void:
 	convert_build_numbers_to_names()
 	
 	choose_which_filepaths_to_process() 
+	
+	refresh_assets_paths()
 
 
 ## Ensure paths in app_settings.json that may have gotten tampered with by user 
@@ -501,34 +508,116 @@ func choose_which_filepaths_to_process() -> void:
 			active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
 			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
 		
-		## Define Assets.zip paths to be used.
+		## Define paths to be used.
 		if i == 0:
 			asset_1_zip_path = branch[choice].assets_path \
 					+ branch[choice].assets_filename
-			csv_1_save_path = settings.output[output_choice].csv_save_path \
-					+ settings.output[output_choice].csv_filename
+			exported_csv_1_save_path = settings.output[output_choice].csv_save_path \
+					+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
 			exported_json_1_save_path = settings.output[output_choice].exported_json_save_path \
-					+ settings.output[output_choice].exported_json_filename
+					+ assemble_output_filename(settings.output[output_choice] \
+					.exported_json_filename, i)
 			
 			
 		else:
 			asset_2_zip_path = branch[choice].assets_path \
 					+ branch[choice].assets_filename
-			csv_2_save_path = settings.output[output_choice].csv_save_path \
-					+ settings.output[output_choice].csv_filename
+			exported_csv_2_save_path = settings.output[output_choice].csv_save_path \
+					+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
 			exported_json_2_save_path = settings.output[output_choice].exported_json_save_path \
-					+ settings.output[output_choice].exported_json_filename
+					+ assemble_output_filename(settings.output[output_choice] \
+					.exported_json_filename, i)
 			
 	#print(active_assets)
 	#print(asset_1_zip_path)
 	#print(asset_2_zip_path)
+	#print(exported_csv_1_save_path)
+	#print(exported_json_2_save_path)
 	#print(active_build_folders)
 	
 	## saving the diffs with thier respectively formatted output.
 	diff_json_save_path = settings.output[output_choice].exported_json_save_path \
-			+ settings.output.weapon_diff.json_filename
+			+ assemble_output_filename(settings.output.weapon_diff.json_filename, 0, true)
 	diff_csv_save_path = settings.output[output_choice].csv_save_path \
-			+ settings.output.weapon_diff.csv_filename
+			+ assemble_output_filename(settings.output.weapon_diff.csv_filename, 0, true)
 	diff_json_from_csv_save_path = settings.output[output_choice].csv_save_path \
-			+ settings.output.weapon_diff.json_from_csv_filename
+			+ assemble_output_filename(settings.output.weapon_diff.json_from_csv_filename, 0, true)
+	#print(diff_csv_save_path)
+
+
+## index can be whatever for diff
+func assemble_output_filename(generic_filename: String, index: int, 
+		is_diff: bool = false) -> String:
 	
+	match is_diff:
+		
+		## Export encyclopedia filenames
+		false when generic_filename.ends_with(".json"):
+			return generic_filename.replacen(".json", "_" + active_build_folders[index] + ".json")
+			
+		false when generic_filename.ends_with(".csv"):
+			return generic_filename.replacen(".csv", "_" + active_build_folders[index] + ".csv")
+			
+		## Diff filenames:
+		true when generic_filename.ends_with(".json"):
+			return generic_filename.replacen(".json", "_" 
+					+ active_build_type[0] + "-" + str(active_build_numbers[0]) + "_v_" 
+					+ active_build_type[1] + "-" + str(active_build_numbers[1]) + ".json")
+			
+		true when generic_filename.ends_with(".csv"):
+			return generic_filename.replacen(".csv", "_" 
+					+ active_build_type[0] + "-" + str(active_build_numbers[0]) + "_v_" 
+					+ active_build_type[1] + "-" + str(active_build_numbers[1]) + ".csv")
+	
+	return generic_filename
+
+
+## Update app_settings.json 'previous paths'.
+## Refresh the previous build Assets path, in case a newwer build has replaced it.
+func refresh_assets_paths() -> void:
+	
+	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
+	
+	## Load paths. ==== User defined not updated. ====
+	
+	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
+			+ build_folders[Assets.PREVIOUS_PRE_RELEASE] + "/"
+	
+	settings.assets.pre_release.previous_pre_release.set("assets_path", 
+			hytale_roaming_folder + previous_pre_release_path)
+
+	var previous_release_path: String = "/install/release/package/game/" \
+			+ build_folders[Assets.PREVIOUS_RELEASE] + "/"
+	settings.assets.release.previous_release.set("assets_path", 
+			hytale_roaming_folder + previous_release_path)
+	
+	## Save the app settings to the user directory
+	FileUtils.export_dict_to_json(settings, "user://app_settings.json")
+
+
+## Check if assets have been previously processed. Saves result to assets_processed
+func check_for_processed_books() -> void:
+	
+	var csv_exists: bool = FileUtils.check_os_file_exists(exported_csv_1_save_path)
+	var json_exists: bool = FileUtils.check_os_file_exists(exported_json_1_save_path)
+	
+	if csv_exists and json_exists:
+		assets_processed[0] = true
+	else:
+		assets_processed[0] = false
+	
+	csv_exists = FileUtils.check_os_file_exists(exported_csv_2_save_path)
+	json_exists = FileUtils.check_os_file_exists(exported_json_2_save_path)
+	
+	if csv_exists and json_exists:
+		assets_processed[1] = true
+	else:
+		assets_processed[1] = false
+	
+	
+		
+	
+	
+	
+	
+		

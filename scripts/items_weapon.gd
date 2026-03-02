@@ -104,7 +104,7 @@ func parse_weapon_item_info(file_path: String) -> Dictionary:
 		print("Failed to read json weapon file or file is empty")
 		return { null:null }
 	else:
-		print("Successfully read file: ", file_path)
+		#print("Successfully read file: ", file_path)
 		# Convert Byte Array into String. utf8 for safety
 		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()# FileAccess.get_file_as_string(file_path)
 		var _item_weapon_info_as_dict: Dictionary = JSON.parse_string(_item_weapon_info_string)
