@@ -7,7 +7,8 @@ extends Object
 ## App Settings Data loaded from / saved to user://app_settings.json
 static var settings:Dictionary = {}
 ## [previous_pre_release, latest_pre_release, previous_release, latest_release] build numbers.
-static var builds: Array[int] = [0, 0, 0, 0]
+static var build_numbers: Array[int] = [0, 0, 0, 0]
+static var build_folders: Array = ["", "", "", ""]
 static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
 
@@ -17,6 +18,7 @@ static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
 
+enum { PREVIOUS_PRE_RELEASE, LATEST_PRE_RELEASE, PREVIOUS_RELEASE, LATEST_RELEASE }
 
 ## Sets up app the first time it is loaded by copying files to user:// and defining assets location
 func check_if_first_load() -> void:
@@ -137,7 +139,7 @@ func load_app_settings_from_json() -> void:
 	verify_settings_formatting()
 	
 	## Determine build numbers currently installed on system.
-	builds = FileUtils.determine_assets_builds()
+	build_numbers = FileUtils.determine_assets_builds()
 	#print(builds)
 	choose_which_filepaths_to_process() 
 
@@ -374,6 +376,13 @@ func verify_settings_formatting() -> void:
 		print("Corrected %d simple formatting error(s) in app_settings.json" % entries_with_errors)
 		## Save the app settings to the user directory
 		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
+
+
+func convert_build_numbers_to_names() -> void:
+	
+	var a = build_numbers[0]
+	
+	
 
 
 ## Assign load and save paths based upon data from app_settings.json

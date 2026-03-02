@@ -10,7 +10,7 @@ static var zip_reader := ZIPReader.new() ## Class to put Assets.zip in
 static var zip_files: PackedStringArray ## Path and File list inside zip. An array of strings.
 
 ## Gets ZIP Reader going in this scope with specified file
-static func open_assets_zip(path_to_zip)->void:
+static func open_assets_zip(path_to_zip: String) -> void:
 	var error = zip_reader.open(path_to_zip)
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
@@ -23,18 +23,22 @@ static func load_json_data_to_dict(load_path: String) -> Dictionary:
 	return JSON.parse_string(app_settings_string) # Define Dictionary
 
 
-## Return Array with build numbers. 
+## Returns Array with build numbers. 
 ## [pre-previous, pre-latest, release-previous, release-latest]
-static func determine_assets_builds() -> Array[int]:
+static func determine_assets_builds() -> Array:
 	## Array contains: [pre-prior, pre-latest, release-prior, release-latest]
 	var build_numbers: Array[int] = [0, 0, 0, 0]
 	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
 	
-	var pre_release_build_path: String = hytale_base_folder + "/install/pre-release/package/sig/"
-	var folder_names_pre: Array = get_folder_names(pre_release_build_path)
+	var pre_release_sig_path: String = hytale_base_folder + "/install/pre-release/package/sig/"
+	var folder_names_pre: Array = get_folder_names(pre_release_sig_path)
+	while folder_names_pre.size() < 2: # If user only has latest pre-release installed, or none.
+		folder_names_pre.append("0")
 	
-	var release_build_path: String = hytale_base_folder + "/install/release/package/sig/"
-	var folder_names_rel: Array  = get_folder_names(release_build_path)
+	var release_sig_path: String = hytale_base_folder + "/install/release/package/sig/"
+	var folder_names_rel: Array  = get_folder_names(release_sig_path)
+	while folder_names_rel.size() < 2: # If user only has latest release installed, or no release.
+		folder_names_rel.append("0")
 	
 	## Trim folder names into numbers, and convert to integers.
 	folder_names_pre[0] =  (folder_names_pre[0].trim_prefix("build-")).to_int()
@@ -49,8 +53,8 @@ static func determine_assets_builds() -> Array[int]:
 	## Place build numbers in thier proper places.
 	build_numbers[0] = folder_names_pre[0] ## previous Pre-release
 	build_numbers[1] = folder_names_pre[1] ## latest Pre-release
-	build_numbers[2] = folder_names_rel[0] ## previous release
-	build_numbers[3] = folder_names_rel[1] ## latest release
+	build_numbers[2] = folder_names_rel[0] ## previous Release
+	build_numbers[3] = folder_names_rel[1] ## latest Release
 	
 	return build_numbers
 
@@ -112,7 +116,7 @@ static func load_csv_data_to_array(load_path: String, strip_header: bool = false
 static func export_dict_to_json(dict: Dictionary, save_path: String = "user://new.json") -> void:
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
-		var json_string = JSON.stringify(dict,"  ",false)
+		var json_string = JSON.stringify(dict, "  ", false)
 		file.store_line(json_string)
 		file.close()
 		print("Dictionary saved as json to: " + save_path)
@@ -189,8 +193,11 @@ static func retrieve_roaming_Hytale_folder_location() -> String:
 
 
 ## Creates a copy of the weapons csv and json before they can be overwritten.
-static func backup_csv_and_json(designator_for_old: String = "_old", 
-		auto_save_old_csv: bool = true, auto_save_old_json: bool = true) -> void:
+static func backup_csv_and_json(
+		designator_for_old: String = "_old", 
+		auto_save_old_csv: bool = true, 
+		auto_save_old_json: bool = true) -> void:
+			
 	## Array of arrays, so files can be cycled in for-loop
 	var path_array: Array = []
 	
@@ -203,7 +210,7 @@ static func backup_csv_and_json(designator_for_old: String = "_old",
 	
 	if auto_save_old_json:
 		## Save to var so both files can be cycled in for-loop
-		path_array.append([App.diff_json_save_path,".json"])
+		path_array.append([App.diff_json_save_path, ".json"])
 		path_array.append([App.compiled_json_save_path, ".json"])
 	
 	## Array filepath[0] is Sting path to file, filepath[1] is String extension.
@@ -237,7 +244,7 @@ static func backup_csv_and_json(designator_for_old: String = "_old",
 			print(filepath[0] + " does not exists for backup.")
 
 
-static func create_user_data_folder(folder_name: String):
+static func create_user_data_folder(folder_name: String) -> void:
 	
 	# Construct the full path using the user:// protocol
 	var dir_path = "user://" + folder_name

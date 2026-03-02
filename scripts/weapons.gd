@@ -7,9 +7,9 @@ extends App
 
 ## The weapon dictionary is a JSON that can be user-changed as weapons are 
 ## added to game, or maneuvers changed.
-static var weapon_dict: Dictionary ={}
+static var weapon_dict: Dictionary = {}
 ## Dictionary equivalent of weapon_table output
-static var weapon_encyclopedia: Dictionary ={}
+static var weapon_encyclopedia: Dictionary = {}
 ## Dictionary of column name equivalents for weapon family 
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
@@ -95,7 +95,8 @@ func determine_weapon_table_columns() -> Array:
 	var table_columns: Array =[]
 	for i in weapon_dict.weapon_table_columns.size():
 		var i_as_string: String = str(i)
-		var value: String = weapon_dict.weapon_table_columns.get(i_as_string,"Error Creating Table")
+		var value: String = weapon_dict.weapon_table_columns.get \
+				(i_as_string,"Error Creating Table")
 		table_columns.append(value)
 	family_weapon_columns_dictionary(table_columns)
 	#print(table_columns)
@@ -151,7 +152,7 @@ func step_through_weapons() -> void:
 		
 		## lower_case string version of current_Family  
 		var current_family_lower: String = current_family.to_lower()
-		weapon_encyclopedia.set(current_family_lower,{}) # Top level is Family
+		weapon_encyclopedia.set(current_family_lower, {}) # Top level is Family
 		
 		var target_folder: String = "Server/Item/Items/Weapon/" + current_family + "/"
 		
@@ -168,9 +169,9 @@ func step_through_weapons() -> void:
 				
 				## The below block pulls out the current_child String from path.
 				## count is the index for .get_slice method.
-				var count: int = file_path.get_slice_count("/")  - 1
+				var count: int = file_path.get_slice_count("/") - 1
 				## current_child is the descriptor, such as crude, or copper.
-				var current_child: String = file_path.get_slice("/",count) 
+				var current_child: String = file_path.get_slice("/", count) 
 				current_child = current_child.trim_suffix(".json")
 				var left_stripper: String = "Weapon_" + current_family + "_"
 				current_child = current_child.trim_prefix(left_stripper)
@@ -181,17 +182,13 @@ func step_through_weapons() -> void:
 				# Second level is child
 				weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) 
 							
-				## Instance of ItemsWeapon class.
+				## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
 				var iw := ItemsWeapon.new()
 				
 				iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, \
 						current_child, current_child_lower, xref_family_tree, \
 						xref_common_table_headers, current_table_row)
-				
-				
-			
-		
-		
+
 
 ## Call this to print the table to console for troubleshooting
 func print_weapon_table_to_console() -> void:

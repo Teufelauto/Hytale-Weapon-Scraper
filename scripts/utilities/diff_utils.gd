@@ -6,13 +6,13 @@ extends Object
 ## helps clean up the main scripts by containing oddball functions.
 
 ## Header row of diff table. Used for column indexing when converting array to dict.
-enum Header {
+enum {
 	WEAPON_FAMILY,
 	DESCRIPTOR,
 	DIFF_PARAMETER,
 	OLD_VALUE,
 	NEW_VALUE,
-	}
+}
 
 
 ## Csv based diffs - For creating easy to read table
@@ -248,23 +248,23 @@ static func convert_diff_table_array_to_dict(table: Array) -> Dictionary:
 	## Create top-level keys for weapon family
 	for row in table:
 		## Skip if this family already added.
-		if not diff.has(row[Header.WEAPON_FAMILY]):
+		if not diff.has(row[WEAPON_FAMILY]):
 			## Set family:empty-array as top level of dict. 
-			diff.set(row[Header.WEAPON_FAMILY], {}) 
+			diff.set(row[WEAPON_FAMILY], {}) 
 	
 	## Create level-2 for descriptors
 	for row in table:
 		## Skip if this descriptor already added.
-		if not diff[row[Header.WEAPON_FAMILY]].has(row[Header.DESCRIPTOR]):
-			diff[row[Header.WEAPON_FAMILY]].set(row[Header.DESCRIPTOR], {} )
+		if not diff[row[WEAPON_FAMILY]].has(row[DESCRIPTOR]):
+			diff[row[WEAPON_FAMILY]].set(row[DESCRIPTOR], {} )
 	
 	## Create level-3 for parameters
 	for row in table:
 		## These vars are for human readability.
-		var family_key: String = row[Header.WEAPON_FAMILY]
-		var descriptor_key: String = row[Header.DESCRIPTOR]
-		var parameter_key: String = row[Header.DIFF_PARAMETER]
-		var parameter_value: Array = [row[Header.OLD_VALUE], row[Header.NEW_VALUE]]
+		var family_key: String = row[WEAPON_FAMILY]
+		var descriptor_key: String = row[DESCRIPTOR]
+		var parameter_key: String = row[DIFF_PARAMETER]
+		var parameter_value: Array = [row[OLD_VALUE], row[NEW_VALUE]]
 		
 		## No need to skip, because there will not be a repeat. Assign key and values.
 		diff[family_key][descriptor_key].set(parameter_key, parameter_value)

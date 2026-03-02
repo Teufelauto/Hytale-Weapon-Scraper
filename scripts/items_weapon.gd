@@ -17,15 +17,20 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## This function is called from weapons class. Other functions in this class result from it.
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
-func scrape_weapon_item_data(file_path: String, current_family: String, 
-		current_family_lower: String, current_child: String, current_child_lower: String, 
-		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary, 
+func scrape_weapon_item_data(
+		file_path: String, 
+		current_family: String, 
+		current_family_lower: String, 
+		current_child: String, 
+		current_child_lower: String, 
+		xref_family_tree: Dictionary, 
+		xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	
 	## Dictionary for a singular weapon, equivalent one row in the weapon table. Becomes output json
 	## Unusual branches constructed as needed elsewhere, such as dagger rear-attack.
 	var unique_weapon: Dictionary = {
-		"attack":{
+		"attack": {
 			"primary": [],
 			"charged": [],
 			"signature": [],
@@ -213,7 +218,7 @@ func extract_attack_dmg(move_name:String) -> int:
 
 ## Back-Stabbing Daggers get a special function. AngledDamage is the brach to follow.
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-func extract_rear_attack_dmg(move_name:String) -> int:
+func extract_rear_attack_dmg(move_name: String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return 0
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
