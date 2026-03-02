@@ -7,62 +7,67 @@
 		path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. 
 		Filenames can be whatever you like.",
 	"run_app_headless": true,
-	"assets":{
-		"user":{
-			"user_defined_1":{
-				"scrape_assets":[false, false],
-				"assets_path": "user://",
-				"assets_filename": "Assets.zip"
-			},
-			"user_defined_2":{
-				"scrape_assets": [false, false],
-				"assets_path": "user://",
-				"assets_filename": "Assets.zip"
-			}
-		},
-		"pre_release":{
-			"previous_pre_release":{
+	"assets": {
+		"pre_release": {
+			"previous_pre_release": {
 				"scrape_assets": [false, false],
 				"assets_path": "user://",
 				"assets_filename": "Assets.zip"
 			},
-			"latest_pre_release":{
+			"latest_pre_release": {
 				"scrape_assets": [false, true],
 				"assets_path": "user://",
 				"assets_filename": "Assets.zip"
 			}
 		},
-		"release":{
-			"previous_release":{
+		"release": {
+			"previous_release": {
 				"scrape_assets": [false, false],
 				"assets_path": "user://",
-				"assets_filename": "Assets.zip"},
-			"latest_release":{
+				"assets_filename": "Assets.zip"
+			},
+			"latest_release": {
+				"scrape_assets": [false, false],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			}
+		},
+		"user": {
+			"user_defined_1": {
+				"scrape_assets": [false, false],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			},
+			"user_defined_2": {
 				"scrape_assets": [false, false],
 				"assets_path": "user://",
 				"assets_filename": "Assets.zip"
 			}
 		}
 	},
-	"output":{
-		"user_defined":{
-			"exported_json_save_path": "user://output/",
-			"exported_json_filename": "weapons_book_user_defined.json",
-			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_user.csv"},
-		"pre_release":{
+	"output": {
+		"pre_release": {
 			"exported_json_save_path": "user://output/",
 			"exported_json_filename": "weapons_book_pre-release.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_pre-rel.csv"},
-		"release":{
+			"csv_filename": "wpn_tbl_pre-rel.csv"
+		},
+		"release": {
 			"exported_json_save_path": "user://output/",
 			"exported_json_filename": "weapons_book_release.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_rel.csv"},
-		"weapon_diff":{
+			"csv_filename": "wpn_tbl_rel.csv"
+		},
+		"user_defined": {
+			"exported_json_save_path": "user://output/",
+			"exported_json_filename": "weapons_book_user_defined.json",
+			"csv_save_path": "user://output/",
+			"csv_filename": "wpn_tbl_user.csv"
+		},
+		"weapon_diff": {
 			"json_filename": "wpn_diff_json.json",
 			"csv_filename": "wpn_diff_csv.csv",
-			"json_from_csv_filename": "wpn_diff_json_from_csv.json"}
+			"json_from_csv_filename": "wpn_diff_json_from_csv.json"
+		}
 	}
 }

@@ -17,8 +17,15 @@ static var exported_json_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
-## Index for build_numbers and build_folders Arrays.
-enum { PREVIOUS_PRE_RELEASE, LATEST_PRE_RELEASE, PREVIOUS_RELEASE, LATEST_RELEASE }
+## Index for build_numbers and build_folders Arrays. Also for choosing active track.
+enum { 
+	PREVIOUS_PRE_RELEASE, 
+	LATEST_PRE_RELEASE, 
+	PREVIOUS_RELEASE, 
+	LATEST_RELEASE,
+	USER_DEFINED_1,
+	USER_DEFINED_2,
+}
 
 ## Sets up app the first time it is loaded by copying files to user:// and defining assets location
 func check_if_first_load() -> void:
@@ -416,6 +423,8 @@ func choose_which_filepaths_to_process() -> void:
 	var choice: String
 	var output_choice: String
 	var branch: Dictionary
+	
+
 	# If pre-release
 	if settings.assets.pre_release.previous_pre_release.scrape_assets[1]:
 		branch = settings.assets.get("pre_release")
