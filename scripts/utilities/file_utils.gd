@@ -23,10 +23,11 @@ static func load_json_data_to_dict(load_path: String) -> Dictionary:
 	return JSON.parse_string(app_settings_string) # Define Dictionary
 
 
-## Accept version as "release", or "pre_release". return Array of [old,new] build number.
-static func determine_assets_build() -> Array:
+## Return Array with build numbers. 
+## [pre-previous, pre-latest, release-previous, release-latest]
+static func determine_assets_builds() -> Array[int]:
 	## Array contains: [pre-prior, pre-latest, release-prior, release-latest]
-	var build_numbers: Array = [0,0,0,0]
+	var build_numbers: Array[int] = [0, 0, 0, 0]
 	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
 	
 	var pre_release_build_path: String = hytale_base_folder + "/install/pre-release/package/sig/"
@@ -35,22 +36,21 @@ static func determine_assets_build() -> Array:
 	var release_build_path: String = hytale_base_folder + "/install/release/package/sig/"
 	var folder_names_rel: Array  = get_folder_names(release_build_path)
 	
-	## sort folder names, then put in array.
-	folder_names_pre[0] = folder_names_pre[0].trim_prefix("build-")
-	folder_names_pre[1] = folder_names_pre[1].trim_prefix("build-")
-	folder_names_rel[0] = folder_names_rel[0].trim_prefix("build-")
-	folder_names_rel[1] = folder_names_rel[1].trim_prefix("build-")
+	## Trim folder names into numbers, and convert to integers.
+	folder_names_pre[0] =  (folder_names_pre[0].trim_prefix("build-")).to_int()
+	folder_names_pre[1] = (folder_names_pre[1].trim_prefix("build-")).to_int()
+	folder_names_rel[0] = (folder_names_rel[0].trim_prefix("build-")).to_int()
+	folder_names_rel[1] = (folder_names_rel[1].trim_prefix("build-")).to_int()
 	
-	## INT
+	## Sort Pre and Release 
 	folder_names_pre.sort()
 	folder_names_rel.sort()
 	
-	build_numbers[0] = folder_names_pre[0]
-	build_numbers[1] = folder_names_pre[1]
-	build_numbers[2] = folder_names_rel[0]
-	build_numbers[3] = folder_names_rel[1]
-	
-	
+	## Place build numbers in thier proper places.
+	build_numbers[0] = folder_names_pre[0] ## previous Pre-release
+	build_numbers[1] = folder_names_pre[1] ## latest Pre-release
+	build_numbers[2] = folder_names_rel[0] ## previous release
+	build_numbers[3] = folder_names_rel[1] ## latest release
 	
 	return build_numbers
 

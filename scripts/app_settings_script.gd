@@ -5,7 +5,9 @@ extends Object
 ## Loads, processes, verifies, corrects, saves. Becomes source for below static vars.
 
 ## App Settings Data loaded from / saved to user://app_settings.json
-static var settings:Dictionary = {} 
+static var settings:Dictionary = {}
+## [previous_pre_release, latest_pre_release, previous_release, latest_release] build numbers.
+static var builds: Array[int] = [0, 0, 0, 0]
 static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
 
@@ -129,9 +131,14 @@ func first_load_auto_determine_assets_location()->void:
 
 ## Populate dictionary with data from the json and follow settings.
 func load_app_settings_from_json() -> void:
-	# Retrieve json data
+	# Retrieve app settings from json
 	settings = FileUtils.load_json_data_to_dict("user://app_settings.json")
+	
 	verify_settings_formatting()
+	
+	## Determine build numbers currently installed on system.
+	builds = FileUtils.determine_assets_builds()
+	#print(builds)
 	choose_which_filepaths_to_process() 
 
 
