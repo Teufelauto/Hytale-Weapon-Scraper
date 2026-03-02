@@ -9,19 +9,28 @@ static var settings:Dictionary = {}
 
 static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
-static var csv_save_path: String ## Output csv file path
-static var exported_json_save_path: String ## Output json file path
+static var csv_1_save_path: String ## Output csv file path
+static var csv_2_save_path: String ## Output csv file path
+static var exported_json_1_save_path: String ## Output json file path
+static var exported_json_2_save_path: String ## Output json file path
 static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
 ## Build numbers in order:
 ## [previous_pre_release, latest_pre_release, previous_release, latest_release] 
-static var build_numbers: Array[int] = [0, 0, 0, 0]
+static var build_numbers: Array = [0, 0, 0, 0]
 ## Names of build folders in order:
 ## [previous_pre_release, latest_pre_release, previous_release, latest_release]
 static var build_folders: Array = ["", "", "", ""]
+## Active build folders for saving scraped tables and books.
+static var active_build_folders: Array = ["", ""]
+## Active build type (pre, rel, usr) for diff
+static var active_build_type: Array = ["", ""]
+## Active build numbers for diff
+static var active_build_numbers: Array = [0, 0]
 ## The Assets being examined. Set by app_settings. [index of Assets, index of Assets]
 static var active_assets: Array = [null, null]
+
 ## Index for build_numbers and build_folders Arrays. Also for choosing active Assets.
 enum Assets{ 
 	PREVIOUS_PRE_RELEASE, 
@@ -433,6 +442,7 @@ func choose_which_filepaths_to_process() -> void:
 	var output_choice: String
 	var branch: Dictionary
 
+	## Populate active assets array so we can know which files to scrape or diff
 	for i in 2:
 		# If pre-release
 		if settings.assets.pre_release.previous_pre_release.scrape_assets[i]:
@@ -440,12 +450,18 @@ func choose_which_filepaths_to_process() -> void:
 			choice = "previous_pre_release"
 			output_choice = "pre_release"
 			active_assets[i] = Assets.PREVIOUS_PRE_RELEASE
+			active_build_type[i] = "pre"
+			active_build_folders[i] = build_folders[Assets.PREVIOUS_PRE_RELEASE]
+			active_build_numbers[i] = build_numbers[Assets.PREVIOUS_PRE_RELEASE]
 		
 		elif settings.assets.pre_release.latest_pre_release.scrape_assets[i]:
 			branch = settings.assets.get("pre_release")
 			choice = "latest_pre_release"
 			output_choice = "pre_release"
 			active_assets[i] = Assets.LATEST_PRE_RELEASE
+			active_build_type[i] = "pre"
+			active_build_folders[i] = build_folders[Assets.LATEST_PRE_RELEASE]
+			active_build_numbers[i] = build_numbers[Assets.LATEST_PRE_RELEASE]
 		
 		# If Release
 		elif settings.assets.release.previous_release.scrape_assets[i]:
@@ -453,12 +469,18 @@ func choose_which_filepaths_to_process() -> void:
 			choice = "previous_release"
 			output_choice = "release"
 			active_assets[i] = Assets.PREVIOUS_RELEASE
+			active_build_type[i] = "rel"
+			active_build_folders[i] = build_folders[Assets.PREVIOUS_RELEASE]
+			active_build_numbers[i] = build_numbers[Assets.PREVIOUS_RELEASE]
 		
 		elif settings.assets.release.latest_release.scrape_assets[i]:
 			branch = settings.assets.get("release")
 			choice = "latest_release"
 			output_choice = "release"
 			active_assets[i] = Assets.LATEST_RELEASE
+			active_build_type[i] = "rel"
+			active_build_folders[i] = build_folders[Assets.LATEST_RELEASE]
+			active_build_numbers[i] = build_numbers[Assets.LATEST_RELEASE]
 			
 		# if User defined
 		elif settings.assets.user.user_defined_1.scrape_assets[i]:
@@ -466,22 +488,41 @@ func choose_which_filepaths_to_process() -> void:
 			choice = "user_defined_1"
 			output_choice = "user_defined"
 			active_assets[i] = Assets.USER_DEFINED_1
+			active_build_type[i] = "usr"
+			active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
+			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
 		
 		elif settings.assets.user.user_defined_2.scrape_assets[i]:
 			branch = settings.assets.get("user")
 			choice = "user_defined_2"
 			output_choice = "user_defined"
 			active_assets[i] = Assets.USER_DEFINED_2
+			active_build_type[i] = "usr"
+			active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
+			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
+		
+		## Define Assets.zip paths to be used.
+		if i == 0:
+			asset_1_zip_path = branch[choice].assets_path \
+					+ branch[choice].assets_filename
+			csv_1_save_path = settings.output[output_choice].csv_save_path \
+					+ settings.output[output_choice].csv_filename
+			exported_json_1_save_path = settings.output[output_choice].exported_json_save_path \
+					+ settings.output[output_choice].exported_json_filename
+			
+			
+		else:
+			asset_2_zip_path = branch[choice].assets_path \
+					+ branch[choice].assets_filename
+			csv_2_save_path = settings.output[output_choice].csv_save_path \
+					+ settings.output[output_choice].csv_filename
+			exported_json_2_save_path = settings.output[output_choice].exported_json_save_path \
+					+ settings.output[output_choice].exported_json_filename
+			
 	#print(active_assets)
-	
-	## Inputs
-	asset_2_zip_path = branch[choice].assets_path \
-			+ branch[choice].assets_filename
-	## Outputs
-	csv_save_path = settings.output[output_choice].csv_save_path \
-			+ settings.output[output_choice].csv_filename
-	exported_json_save_path = settings.output[output_choice].exported_json_save_path \
-			+ settings.output[output_choice].exported_json_filename
+	#print(asset_1_zip_path)
+	#print(asset_2_zip_path)
+	#print(active_build_folders)
 	
 	## saving the diffs with thier respectively formatted output.
 	diff_json_save_path = settings.output[output_choice].exported_json_save_path \

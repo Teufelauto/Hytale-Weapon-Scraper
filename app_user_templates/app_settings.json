@@ -1,11 +1,11 @@
 {	
 	"how_to_use_this_file ->":"Values may be changed in this file to modify load-path, save-path, 
-		and filename without a GUI. run_app_headless should be set to true, because the GUI is not 
-		ready. 'scrape_assets'- Array is [diff1, diff2]. You can change asset path values to 
-		a different location if you wish to analyze a zip saved in a custom location. So, if you 
-		wish to analyze an older release of the Assets.zip file, you can modify the pregenerated 
-		path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. 
-		Filenames can be whatever you like.",
+		 and filename without a GUI. run_app_headless should be set to true, because the GUI is not 
+		 ready. 'scrape_assets'- Array is [diff1, diff2]. You can change asset path values to 
+		 a different location if you wish to analyze a zip saved in a custom location. So, if you 
+		 wish to analyze an older release of the Assets.zip file, you can modify the pregenerated 
+		 path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. 
+		 Filenames can be whatever you like.",
 	"run_app_headless": true,
 	"assets": {
 		"pre_release": {

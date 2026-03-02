@@ -44,13 +44,13 @@ func headless_new_main() -> void:
 	#print_weapon_table_to_console() # For troubleshooting
 	
 	FileUtils.backup_csv_and_json() # Backup files so they can be compared and archived.
-	FileUtils.export_array_as_csv(weapon_table, csv_save_path) # Export to csv
-	FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_save_path) # export to json
-	if FileUtils.check_os_file_exists("user://output/wpn_tbl_pre-rel_old.csv"): ## Catch if no file to compare
-		DiffUtils.do_csv_based_diff("user://output/wpn_tbl_pre-rel_old.csv", App.csv_save_path) ## Creates Diff in csv table and as json
-	if FileUtils.check_os_file_exists("user://output/weapons_encyclopedia_pre-release_old.json"):  ## Catch if no file to compare
-		DiffUtils.do_json_based_diff("user://output/weapons_encyclopedia_pre-release_old.json", 
-				App.exported_json_save_path) ## Creates Diff in hard to read json
+	FileUtils.export_array_as_csv(weapon_table, csv_2_save_path) # Export to csv
+	FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
+	if FileUtils.check_os_file_exists(App.csv_1_save_path): ## Catch if no file to compare
+		DiffUtils.do_csv_based_diff(App.csv_1_save_path, App.csv_2_save_path) ## Creates Diff in csv table and as json
+	if FileUtils.check_os_file_exists(App.exported_json_1_save_path):  ## Catch if no file to compare
+		DiffUtils.do_json_based_diff(App.exported_json_1_save_path, 
+				App.exported_json_2_save_path) ## Creates Diff in hard to read json
 	
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.

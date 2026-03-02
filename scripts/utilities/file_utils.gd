@@ -27,7 +27,7 @@ static func load_json_data_to_dict(load_path: String) -> Dictionary:
 ## [pre-previous, pre-latest, release-previous, release-latest]
 static func determine_assets_builds() -> Array:
 	## Array contains: [pre-prior, pre-latest, release-prior, release-latest]
-	var build_numbers: Array[int] = [0, 0, 0, 0]
+	var build_numbers: Array = [0, 0, 0, 0]
 	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
 	
 	var pre_release_sig_path: String = hytale_base_folder + "/install/pre-release/package/sig/"
@@ -205,13 +205,13 @@ static func backup_csv_and_json(
 		## Save to var so all files can be cycled in for-loop
 		path_array.append([App.diff_csv_save_path, ".csv"])
 		path_array.append([App.diff_json_from_csv_save_path, ".json"])
-		path_array.append([App.csv_save_path, ".csv"])
+		path_array.append([App.csv_1_save_path, ".csv"])
 		
 	
 	if auto_save_old_json:
 		## Save to var so both files can be cycled in for-loop
 		path_array.append([App.diff_json_save_path, ".json"])
-		path_array.append([App.exported_json_save_path, ".json"])
+		path_array.append([App.exported_json_1_save_path, ".json"])
 	
 	## Array filepath[0] is Sting path to file, filepath[1] is String extension.
 	for filepath in path_array:

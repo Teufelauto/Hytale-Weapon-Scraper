@@ -18,7 +18,7 @@ enum {
 ## Csv based diffs - For creating easy to read table
 static func do_csv_based_diff(
 		csv_old_1_path: String = "user://output/wpn_tbl_pre-rel_old.csv",
-		csv_new_2_path:String = App.csv_save_path) -> void:
+		csv_new_2_path:String = App.csv_2_save_path) -> void:
 	## Do the diff compare, and return two Arrays inside Dictionary.
 	## diffs.table is Array for export as csv.
 	## diffs.textual is Array for displaying plain-text message of differences.
@@ -37,12 +37,12 @@ static func do_csv_based_diff(
 ## JSON based diffs - For creating diff based upon json outputs. Very verbose
 ## and hard to read by human. Does not produce csv output.
 static func do_json_based_diff(
-		json_old_path: String = "user://output/weapons_encyclopedia_pre-release_old.json", 
-		json_new_path: String = App.exported_json_save_path) -> void:
+		json_1_path: String = App.exported_json_1_save_path, 
+		json_2_path: String = App.exported_json_2_save_path) -> void:
 	
 	## Do the Diff compare, and return Dictionary.
 	var differences_dict: Dictionary = diff_json_compare(
-			json_old_path, json_new_path)
+			json_1_path, json_2_path)
 	
 	## Export Dictionary as json.
 	FileUtils.export_dict_to_json(differences_dict, App.diff_json_save_path)
