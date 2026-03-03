@@ -37,20 +37,24 @@ func headless_main(asset_being_processed: int) -> void:
 	## static var weapon_dict populated here.
 	weapon_dict = FileUtils.load_json_data_to_dict("user://weapon_dictionary.json")
 	
-
 	initialize_weapon_table() # Create a mostly blank 2d array to hold csv data.
-		
+	
 	step_through_weapons()
-
+	
 	#print_weapon_table_to_console() # For troubleshooting
 	
-	#FileUtils.export_array_as_csv(weapon_table, csv_2_save_path) # Export to csv
-	#FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
-	#if FileUtils.check_os_file_exists(App.csv_1_save_path): ## Catch if no file to compare
-		#DiffUtils.do_csv_based_diff(App.csv_1_save_path, App.csv_2_save_path) ## Creates Diff in csv table and as json
-	#if FileUtils.check_os_file_exists(App.exported_json_1_save_path):  ## Catch if no file to compare
-		#DiffUtils.do_json_based_diff(App.exported_json_1_save_path, 
-				#App.exported_json_2_save_path) ## Creates Diff in hard to read json
+	if asset_being_processed == 1:
+		FileUtils.export_array_as_csv(weapon_table, App.exported_csv_1_save_path) # Export to csv
+		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_1_save_path) # export to json
+		
+		
+	
+	else: ## asset_being_processed == 2
+		FileUtils.export_array_as_csv(weapon_table, App.exported_csv_2_save_path) # Export to csv
+		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
+		
+		
+	
 	
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.

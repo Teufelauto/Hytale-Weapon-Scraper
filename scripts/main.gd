@@ -18,28 +18,12 @@ func _ready() -> void:
 	
 	retrieve_app_settings() ## Load up all the settings saved in json
 	
-	
-	
-	
-	
 	## Check app settings to see whether to run headless.
 	if app.settings.get("run_app_headless"):
 		print()
 		
-		## Process first Asset
-		if not app.assets_processed[0]:
-			FileUtils.open_assets_zip(App.asset_1_zip_path) # Open ZIP reader at Assets.zip filepath
-			var wpns := Weapons.new() ## Instance of Weapons class.
-			wpns.headless_main(1) ## Run through all the weapons to create csv and json
-			FileUtils.zip_reader.close() # Close ZIP reader
-			
-		## Process second Asset
-		if not app.assets_processed[1]:
-			FileUtils.open_assets_zip(App.asset_2_zip_path) # Open ZIP reader at Assets.zip filepath
-			var wpns := Weapons.new() ## Instance of Weapons class.
-			wpns.headless_main(2) ## Run through all the weapons to create csv and json
-			FileUtils.zip_reader.close() # Close ZIP reader
-		
+		process_assets() ## Process and save books and tables.
+		diff_the_assets() ## produce the diff files for selected assets.
 		
 	# TODO  Check if NOT Headless from App_Settings, and deal with that in a seperate main-loop.
 	else:
@@ -64,6 +48,39 @@ func retrieve_app_settings() -> void:
 	app.check_for_processed_books()
 	
 
+## Call the Weapons class for each Assets.zip to be processed
+func process_assets() -> void:
+	
+	## Process first Asset
+	if not app.assets_processed[0]:
+		## Open ZIP reader at Assets.zip 1 filepath
+		FileUtils.open_assets_zip(App.asset_1_zip_path) 
+		
+		var wpns := Weapons.new() ## Instance of Weapons class.
+		wpns.headless_main(1) ## Run through all the weapons to create csv and json
+		
+		FileUtils.zip_reader.close() # Close ZIP reader
+		
+	## Process second Asset
+	if not app.assets_processed[1]:
+		## Open ZIP reader at Assets.zip 2 filepath
+		FileUtils.open_assets_zip(App.asset_2_zip_path) 
+		
+		var wpns := Weapons.new() ## Instance of Weapons class.
+		wpns.headless_main(2) ## Run through all the weapons to create csv and json
+		
+		FileUtils.zip_reader.close() # Close ZIP reader
+
+
+func diff_the_assets() -> void:
+	
+	#if FileUtils.check_os_file_exists(App.csv_1_save_path): ## Catch if no file to compare
+		#DiffUtils.do_csv_based_diff(App.csv_1_save_path, App.csv_2_save_path) ## Creates Diff in csv table and as json
+	#if FileUtils.check_os_file_exists(App.exported_json_1_save_path):  ## Catch if no file to compare
+		#DiffUtils.do_json_based_diff(App.exported_json_1_save_path, 
+				#App.exported_json_2_save_path) ## Creates Diff in hard to read json
+	
+	pass
 
 
 	
