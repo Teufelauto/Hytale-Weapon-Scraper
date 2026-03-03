@@ -6,8 +6,6 @@ class_name Scraper
 
 ## Instance of App settings class.
 var app := App.new()
-## Instance of Weapons class.
-#var wpns := Weapons.new() 
 
 
 func _ready() -> void:
@@ -39,7 +37,6 @@ func _ready() -> void:
 	
 	
 	get_tree().quit() # Closes app
-	
 
 
 func retrieve_app_settings() -> void:
@@ -59,7 +56,10 @@ func process_assets() -> void:
 		var wpns := Weapons.new() ## Instance of Weapons class.
 		wpns.headless_main(1) ## Run through all the weapons to create csv and json
 		
+		FileUtils.zip_files.clear() # Clear this so correct number of rows are in second table
 		FileUtils.zip_reader.close() # Close ZIP reader
+	else: 
+		print(App.asset_1_zip_path + " already processed.")
 		
 	## Process second Asset
 	if not app.assets_processed[1]:
@@ -69,18 +69,34 @@ func process_assets() -> void:
 		var wpns := Weapons.new() ## Instance of Weapons class.
 		wpns.headless_main(2) ## Run through all the weapons to create csv and json
 		
+		FileUtils.zip_files.clear() # No longer needed. free ram
 		FileUtils.zip_reader.close() # Close ZIP reader
+	else: 
+		print(App.asset_2_zip_path + " already processed.")
 
 
+## Compare two assets if able.
 func diff_the_assets() -> void:
 	
-	#if FileUtils.check_os_file_exists(App.csv_1_save_path): ## Catch if no file to compare
-		#DiffUtils.do_csv_based_diff(App.csv_1_save_path, App.csv_2_save_path) ## Creates Diff in csv table and as json
-	#if FileUtils.check_os_file_exists(App.exported_json_1_save_path):  ## Catch if no file to compare
-		#DiffUtils.do_json_based_diff(App.exported_json_1_save_path, 
-				#App.exported_json_2_save_path) ## Creates Diff in hard to read json
-	
-	pass
+	## Catch if no csv files to compare
+	if FileUtils.check_os_file_exists(App.exported_csv_1_save_path) \
+			and FileUtils.check_os_file_exists(App.exported_csv_2_save_path):
+		
+		## Creates Diff in csv table and as json based on that table
+		DiffUtils.do_csv_based_diff(App.exported_csv_1_save_path, 
+				App.exported_csv_2_save_path) 
+	else:
+		print("No csv diff processed. Need two csv assets to compare.")
+		
+	## Catch if no json files to compare
+	if FileUtils.check_os_file_exists(App.exported_json_1_save_path) \
+			and FileUtils.check_os_file_exists(App.exported_json_2_save_path):
+		
+		## Creates Diff in json. Somewhat odd output is more verbose.
+		DiffUtils.do_json_based_diff(App.exported_json_1_save_path, 
+				App.exported_json_2_save_path) ## Creates Diff in hard to read json
+	else:
+		print("No json diff processed. Need two json assets to compare.")
 
 
 	

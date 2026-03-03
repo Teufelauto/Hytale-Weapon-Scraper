@@ -65,8 +65,11 @@
 			"csv_filename": "weapon_table_user-defined.csv"
 		},
 		"weapon_diff": {
+			"json_path": "user://diff_results/",
 			"json_filename": "wpn_diff_json.json",
+			"csv_path": "user://diff_results/",
 			"csv_filename": "wpn_diff_csv.csv",
+			"json_from_csv_path": "user://diff_results/",
 			"json_from_csv_filename": "wpn_diff_json_from_csv.json"
 		}
 	}

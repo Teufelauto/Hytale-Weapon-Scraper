@@ -122,6 +122,7 @@ func check_if_first_load() -> void:
 	
 	# Create Output folder if necessary
 	FileUtils.create_user_data_folder("output")
+	FileUtils.create_user_data_folder("diff_results")
 
 
 ## The first time app_settings is created, pre-fill file-path for assets.
@@ -158,16 +159,20 @@ func first_load_auto_determine_assets_location()->void:
 	settings.assets.release.latest_release.set("assets_path", 
 			hytale_roaming_folder + latest_release_path)
 	
-	
-	
-	# We fill in the user://output/ directery path so the user is not confused by "user://"
-	var output_path = OS.get_user_data_dir() + "/output/"
+	## We fill in the user://output/ directery path so the user is not confused by "user://"
+	var output_path: String = OS.get_user_data_dir().path_join("/output/") 
 	settings.output.pre_release.set("exported_json_save_path", output_path)
 	settings.output.user_defined.set("exported_json_save_path", output_path)
 	settings.output.release.set("exported_json_save_path", output_path)
 	settings.output.pre_release.set("csv_save_path", output_path)
 	settings.output.user_defined.set("csv_save_path", output_path)
 	settings.output.release.set("csv_save_path", output_path)
+	
+	## Diff default directories now in own folder
+	output_path = OS.get_user_data_dir().path_join("/diff_results/")
+	settings.output.weapon_diff.set("json_path", output_path)
+	settings.output.weapon_diff.set("csv_path", output_path)
+	settings.output.weapon_diff.set("json_from_csv_path", output_path)
 	
 	## Save the app settings to the user directory
 	FileUtils.export_dict_to_json(settings, "user://app_settings.json")
@@ -303,6 +308,22 @@ func verify_settings_formatting() -> void:
 		entries_with_errors += 1
 		settings.output.release.csv_save_path = \
 				settings.output.release.csv_save_path + "/"
+	
+	## diff path
+	if not settings.output.weapon_diff.json_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.weapon_diff.json_path = \
+				settings.output.weapon_diff.json_path + "/"
+	
+	if not settings.output.weapon_diff.csv_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.weapon_diff.csv_path = \
+				settings.output.weapon_diff.csv_path + "/"
+	
+	if not settings.output.weapon_diff.json_from_csv_path.ends_with("/"):
+		entries_with_errors += 1
+		settings.output.weapon_diff.json_from_csv_path = \
+				settings.output.weapon_diff.json_from_csv_path + "/"
 	
 	## -- Output extensions (.csv) (.json) - Need to deal with caps
 	## json extension
@@ -536,11 +557,13 @@ func choose_which_filepaths_to_process() -> void:
 	#print(active_build_folders)
 	
 	## saving the diffs with thier respectively formatted output.
-	diff_json_save_path = settings.output[output_choice].exported_json_save_path \
+	diff_json_save_path = settings.output.weapon_diff.json_path \
 			+ assemble_output_filename(settings.output.weapon_diff.json_filename, 0, true)
-	diff_csv_save_path = settings.output[output_choice].csv_save_path \
+			
+	diff_csv_save_path = settings.output.weapon_diff.csv_path \
 			+ assemble_output_filename(settings.output.weapon_diff.csv_filename, 0, true)
-	diff_json_from_csv_save_path = settings.output[output_choice].csv_save_path \
+			
+	diff_json_from_csv_save_path = settings.output.weapon_diff.json_from_csv_path \
 			+ assemble_output_filename(settings.output.weapon_diff.json_from_csv_filename, 0, true)
 	#print(diff_csv_save_path)
 

@@ -21,7 +21,7 @@ var current_template_parent: String ## Keeps track of the currently loaded templ
 # Weapon Table construction
 ## Determine how many rows are in the weapon_table by counting each weapon's files
 static var total_number_of_weapons:int = 0
-static var weapon_table_height: int 
+static var weapon_table_height: int = 0
 static var weapon_table_width: int = 0
 static var weapon_table_column_array: Array = []
 static var weapon_table: Array[Array] = [] ## Table to contain all the data
@@ -44,13 +44,13 @@ func headless_main(asset_being_processed: int) -> void:
 	#print_weapon_table_to_console() # For troubleshooting
 	
 	if asset_being_processed == 1:
-		FileUtils.export_array_as_csv(weapon_table, App.exported_csv_1_save_path) # Export to csv
+		FileUtils.export_array_as_csv(weapon_table, exported_csv_1_save_path) # Export to csv
 		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_1_save_path) # export to json
 		
 		
 	
 	else: ## asset_being_processed == 2
-		FileUtils.export_array_as_csv(weapon_table, App.exported_csv_2_save_path) # Export to csv
+		FileUtils.export_array_as_csv(weapon_table, exported_csv_2_save_path) # Export to csv
 		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
 		
 		
@@ -60,6 +60,10 @@ func headless_main(asset_being_processed: int) -> void:
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
 ## The table can be exported as CSV or used internally. 
 func initialize_weapon_table() -> void:
+	
+	weapon_table.clear() ## Must clear before second go round, or extra cells
+	total_number_of_weapons = 0 ## Must clear before second go round, or extra cells
+	
 	# Define the table size from the weapon-dictionary file to only include weapons we want.
 	# Determine Rows: A family is Mace, or Sword, etc
 	for family in weapon_dict.weapon_family.keys():
@@ -71,7 +75,7 @@ func initialize_weapon_table() -> void:
 		## Check if the file path starts with the desired folder path
 			if file_path.begins_with(target_folder):
 				total_number_of_weapons += 1
-		#print(total_number_of_weapons)
+		print(total_number_of_weapons)
 	
 	## Temp - add bunches of extra rows because we may not be usung tables for base anymore...
 	weapon_table_height = total_number_of_weapons + 1 # Add 1 for the column headers
@@ -96,7 +100,7 @@ func initialize_weapon_table() -> void:
 
 ## Gets Column headers from weapon_dictionary JSON.
 func determine_weapon_table_columns() -> Array:
-	var table_columns: Array =[]
+	var table_columns: Array = []
 	for i in weapon_dict.weapon_table_columns.size():
 		var i_as_string: String = str(i)
 		var value: String = weapon_dict.weapon_table_columns.get \
