@@ -35,7 +35,7 @@ func _ready() -> void:
 	
 	## After run, close up shop.
 	
-	
+	app.free()
 	get_tree().quit() # Closes app
 
 
@@ -55,7 +55,7 @@ func process_assets() -> void:
 		
 		var wpns := Weapons.new() ## Instance of Weapons class.
 		wpns.headless_main(1) ## Run through all the weapons to create csv and json
-		
+		wpns.free()
 		FileUtils.zip_files.clear() # Clear this so correct number of rows are in second table
 		FileUtils.zip_reader.close() # Close ZIP reader
 	else: 
@@ -68,7 +68,7 @@ func process_assets() -> void:
 		
 		var wpns := Weapons.new() ## Instance of Weapons class.
 		wpns.headless_main(2) ## Run through all the weapons to create csv and json
-		
+		wpns.free()
 		FileUtils.zip_files.clear() # No longer needed. free ram
 		FileUtils.zip_reader.close() # Close ZIP reader
 	else: 

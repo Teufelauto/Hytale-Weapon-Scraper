@@ -51,11 +51,11 @@ func check_if_first_load() -> void:
 	## Need to copy the App Setttings into the user folder, 
 	## so they can be edited by the user by headless method.
 	var file_folder: String
-	var file_name: String = "app_settings.json"
 	var file_short_path: String
-	var file_exists: bool = FileUtils.check_user_file_exists(file_name)
 	var full_source: String
 	var full_destination: String
+	var file_name: String = "app_settings.json"
+	var file_exists: bool = FileUtils.check_user_file_exists(file_name)
 	if not file_exists: 
 		full_source = "res://app_user_templates/" + file_name
 		full_destination = "user://" + file_name
@@ -75,8 +75,8 @@ func check_if_first_load() -> void:
 		full_destination = "user://" + file_name
 		# copy weapons dictinary to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	#else:
-		#print("User folder already contains weapon_dictionary.")
+	else:
+		print("User folder already contains weapon_dictionary.")
 	
 	# Create documentation folder if necessary
 	FileUtils.create_user_data_folder("docs")
@@ -87,38 +87,25 @@ func check_if_first_load() -> void:
 	file_short_path = file_folder + file_name
 	file_exists = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
-		full_source = "res://" + file_name
+		full_source = "res://docs/" + file_name
 		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	#else:
-		#print("docs folder already contains Instructions.txt.")
-		
-	## Copy readme markdown to user so it can be read by user.
-	file_folder = "docs/"
-	file_name = "README.md"
-	file_short_path = file_folder + file_name
-	file_exists = FileUtils.check_user_file_exists(file_short_path)
-	if not file_exists: 
-		full_source = "res://" + file_name
-		full_destination = "user://" + file_short_path
-		# copy instructions to user
-		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	#else:
-		#print("docs folder already contains Instructions.txt.")
-	
+	else:
+		print("docs folder already contains Instructions.txt.")
+			
 	## Copy license to user so it can be read by user.
 	file_folder = "docs/"
 	file_name = "LICENSE.txt"
 	file_short_path = file_folder + file_name
 	file_exists = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
-		full_source = "res://" + file_name
+		full_source = "res://docs/" + file_name
 		full_destination = "user://" + file_short_path
 		# copy instructions to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
-	#else:
-		#print("docs folder already contains LICENSE.txt.")
+	else:
+		print("docs folder already contains LICENSE.txt.")
 	
 	# Create Output folder if necessary
 	FileUtils.create_user_data_folder("output")

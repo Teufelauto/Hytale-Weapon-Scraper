@@ -75,7 +75,7 @@ func initialize_weapon_table() -> void:
 		## Check if the file path starts with the desired folder path
 			if file_path.begins_with(target_folder):
 				total_number_of_weapons += 1
-		print(total_number_of_weapons)
+		#print(total_number_of_weapons)
 	
 	## Temp - add bunches of extra rows because we may not be usung tables for base anymore...
 	weapon_table_height = total_number_of_weapons + 1 # Add 1 for the column headers
@@ -196,6 +196,7 @@ func step_through_weapons() -> void:
 				iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, \
 						current_child, current_child_lower, xref_family_tree, \
 						xref_common_table_headers, current_table_row)
+				iw.free()
 
 
 ## Call this to print the table to console for troubleshooting

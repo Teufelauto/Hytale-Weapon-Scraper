@@ -1,0 +1,32 @@
+App may be run from command line using   whatever_you_renamed_it.exe --headless
+Currently, as the app is in development, quite a bit gets printed to the terminal.
+
+Files to be processed are selected by modifying the app_settings.json.
+The default settings will process and compare the latest pre-release with the 
+previous pre-release. The results are saved with the build-number appended to 
+the filename.
+
+--- Instructions for using app_settings.json ---
+
+Open it in a text editor of your choosing.
+
+Values may be changed in this file to modify load-path, save-path, and filename 
+without a GUI. run_app_headless should be set to true, because the GUI is not 
+ready. 
+
+ Make 'true' for slot 1     Make 'true' for 2nd processing slot
+					 |      |
+   "scrape_assets": [true, false]
+This array is used to determine if the associated Asset file will be processed 
+and compared. Make array [false, false] if associated Asset in branch is not
+of interest. Only one file can have 'true' in the first index, and likewise,
+only one 'true' can be placed in the second index of all the arrays.
+
+You can change asset path values to a different location if you wish to analyze 
+a zip saved in a custom location. So, if you wish to analyze an older release of
+the Assets.zip file, you can modify the pregenerated path. All paths must use 
+forward-slashes: ( / ). All paths must end with a forward-slash. Filenames can
+be whatever you like. Output files will have identifiers added to end of generic 
+name you provide. You can create different folders to seperate out the different
+diff files, if you want to declutter. 
+	
