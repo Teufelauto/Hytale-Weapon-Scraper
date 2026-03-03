@@ -1,38 +1,76 @@
 {	
-	"how_to_use_this_file ->":"Values may be changed in this file to modify load-path, save-path, and filename without a GUI. run_app_headless should be set to true, because the GUI is not ready. Choose only 0ne of the assets to change to true. You can change asset path values to a different location if you wish to analyze a zip saved in a custom location. So, if you wish to analyze an older release of the Assets.zip file, you can modify the pregenerated path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. Filenames can be whatever you like.",
+	"how_to_use_this_file ->":"Values may be changed in this file to modify load-path, save-path, 
+		 and filename without a GUI. run_app_headless should be set to true, because the GUI is not 
+		 ready. 'scrape_assets'- Array is [diff1, diff2]. You can change asset path values to 
+		 a different location if you wish to analyze a zip saved in a custom location. So, if you 
+		 wish to analyze an older release of the Assets.zip file, you can modify the pregenerated 
+		 path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. 
+		 Filenames can be whatever you like.",
 	"run_app_headless": true,
-	"assets":{
-		"user_defined":{
-			"scrape_assets": false,
-			"assets_path": "user://",
-			"assets_filename": "Assets.zip"},
-		"latest_prerelease":{
-			"scrape_assets": true,
-			"assets_path": "user://",
-			"assets_filename": "Assets.zip"},
-		"latest_release":{
-			"scrape_assets": false,
-			"assets_path": "user://",
-			"assets_filename": "Assets.zip"}},
-	"output":{
-		"user_defined":{
-			"compiled_json_save_path": "user://output/",
-			"compiled_json_filename": "weapons_encyclopedia_user_defined.json",
+	"assets": {
+		"pre_release": {
+			"previous_pre_release": {
+				"scrape_assets": [true, false],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			},
+			"latest_pre_release": {
+				"scrape_assets": [false, true],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			}
+		},
+		"release": {
+			"previous_release": {
+				"scrape_assets": [false, false],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			},
+			"latest_release": {
+				"scrape_assets": [false, false],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			}
+		},
+		"user": {
+			"user_defined_1": {
+				"scrape_assets": [false, false],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			},
+			"user_defined_2": {
+				"scrape_assets": [false, false],
+				"assets_path": "user://",
+				"assets_filename": "Assets.zip"
+			}
+		}
+	},
+	"output": {
+		"pre_release": {
+			"exported_json_save_path": "user://output/",
+			"exported_json_filename": "weapon_book_pre-release.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_user.csv"},
-		"latest_prerelease":{
-			"compiled_json_save_path": "user://output/",
-			"compiled_json_filename": "weapons_encyclopedia_pre-release.json",
+			"csv_filename": "weapon_table_pre-release.csv"
+		},
+		"release": {
+			"exported_json_save_path": "user://output/",
+			"exported_json_filename": "weapon_book_release.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_pre-rel.csv"},
-		"latest_release":{
-			"compiled_json_save_path": "user://output/",
-			"compiled_json_filename": "weapons_encyclopedia_release.json",
+			"csv_filename": "weapon_table_release.csv"
+		},
+		"user_defined": {
+			"exported_json_save_path": "user://output/",
+			"exported_json_filename": "weapon_book_user-defined.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "wpn_tbl_rel.csv"},
-		"weapon_diff":{
+			"csv_filename": "weapon_table_user-defined.csv"
+		},
+		"weapon_diff": {
+			"json_path": "user://diff_results/",
 			"json_filename": "wpn_diff_json.json",
+			"csv_path": "user://diff_results/",
 			"csv_filename": "wpn_diff_csv.csv",
-			"json_from_csv_filename": "wpn_diff_json_from_csv.json"}
+			"json_from_csv_path": "user://diff_results/",
+			"json_from_csv_filename": "wpn_diff_json_from_csv.json"
+		}
 	}
 }

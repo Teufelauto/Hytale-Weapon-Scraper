@@ -10,7 +10,7 @@ static var zip_reader := ZIPReader.new() ## Class to put Assets.zip in
 static var zip_files: PackedStringArray ## Path and File list inside zip. An array of strings.
 
 ## Gets ZIP Reader going in this scope with specified file
-static func open_assets_zip(path_to_zip)->void:
+static func open_assets_zip(path_to_zip: String) -> void:
 	var error = zip_reader.open(path_to_zip)
 	if error != OK:
 		print("Failed to open ZIP file: ", error)
@@ -21,6 +21,70 @@ static func open_assets_zip(path_to_zip)->void:
 static func load_json_data_to_dict(load_path: String) -> Dictionary:
 	var app_settings_string = FileAccess.get_file_as_string(load_path) # Retrieve json data
 	return JSON.parse_string(app_settings_string) # Define Dictionary
+
+
+## Returns Array with build numbers. 
+## [pre-previous, pre-latest, release-previous, release-latest]
+static func determine_assets_builds() -> Array:
+	## Array contains: [pre-prior, pre-latest, release-prior, release-latest]
+	var build_numbers: Array = [0, 0, 0, 0]
+	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
+	
+	var pre_release_sig_path: String = hytale_base_folder + "/install/pre-release/package/sig/"
+	var folder_names_pre: Array = get_folder_names(pre_release_sig_path)
+	while folder_names_pre.size() < 2: # If user only has latest pre-release installed, or none.
+		folder_names_pre.append("0")
+	
+	var release_sig_path: String = hytale_base_folder + "/install/release/package/sig/"
+	var folder_names_rel: Array  = get_folder_names(release_sig_path)
+	while folder_names_rel.size() < 2: # If user only has latest release installed, or no release.
+		folder_names_rel.append("0")
+	
+	## Trim folder names into numbers, and convert to integers.
+	folder_names_pre[0] =  (folder_names_pre[0].trim_prefix("build-")).to_int()
+	folder_names_pre[1] = (folder_names_pre[1].trim_prefix("build-")).to_int()
+	folder_names_rel[0] = (folder_names_rel[0].trim_prefix("build-")).to_int()
+	folder_names_rel[1] = (folder_names_rel[1].trim_prefix("build-")).to_int()
+	
+	## Sort Pre and Release 
+	folder_names_pre.sort()
+	folder_names_rel.sort()
+	
+	## Place build numbers in thier proper places.
+	build_numbers[0] = folder_names_pre[0] ## previous Pre-release
+	build_numbers[1] = folder_names_pre[1] ## latest Pre-release
+	build_numbers[2] = folder_names_rel[0] ## previous Release
+	build_numbers[3] = folder_names_rel[1] ## latest Release
+	
+	return build_numbers
+
+
+## Returns Array of folder names
+static func get_folder_names(path: String) -> Array:
+	# Open the directory
+	var dir = DirAccess.open(path)
+	var folder_names: Array = []
+	
+	if dir:
+		# Start iterating through the directory contents
+		dir.list_dir_begin()
+		var item_name: String = dir.get_next()
+		
+		while item_name != "":
+			# Check if the current item is a directory
+			if dir.current_is_dir():
+				#print("Found directory: " + item_name)
+				folder_names.append(item_name)
+				
+			# Move to the next item
+			item_name = dir.get_next()
+			
+		# Stop iterating
+		dir.list_dir_end()
+		return folder_names
+	else:
+		print("An error occurred when trying to access the path to retrieve folder names.")
+		return []
 
 
 ## Load a csv file, and return it as a 2d array. Stripping header is optional.
@@ -52,7 +116,7 @@ static func load_csv_data_to_array(load_path: String, strip_header: bool = false
 static func export_dict_to_json(dict: Dictionary, save_path: String = "user://new.json") -> void:
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
-		var json_string = JSON.stringify(dict,"  ",false)
+		var json_string = JSON.stringify(dict, "  ", false)
 		file.store_line(json_string)
 		file.close()
 		print("Dictionary saved as json to: " + save_path)
@@ -128,56 +192,7 @@ static func retrieve_roaming_Hytale_folder_location() -> String:
 	return path + "Hytale" # append the Hytale folder
 
 
-## Creates a copy of the weapons csv and json before they can be overwritten.
-static func backup_csv_and_json(designator_for_old: String = "_old", 
-		auto_save_old_csv: bool = true, auto_save_old_json: bool = true) -> void:
-	## Array of arrays, so files can be cycled in for-loop
-	var path_array: Array = []
-	
-	if auto_save_old_csv:
-		## Save to var so all files can be cycled in for-loop
-		path_array.append([App.diff_csv_save_path, ".csv"])
-		path_array.append([App.diff_json_from_csv_save_path, ".json"])
-		path_array.append([App.csv_save_path, ".csv"])
-		
-	
-	if auto_save_old_json:
-		## Save to var so both files can be cycled in for-loop
-		path_array.append([App.diff_json_save_path,".json"])
-		path_array.append([App.compiled_json_save_path, ".json"])
-	
-	## Array filepath[0] is Sting path to file, filepath[1] is String extension.
-	for filepath in path_array:
-		if check_os_file_exists(filepath[0]):
-			print(filepath[0] + " exists for backup.")
-			
-			## Looks like: _old.csv
-			var constructed_suffix: String = designator_for_old + filepath[1]
-			## Looks like: .../wpn_tbl_rel_old.csv
-			var _previous_path: String = filepath[0].replace(filepath[1], constructed_suffix)
-			
-			## Rename old file if it already exists for archiving.
-			if check_os_file_exists(_previous_path):
-				## timestamp for renaming old file to archive.
-				var date: String = Time.get_date_string_from_system()
-				var time: String = Time.get_time_string_from_system()
-				time = time.replace(":", ".") # Need to replace : with something else.
-				## looking like: _old_2026-02-23_21.32.18.csv
-				var dated_suffix: String = designator_for_old + "_" + date + "_" + time + filepath[1]
-				## Path looking like: .../wpn_tbl_rel_old_2026-02-23_21.32.18.csv
-				var stamped_path: String = _previous_path.replace(constructed_suffix, dated_suffix)
-				
-				## Copy old file to dated archive before it can be overwritten.
-				copy_file_from_source_to_destination(_previous_path, stamped_path)
-				
-			## Copy current file to old, before it can be overwritten.
-			copy_file_from_source_to_destination(filepath[0], _previous_path)
-			
-		else:
-			print(filepath[0] + " does not exists for backup.")
-
-
-static func create_user_data_folder(folder_name: String):
+static func create_user_data_folder(folder_name: String) -> void:
 	
 	# Construct the full path using the user:// protocol
 	var dir_path = "user://" + folder_name
@@ -215,6 +230,19 @@ static func replace_file_extension(file_name: String, preferred_ext: String) -> 
 	return file_name + preferred_ext ## Add the preferred extension format
 
 
+static func save_to_txt_file(content: String, path: String) -> void:
+	# Open the file in write mode ("w").
+	# If the file does not exist, it will be created.
+	# If it exists, it will be overwritten.
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	if file:
+		# Store the string content in the file.
+		file.store_string(content)
+		# Close the file.
+		file.close()
+		print("File saved successfully to" + path)
+	else:
+		print("Failed to open file: ", FileAccess.get_open_error())
 
 
 

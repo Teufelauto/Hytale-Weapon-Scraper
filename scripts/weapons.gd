@@ -7,9 +7,9 @@ extends App
 
 ## The weapon dictionary is a JSON that can be user-changed as weapons are 
 ## added to game, or maneuvers changed.
-static var weapon_dict: Dictionary ={}
+static var weapon_dict: Dictionary = {}
 ## Dictionary equivalent of weapon_table output
-static var weapon_encyclopedia: Dictionary ={}
+static var weapon_encyclopedia: Dictionary = {}
 ## Dictionary of column name equivalents for weapon family 
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
@@ -21,7 +21,7 @@ var current_template_parent: String ## Keeps track of the currently loaded templ
 # Weapon Table construction
 ## Determine how many rows are in the weapon_table by counting each weapon's files
 static var total_number_of_weapons:int = 0
-static var weapon_table_height: int 
+static var weapon_table_height: int = 0
 static var weapon_table_width: int = 0
 static var weapon_table_column_array: Array = []
 static var weapon_table: Array[Array] = [] ## Table to contain all the data
@@ -31,31 +31,39 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 ##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ##==================================================================================================
 
-## Process new Assets, not old.
-func headless_new_main() -> void:
+## Process Asset. arg is: 1 or 2
+func headless_main(asset_being_processed: int) -> void:
 	
 	## static var weapon_dict populated here.
 	weapon_dict = FileUtils.load_json_data_to_dict("user://weapon_dictionary.json")
 	
 	initialize_weapon_table() # Create a mostly blank 2d array to hold csv data.
-		
+	
 	step_through_weapons()
-
+	
 	#print_weapon_table_to_console() # For troubleshooting
 	
-	FileUtils.backup_csv_and_json() # Backup files so they can be compared and archived.
-	FileUtils.export_array_as_csv(weapon_table, csv_save_path) # Export to csv
-	FileUtils.export_dict_to_json(weapon_encyclopedia, compiled_json_save_path) # export to json
-	if FileUtils.check_os_file_exists("user://output/wpn_tbl_pre-rel_old.csv"): ## Catch if no file to compare
-		DiffUtils.do_csv_based_diff("user://output/wpn_tbl_pre-rel_old.csv", App.csv_save_path) ## Creates Diff in csv table and as json
-	if FileUtils.check_os_file_exists("user://output/weapons_encyclopedia_pre-release_old.json"):  ## Catch if no file to compare
-		DiffUtils.do_json_based_diff("user://output/weapons_encyclopedia_pre-release_old.json", 
-				App.compiled_json_save_path) ## Creates Diff in hard to read json
+	if asset_being_processed == 1:
+		FileUtils.export_array_as_csv(weapon_table, exported_csv_1_save_path) # Export to csv
+		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_1_save_path) # export to json
+		
+		
+	
+	else: ## asset_being_processed == 2
+		FileUtils.export_array_as_csv(weapon_table, exported_csv_2_save_path) # Export to csv
+		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
+		
+		
+	
 	
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
 ## The table can be exported as CSV or used internally. 
 func initialize_weapon_table() -> void:
+	
+	weapon_table.clear() ## Must clear before second go round, or extra cells
+	total_number_of_weapons = 0 ## Must clear before second go round, or extra cells
+	
 	# Define the table size from the weapon-dictionary file to only include weapons we want.
 	# Determine Rows: A family is Mace, or Sword, etc
 	for family in weapon_dict.weapon_family.keys():
@@ -92,10 +100,11 @@ func initialize_weapon_table() -> void:
 
 ## Gets Column headers from weapon_dictionary JSON.
 func determine_weapon_table_columns() -> Array:
-	var table_columns: Array =[]
+	var table_columns: Array = []
 	for i in weapon_dict.weapon_table_columns.size():
 		var i_as_string: String = str(i)
-		var value: String = weapon_dict.weapon_table_columns.get(i_as_string,"Error Creating Table")
+		var value: String = weapon_dict.weapon_table_columns.get \
+				(i_as_string,"Error Creating Table")
 		table_columns.append(value)
 	family_weapon_columns_dictionary(table_columns)
 	#print(table_columns)
@@ -151,7 +160,7 @@ func step_through_weapons() -> void:
 		
 		## lower_case string version of current_Family  
 		var current_family_lower: String = current_family.to_lower()
-		weapon_encyclopedia.set(current_family_lower,{}) # Top level is Family
+		weapon_encyclopedia.set(current_family_lower, {}) # Top level is Family
 		
 		var target_folder: String = "Server/Item/Items/Weapon/" + current_family + "/"
 		
@@ -162,15 +171,15 @@ func step_through_weapons() -> void:
 		## If target_folder is empty, it processes all files.
 			if target_folder.is_empty() or file_path.begins_with(target_folder):
 				#print()
-				print("Found weapon file in target folder: ", file_path)
+				#print("Found weapon file in target folder: ", file_path)
 				
 				current_table_row += 1
 				
 				## The below block pulls out the current_child String from path.
 				## count is the index for .get_slice method.
-				var count: int = file_path.get_slice_count("/")  - 1
+				var count: int = file_path.get_slice_count("/") - 1
 				## current_child is the descriptor, such as crude, or copper.
-				var current_child: String = file_path.get_slice("/",count) 
+				var current_child: String = file_path.get_slice("/", count) 
 				current_child = current_child.trim_suffix(".json")
 				var left_stripper: String = "Weapon_" + current_family + "_"
 				current_child = current_child.trim_prefix(left_stripper)
@@ -181,17 +190,14 @@ func step_through_weapons() -> void:
 				# Second level is child
 				weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) 
 							
-				## Instance of ItemsWeapon class.
+				## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
 				var iw := ItemsWeapon.new()
 				
 				iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, \
 						current_child, current_child_lower, xref_family_tree, \
 						xref_common_table_headers, current_table_row)
-				
-				
-			
-		
-		
+				iw.free()
+
 
 ## Call this to print the table to console for troubleshooting
 func print_weapon_table_to_console() -> void:
