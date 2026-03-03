@@ -230,6 +230,19 @@ static func replace_file_extension(file_name: String, preferred_ext: String) -> 
 	return file_name + preferred_ext ## Add the preferred extension format
 
 
+static func save_to_txt_file(content: String, path: String) -> void:
+	# Open the file in write mode ("w").
+	# If the file does not exist, it will be created.
+	# If it exists, it will be overwritten.
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	if file:
+		# Store the string content in the file.
+		file.store_string(content)
+		# Close the file.
+		file.close()
+		print("File saved successfully to" + path)
+	else:
+		print("Failed to open file: ", FileAccess.get_open_error())
 
 
 

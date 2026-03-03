@@ -87,10 +87,10 @@ func check_if_first_load() -> void:
 	file_short_path = file_folder + file_name
 	file_exists = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
-		full_source = "res://docs/" + file_name
 		full_destination = "user://" + file_short_path
 		# copy instructions to user
-		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
+		var app_res := AppResources.new()
+		FileUtils.save_to_txt_file(app_res.INSTRUCTIONS,full_destination)
 	else:
 		print("docs folder already contains Instructions.txt.")
 			
@@ -100,10 +100,10 @@ func check_if_first_load() -> void:
 	file_short_path = file_folder + file_name
 	file_exists = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
-		full_source = "res://docs/" + file_name
 		full_destination = "user://" + file_short_path
-		# copy instructions to user
-		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
+		# copy license to user
+		var app_res := AppResources.new()
+		FileUtils.save_to_txt_file(app_res.LICENSE,full_destination)
 	else:
 		print("docs folder already contains LICENSE.txt.")
 	
