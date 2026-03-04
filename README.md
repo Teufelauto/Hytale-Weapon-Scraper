@@ -1,9 +1,11 @@
 # Hytale-Weapon-Scraper
-Turn zipped weapon assets into a JSON for easy access, and a CSV table for easy viewing.
-App takes several seconds to go through the 3 GB Assets.zip on a 9800x3D computer with an NVME drive. It may appear frozen, but it's probably still parsing. It will close when it's done.
-Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
+- Turn zipped weapon assets into a JSON for easy access, and a CSV table for easy viewing.
+- Compare two Game Builds of your choice for differences in weapons.
+- App takes about 45 seconds to go through the two 3 GB Assets.zip on a 9800x3D computer with an NVME drive. It may appear frozen, but it's probably still parsing. It will save the files, and close when it's done. If running --headless in a terminal, you can see the progress as it processes each weapon.
+- Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
 
-Version 0.3.0 introduces a diff output and some automatic error correcting for user-induced formatting errors in app_settings.
+- Version 0.4.0 saves each output with the Release/Pre-Release build-number in the filename. Compares two Assets without needing them to be reprocessed if output exists already.
+- More parameters will be added to output, but the goal is to not make breaking changes affecting APIs using this app.
 ### Example json output
 ```json
 {
