@@ -58,7 +58,7 @@ Use "/" rather than "\\" in file paths, and end the path with a "/".
 
 The JSON or CSV can be saved to a different location by changing path or name in app_settings.json
 ## weapon_dictionary.json
-Editing Weapon_Dictionary.json will allow you to add new weapons or materials, or remove certain columns from the output. That would require a tutorial. Additional weapons are being configured. Still need to add info to table from another location in the zip, regarding attack timing. That will come after this section is working nicely.
+Editing Weapon_Dictionary.json will allow you to add new weapons or actions, or remove certain columns from the output. That would require a tutorial. Additional weapons are being configured. Still need to add info to table from another location in the zip, regarding attack timing.
 
 
 ## Compiling
