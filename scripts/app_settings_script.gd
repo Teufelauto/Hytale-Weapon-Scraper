@@ -17,11 +17,14 @@ static var diff_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_from_csv_save_path: String ## Output diff file path follows csv
 static var diff_json_save_path: String ## Output diff file path follows json
 ## Build numbers in order:
-## [previous_pre_release, latest_pre_release, previous_release, latest_release] 
-static var build_numbers: Array = [0, 0, 0, 0]
-## Names of build folders in order:
-## [previous_pre_release, latest_pre_release, previous_release, latest_release]
-static var build_folders: Array = ["", "", "", ""]
+## [previous_pre_release, latest_pre_release, previous_release, latest_release, user1, user2] 
+static var build_numbers: Array = [0, 0, 0, 0, 0, 0]
+## Names of build folders in order: "build-##"
+## [previous_pre_release, latest_pre_release, previous_release, latest_release, user1, user2]
+static var build_folders: Array = ["", "", "", "", "", ""]
+## Type of release for adding to filenames:
+## pre_release, release, user, user
+static var build_type: Array = ["pre-release", "pre-release", "release", "release", "user", "user"]
 ## Active build folders for saving scraped tables and books.
 static var active_build_folders: Array = ["", ""]
 ## Active build type (pre, rel, usr) for diff
@@ -448,6 +451,32 @@ func convert_build_numbers_to_names() -> void:
 	build_folders[Assets.LATEST_RELEASE] = \
 			"build-" + str(build_numbers[Assets.LATEST_RELEASE])
 	
+	## USER_DEFINED_1 value
+	
+	## Retrieved from app_settings.json for user defined. If user knows where zip came from,
+	## they can choose correct type for archiving.
+	
+	if settings.assets.user.user_defined_1.build_type.get("pre_release", false):
+		build_type[Assets.USER_DEFINED_1] = "pre-release"
+	elif settings.assets.user.user_defined_1.build_type.get("release", false):
+		build_type[Assets.USER_DEFINED_1] = "release"
+	else: ## in settings, build_type.user:true is technically optional
+		build_type[Assets.USER_DEFINED_1] = "user"
+	
+	build_folders[Assets.USER_DEFINED_1] = "build-" \
+			+ str(build_numbers[Assets.USER_DEFINED_1])
+	
+	## USER_DEFINED_2 value
+	if settings.assets.user.user_defined_2.build_type.get("pre_release", false):
+		build_type[Assets.USER_DEFINED_2] = "pre-release"
+	elif settings.assets.user.user_defined_2.build_type.get("release", false):
+		build_type[Assets.USER_DEFINED_2] = "release"
+	else: ## in settings, build_type.user:true
+		build_type[Assets.USER_DEFINED_2] = "user"
+	
+	build_folders[Assets.USER_DEFINED_2] = "build-" \
+			+ str(build_numbers[Assets.USER_DEFINED_2])
+
 	print(build_folders)
 
 
@@ -506,7 +535,14 @@ func choose_which_filepaths_to_process() -> void:
 			choice = "user_defined_1"
 			output_choice = "user_defined"
 			active_assets[i] = Assets.USER_DEFINED_1
-			active_build_type[i] = "usr"
+			
+			if build_type[Assets.USER_DEFINED_1] == "pre-release":
+				active_build_type[i] = "pre"
+			elif build_type[Assets.USER_DEFINED_1] == "release":
+				active_build_type[i] = "rel"
+			else: ## in settings, build_type.user:true is technically optional
+				active_build_type[i] = "usr"
+
 			active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
 			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
 		
@@ -515,7 +551,14 @@ func choose_which_filepaths_to_process() -> void:
 			choice = "user_defined_2"
 			output_choice = "user_defined"
 			active_assets[i] = Assets.USER_DEFINED_2
-			active_build_type[i] = "usr"
+			
+			if build_type[Assets.USER_DEFINED_2] == "pre-release":
+				active_build_type[i] = "pre"
+			elif build_type[Assets.USER_DEFINED_2] == "release":
+				active_build_type[i] = "rel"
+			else: ## in settings, build_type.user:true is technically optional
+				active_build_type[i] = "usr"
+			
 			active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
 			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
 		
@@ -567,12 +610,14 @@ func assemble_output_filename(generic_filename: String, scrape_assets_index: int
 		
 		## Export book (encyclopedia) filenames
 		false when generic_filename.ends_with(".json"):
-			return generic_filename.replacen(".json", "_" 
-					+ active_build_folders[scrape_assets_index] + ".json")
+			return generic_filename.replacen(".json", 
+					"_" + active_build_type[scrape_assets_index] +
+					"_" + active_build_folders[scrape_assets_index] + ".json")
 			
 		false when generic_filename.ends_with(".csv"):
-			return generic_filename.replacen(".csv", "_" 
-					+ active_build_folders[scrape_assets_index] + ".csv")
+			return generic_filename.replacen(".csv", 
+					"_" + active_build_type[scrape_assets_index] +
+					"_" + active_build_folders[scrape_assets_index] + ".csv")
 			
 		## Diff filenames:
 		true when generic_filename.ends_with(".json"):

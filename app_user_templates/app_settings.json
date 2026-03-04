@@ -1,10 +1,10 @@
 {	
 	"how_to_use_this_file ->":"Values may be changed in this file to modify load-path, save-path, 
 		 and filename without a GUI. run_app_headless should be set to true, because the GUI is not 
-		 ready. 'scrape_assets'- Array is [diff1, diff2]. You can change asset path values to 
+		 ready. 'scrape_assets'- Array is [diff1, diff2]. You can choose user asset path values at 
 		 a different location if you wish to analyze a zip saved in a custom location. So, if you 
-		 wish to analyze an older release of the Assets.zip file, you can modify the pregenerated 
-		 path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. 
+		 wish to analyze an older release of the Assets.zip file, you can modify the user section. 
+		 All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. 
 		 Filenames can be whatever you like.",
 	"run_app_headless": true,
 	"assets": {
@@ -36,41 +36,53 @@
 			"user_defined_1": {
 				"scrape_assets": [false, false],
 				"assets_path": "user://",
-				"assets_filename": "Assets.zip"
+				"assets_filename": "Assets.zip",
+				"build_type": {
+					"pre_release": false,
+					"release": false,
+					"user": true
+				},
+				"build_number": 68
 			},
 			"user_defined_2": {
 				"scrape_assets": [false, false],
 				"assets_path": "user://",
-				"assets_filename": "Assets.zip"
+				"assets_filename": "Assets.zip",
+				"build_type": {
+					"pre_release": false,
+					"release": false,
+					"user": true
+				},
+				"build_number": 70
 			}
 		}
 	},
 	"output": {
 		"pre_release": {
 			"exported_json_save_path": "user://output/",
-			"exported_json_filename": "weapon_book_pre-release.json",
+			"exported_json_filename": "weapon_book.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "weapon_table_pre-release.csv"
+			"csv_filename": "weapon_table.csv"
 		},
 		"release": {
 			"exported_json_save_path": "user://output/",
-			"exported_json_filename": "weapon_book_release.json",
+			"exported_json_filename": "weapon_book.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "weapon_table_release.csv"
+			"csv_filename": "weapon_table.csv"
 		},
 		"user_defined": {
 			"exported_json_save_path": "user://output/",
-			"exported_json_filename": "weapon_book_user-defined.json",
+			"exported_json_filename": "weapon_book.json",
 			"csv_save_path": "user://output/",
-			"csv_filename": "weapon_table_user-defined.csv"
+			"csv_filename": "weapon_table.csv"
 		},
 		"weapon_diff": {
 			"json_path": "user://diff_results/",
-			"json_filename": "wpn_diff_json.json",
+			"json_filename": "verbose_wpn_diff.json",
 			"csv_path": "user://diff_results/",
-			"csv_filename": "wpn_diff_csv.csv",
+			"csv_filename": "csv_wpn_diff.csv",
 			"json_from_csv_path": "user://diff_results/",
-			"json_from_csv_filename": "wpn_diff_json_from_csv.json"
+			"json_from_csv_filename": "json_wpn_diff.json"
 		}
 	}
 }
