@@ -453,8 +453,11 @@ func convert_build_numbers_to_names() -> void:
 
 ## Assign load and save paths based upon data from app_settings.json
 func choose_which_filepaths_to_process() -> void:
+	## previous, latest, of pre or rel. Or user_defined_1 or 2
 	var choice: String
+	## user, pre-release or release 
 	var output_choice: String
+	## shortcut to get inside pre, rel, user branch
 	var branch: Dictionary
 
 	## Populate active assets array so we can know which files to scrape or diff
@@ -535,13 +538,6 @@ func choose_which_filepaths_to_process() -> void:
 			exported_json_2_save_path = settings.output[output_choice].exported_json_save_path \
 					+ assemble_output_filename(settings.output[output_choice] \
 					.exported_json_filename, i)
-			
-	#print(active_assets)
-	#print(asset_1_zip_path)
-	#print(asset_2_zip_path)
-	#print(exported_csv_1_save_path)
-	#print(exported_json_2_save_path)
-	#print(active_build_folders)
 	
 	## saving the diffs with thier respectively formatted output.
 	diff_json_save_path = settings.output.weapon_diff.json_path \
@@ -552,21 +548,31 @@ func choose_which_filepaths_to_process() -> void:
 			
 	diff_json_from_csv_save_path = settings.output.weapon_diff.json_from_csv_path \
 			+ assemble_output_filename(settings.output.weapon_diff.json_from_csv_filename, 0, true)
+	
+	#print(active_assets)
+	#print(asset_1_zip_path)
+	#print(asset_2_zip_path)
+	#print(exported_csv_1_save_path)
+	#print(exported_json_2_save_path)
+	#print(active_build_folders)
 	#print(diff_csv_save_path)
 
 
-## index can be whatever for diff
-func assemble_output_filename(generic_filename: String, index: int, 
+## index is Asset #1 (0), or Asset #2 (1) for retrieving build folder name
+## index can be whatever for a diff
+func assemble_output_filename(generic_filename: String, scrape_assets_index: int, 
 		is_diff: bool = false) -> String:
 	
 	match is_diff:
 		
-		## Export encyclopedia filenames
+		## Export book (encyclopedia) filenames
 		false when generic_filename.ends_with(".json"):
-			return generic_filename.replacen(".json", "_" + active_build_folders[index] + ".json")
+			return generic_filename.replacen(".json", "_" 
+					+ active_build_folders[scrape_assets_index] + ".json")
 			
 		false when generic_filename.ends_with(".csv"):
-			return generic_filename.replacen(".csv", "_" + active_build_folders[index] + ".csv")
+			return generic_filename.replacen(".csv", "_" 
+					+ active_build_folders[scrape_assets_index] + ".csv")
 			
 		## Diff filenames:
 		true when generic_filename.ends_with(".json"):
@@ -605,7 +611,8 @@ func refresh_assets_paths() -> void:
 	FileUtils.export_dict_to_json(settings, "user://app_settings.json")
 
 
-## Check if assets have been previously processed. Saves result to assets_processed
+## Check if assets have been previously processed. No need to re-aquire data we 
+## already have. Saves result to assets_processed
 func check_for_processed_books() -> void:
 	
 	var csv_exists: bool = FileUtils.check_os_file_exists(exported_csv_1_save_path)
