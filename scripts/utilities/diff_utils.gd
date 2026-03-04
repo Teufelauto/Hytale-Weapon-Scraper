@@ -32,6 +32,7 @@ static func do_csv_based_diff(
 	
 	## Export Dictionary as json
 	FileUtils.export_dict_to_json(diff_dict_for_json, App.diff_json_from_csv_save_path) 
+	print()
 
 
 ## JSON based diffs - For creating diff based upon json outputs. Very verbose
@@ -54,8 +55,8 @@ static func diff_compare_weapons_table(
 		csv_1_path: String, csv_2_path:String ) -> Dictionary:
 	
 	## Load csv files in to Arrays.
-	if not FileUtils.check_os_file_exists(csv_1_path):
-		return {}
+	#if not FileUtils.check_os_file_exists(csv_1_path):
+		#return {}
 	var table_1: Array = FileUtils.load_csv_data_to_array(csv_1_path)
 	var table_2: Array = FileUtils.load_csv_data_to_array(csv_2_path)
 	
@@ -64,11 +65,15 @@ static func diff_compare_weapons_table(
 	var diffs: Dictionary = compare_weapons_arrays(table_1, table_2)
 	if diffs.textual.is_empty():
 		print("Old and new weapons are identical.")
+		print()
 		return diffs
 	else:
-		print("Differences found between old and new weapons:")
+		var count: int = 0
 		for diff in diffs.textual:
-			print("- " + diff)
+			count += 1
+		print(str(count) + " Differences found between old and new weapons:")
+		#for diff in diffs.textual:
+			#print("- " + diff)
 		
 		print("---------------")
 		#for diff in diffs.table: ## Outputs the table version to terminal

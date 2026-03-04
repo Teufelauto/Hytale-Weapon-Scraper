@@ -24,10 +24,10 @@ static func load_json_data_to_dict(load_path: String) -> Dictionary:
 
 
 ## Returns Array with build numbers. 
-## [pre-previous, pre-latest, release-previous, release-latest]
+## [pre-previous, pre-latest, release-previous, release-latest, user-1, user-2]
 static func determine_assets_builds() -> Array:
-	## Array contains: [pre-prior, pre-latest, release-prior, release-latest]
-	var build_numbers: Array = [0, 0, 0, 0]
+	## Array contains: [pre-prior, pre-latest, release-prior, release-latest, user-1, user-2]
+	var build_numbers: Array = [0, 0, 0, 0, 0, 0]
 	var hytale_base_folder: String = retrieve_roaming_Hytale_folder_location()
 	
 	var pre_release_sig_path: String = hytale_base_folder + "/install/pre-release/package/sig/"
@@ -46,7 +46,7 @@ static func determine_assets_builds() -> Array:
 	folder_names_rel[0] = (folder_names_rel[0].trim_prefix("build-")).to_int()
 	folder_names_rel[1] = (folder_names_rel[1].trim_prefix("build-")).to_int()
 	
-	## Sort Pre and Release 
+	## Sort Pre and Release, now that they are numbers. 
 	folder_names_pre.sort()
 	folder_names_rel.sort()
 	
@@ -56,6 +56,11 @@ static func determine_assets_builds() -> Array:
 	build_numbers[2] = folder_names_rel[0] ## previous Release
 	build_numbers[3] = folder_names_rel[1] ## latest Release
 	
+	## Place USER-DEFINED NUMBERS in thier proper places. int to convert from json implied float.
+	build_numbers[4] = int(App.settings.assets.user.user_defined_1.get("build_number",0))
+	build_numbers[5] = int(App.settings.assets.user.user_defined_2.get("build_number",0))
+	
+	print(build_numbers)
 	return build_numbers
 
 
@@ -114,7 +119,7 @@ static func load_csv_data_to_array(load_path: String, strip_header: bool = false
 
 ## Save a dictionary to a json file.
 static func export_dict_to_json(dict: Dictionary, save_path: String = "user://new.json") -> void:
-	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
 		var json_string = JSON.stringify(dict, "  ", false)
 		file.store_line(json_string)
@@ -139,7 +144,7 @@ static func export_array_as_csv(table_data: Array, path: String = "user://new.cs
 		file.store_csv_line(string_array)
 
 	file.close()
-	print("Data successfully saved to ", path)
+	print("2D Array saved as csv to: ", path)
 
 
 ## Returns true if the filename exists in user://  Folders can pre-pend the file_name
