@@ -60,4 +60,9 @@ The JSON or CSV can be saved to a different location by changing path or name in
 ## weapon_dictionary.json
 Editing Weapon_Dictionary.json will allow you to add new weapons or materials, or remove certain columns from the output. That would require a tutorial. Additional weapons are being configured. Still need to add info to table from another location in the zip, regarding attack timing. That will come after this section is working nicely.
 
-Coded in Godot 4.6. (Because it's easy to compile.)
+
+## Compiling
+- Coded in Godot 4.6.1. (Because it's easy to compile.)
+- Download the latest Godot 4.6.x from https://godotengine.org/
+- Really, you can just open a clone of this repository in Godot 4.6.x and run it without compiling it. Exporting to an exe is done in the editor, and you simply follow the directions to download a template, and choose the target system.
+
