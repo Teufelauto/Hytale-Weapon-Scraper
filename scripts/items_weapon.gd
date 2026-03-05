@@ -37,11 +37,11 @@ func scrape_weapon_item_data(
 				#"projectile":[],
 				#"rand_pct_modifier": [],
 			#},
-			"charged": {
-				"physical": [],
+			#"charged": {
+				#"physical": [],
 				#"projectile":[],
 				#"rand_pct_modifier": [],
-			},
+			#},
 			"signature": {
 				"physical": [],
 				#"projectile":[],
@@ -352,14 +352,21 @@ func key_begins_with_charged_attack(unique_weapon: Dictionary,
 	if index < 0:
 		print("Error with charged attack index in key_begins_with_charged_attack")
 		return unique_weapon
-		
+	
+	## Create branch if it doesn't exist.
+	if not unique_weapon.attack.has("charged"):
+		unique_weapon.attack.set("charged", {} ) #It'll be at least 1 value
+	
+	if not unique_weapon.attack.charged.has("physical"):
+		unique_weapon.attack.charged.set("physical", [0]) #It'll be at least 1 value
+	
 	# Grow array as needed for number of attacks. Changes based on weapon family.
 	var array_min_size: int = index + 1
-	if unique_weapon.attack.charged.size() < array_min_size:
+	if unique_weapon.attack.charged.physical.size() < array_min_size:
 		# Make array bigger if index is larger than array.
-		unique_weapon.attack.charged.resize(array_min_size)
+		unique_weapon.attack.charged.physical.resize(array_min_size)
 		
-	unique_weapon.attack.charged[index] = value # Assign value to array in proper order.
+	unique_weapon.attack.charged.physical[index] = value # Assign value to array in proper order.
 	return unique_weapon
 
 
