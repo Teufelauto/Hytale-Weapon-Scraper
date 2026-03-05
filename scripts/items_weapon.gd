@@ -255,51 +255,10 @@ func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 	## Recipee integration may go here.
 	#elif key.begins_with("recipee"):
 		#unique_weapon.set(key, value)
-		
 	else:
 		unique_weapon.set(key, value)
-	
 	return unique_weapon
 
-## Assign index of value inside array.
-## Helper for key_begins_with_ group of functions.
-func assign_move_index(key: String) -> int:
-	# Arbitrarily incorrect to not be valid value.
-	var index: int = -1
-	if key.contains("1"):
-		index = 0
-	elif key.contains("2"):
-		index = 1
-	elif key.contains("3"):
-		index = 2
-	elif key.contains("4"):
-		index = 3
-	return index
-
-
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
-func create_attack_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.has("attack"):
-		unique_weapon.set("attack", {} ) #It'll be at least 1 value
-	return unique_weapon
-
-## Create 'attack/primary' branch if it doesn't exist in weapon deictionary.
-func create_attack_primary_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.attack.has("primary"):
-		unique_weapon.attack.set("primary", {} ) #It'll be at least 1 value
-	return unique_weapon
-
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
-func create_attack_charged_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.attack.has("charged"):
-		unique_weapon.attack.set("charged", {} ) #It'll be at least 1 value
-	return unique_weapon
-
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
-func create_attack_signature_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.attack.has("signature"):
-		unique_weapon.attack.set("signature", {} ) #It'll be at least 1 value
-	return unique_weapon
 
 ## Determine data to enter primary attack branch of json.
 func key_begins_with_primary_attack(unique_weapon: Dictionary, 
@@ -327,6 +286,36 @@ func key_begins_with_primary_attack(unique_weapon: Dictionary,
 		unique_weapon.attack.primary.physical.resize(array_min_size)
 		
 	unique_weapon.attack.primary.physical[index] = value # Assign value to array in proper order.
+	return unique_weapon
+
+
+## Assign index of value inside array.
+## Helper for key_begins_with_ group of functions.
+func assign_move_index(key: String) -> int:
+	# Arbitrarily incorrect to not be valid value.
+	var index: int = -1
+	if key.contains("1"):
+		index = 0
+	elif key.contains("2"):
+		index = 1
+	elif key.contains("3"):
+		index = 2
+	elif key.contains("4"):
+		index = 3
+	return index
+
+
+## Create 'attack' branch if it doesn't exist in weapon deictionary.
+func create_attack_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.has("attack"):
+		unique_weapon.set("attack", {} ) #It'll be at least 1 value
+	return unique_weapon
+
+
+## Create 'attack/primary' branch if it doesn't exist in weapon deictionary.
+func create_attack_primary_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.attack.has("primary"):
+		unique_weapon.attack.set("primary", {} ) #It'll be at least 1 value
 	return unique_weapon
 
 
@@ -359,6 +348,13 @@ func key_begins_with_charged_attack(unique_weapon: Dictionary,
 	return unique_weapon
 
 
+## Create 'attack' branch if it doesn't exist in weapon deictionary.
+func create_attack_charged_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.attack.has("charged"):
+		unique_weapon.attack.set("charged", {} ) #It'll be at least 1 value
+	return unique_weapon
+
+
 ## Determine data to enter signature attack branch of json.
 func key_begins_with_signature_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
@@ -385,6 +381,13 @@ func key_begins_with_signature_attack(unique_weapon: Dictionary,
 		unique_weapon.attack.signature.physical.resize(array_min_size)
 	
 	unique_weapon.attack.signature.physical[index] = value # Assign value to array in proper order.
+	return unique_weapon
+
+
+## Create 'attack' branch if it doesn't exist in weapon deictionary.
+func create_attack_signature_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.attack.has("signature"):
+		unique_weapon.attack.set("signature", {} ) #It'll be at least 1 value
 	return unique_weapon
 
 
