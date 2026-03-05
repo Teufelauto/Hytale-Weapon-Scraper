@@ -98,7 +98,7 @@ func process_column(current_column: Variant, xref_family_tree: Dictionary,
 	## Get the value from the intermediate dict to make the key for the item weapon dict.
 	## The retrieved key is for looking inside item_weapon_as_dict to find the value for filling in the table.
 	var retrieved_key = xref_family_tree.get(column_header)
-	
+
 	## Value to be put in the Table or unique dictionary
 	var value = get_key_value(item_weapon_as_dict, app_headers, retrieved_key, 
 			xref_common_table_headers, column_header)
@@ -157,6 +157,10 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 		# need to retrieve from template if not in item_dict
 		return common_key_in_weapon_check(item_weapon_as_dict, key)
 	
+	## Check if key is random modifier to attack damage in JSON.
+	elif column_header.begins_with("rndm_pct_mod_"):
+		return extract_rand_physical_attack_dmg(item_weapon_as_dict, key)
+	
 	## Check if key is rear attack damage in JSON.
 	elif column_header.begins_with("rear_"):
 		return extract_rear_physical_attack_dmg(item_weapon_as_dict, key)
@@ -210,6 +214,22 @@ func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:Strin
 			.BaseDamage.get("Physical", 0)
 
 
+## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
+## Get RandomPercentageModifier
+func extract_rand_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name: String) -> int:
+	if not item_weapon_as_dict.has("InteractionVars"): 
+		return 0
+	if not item_weapon_as_dict.InteractionVars.has(move_name):
+		return 0
+	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
+		return 0
+	# The [0] is to deal with the array inside json.
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
+		return 0
+	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
+			.get("RandomPercentageModifier",0)
+
+
 ## Back-Stabbing Daggers get a special function. AngledDamage is the brach to follow.
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
 func extract_rear_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name: String) -> int:
@@ -260,6 +280,10 @@ func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 	# Determine if we need to make or enter rear signature branch.
 	elif key.begins_with("rear_signature_attack"):
 		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
+	
+	elif key.begins_with("rand_pct_mod_primary_attack"):
+		unique_weapon = key_begins_with_rand_pct_mod_primary_attack(unique_weapon, key, value)
+	
 	
 	## Recipee integration may go here.
 	#elif key.begins_with("recipee"):
@@ -457,3 +481,42 @@ func key_begins_with_rear_signature_attack(unique_weapon: Dictionary,
 		
 	unique_weapon.attack.signature.rear_physical[index] = value # Assign value to array in proper order.
 	return unique_weapon
+
+
+## Determine data to enter rear signature attack branch of json.
+func key_begins_with_rand_pct_mod_primary_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with rand modifier")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	unique_weapon = create_attack_branch_if_needed(unique_weapon)
+	unique_weapon = create_attack_primary_branch_if_needed(unique_weapon)
+	if not unique_weapon.attack.primary.has("rand_pct_modifier"):
+		unique_weapon.attack.primary.set("rand_pct_modifier", [0]) #It'll be at least 1 value
+	
+	# Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.primary.rand_pct_modifier.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.primary.rand_pct_modifier.resize(array_min_size)
+		
+	unique_weapon.attack.primary.rand_pct_modifier[index] = value # Assign value to array in proper order.
+	return unique_weapon
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
