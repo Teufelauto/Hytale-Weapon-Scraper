@@ -32,11 +32,11 @@ func scrape_weapon_item_data(
 	## Unusual branches constructed as needed elsewhere, such as dagger rear-attack.
 	var unique_weapon: Dictionary = {
 		"attack": {
-			"primary": {
-				"physical": [],
+			#"primary": {
+				#"physical": [],
 				#"projectile":[],
 				#"rand_pct_modifier": [],
-			},
+			#},
 			"charged": {
 				"physical": [],
 				#"projectile":[],
@@ -183,11 +183,11 @@ func get_key_value(app_headers: Dictionary, key: String,
 	
 	## Check if key is rear attack damage in JSON.
 	elif column_header.begins_with("rear_"):
-		return extract_rear_attack_dmg(key)
+		return extract_rear_physical_attack_dmg(key)
 	
 	## Check if key is frontal attack damage in JSON.
 	elif not item_weapon_as_dict.has(key):
-		return extract_attack_dmg(key)
+		return extract_physical_attack_dmg(key)
 	
 	else:
 		print("Error: Couldn't find the key value to scrape!")
@@ -215,7 +215,7 @@ func common_key_in_weapon_check(key: String) -> Variant:
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
 ## This is a lot
-func extract_attack_dmg(move_name:String) -> int:
+func extract_physical_attack_dmg(move_name:String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return 0
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
@@ -236,7 +236,7 @@ func extract_attack_dmg(move_name:String) -> int:
 
 ## Back-Stabbing Daggers get a special function. AngledDamage is the brach to follow.
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-func extract_rear_attack_dmg(move_name: String) -> int:
+func extract_rear_physical_attack_dmg(move_name: String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return 0
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
@@ -294,6 +294,21 @@ func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 	
 	return unique_weapon
 
+## Assign index of value inside array.
+## Helper for key_begins_with_ group of functions.
+func assign_move_index(key: String) -> int:
+	# Arbitrarily incorrect to not be valid value.
+	var index: int = -1
+	if key.contains("1"):
+		index = 0
+	elif key.contains("2"):
+		index = 1
+	elif key.contains("3"):
+		index = 2
+	elif key.contains("4"):
+		index = 3
+	return index
+
 
 ## Determine data to enter primary attack branch of json.
 func key_begins_with_primary_attack(unique_weapon: Dictionary, 
@@ -303,27 +318,25 @@ func key_begins_with_primary_attack(unique_weapon: Dictionary,
 		return unique_weapon
 	
 	## Index of the move within array, such as attack 1 would index to 0
-	var index: int
-	# Assign index of value inside array.
-	if key.contains("1"):
-		index = 0
-	elif key.contains("2"):
-		index = 1
-	elif key.contains("3"):
-		index = 2
-	elif key.contains("4"):
-		index = 3
-	else :
-		print("Error with primary attack index in  assign_values_to_unique_dictionary")
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with primary attack index in assign_values_to_unique_dictionary")
 		return unique_weapon
-		
+	
+	## Create branch if it doesn't exist.
+	if not unique_weapon.attack.has("primary"):
+		unique_weapon.attack.set("primary", {} ) #It'll be at least 1 value
+	
+	if not unique_weapon.attack.primary.has("physical"):
+		unique_weapon.attack.primary.set("physical", [0]) #It'll be at least 1 value
+	
 	# Grow array as needed for number of attacks. Changes based on weapon family.
 	var array_min_size: int = index + 1
-	if unique_weapon.attack.primary.size() < array_min_size:
+	if unique_weapon.attack.primary.physical.size() < array_min_size:
 		# Make array bigger if index is larger than array.
-		unique_weapon.attack.primary.resize(array_min_size)
+		unique_weapon.attack.primary.physical.resize(array_min_size)
 		
-	unique_weapon.attack.primary[index] = value # Assign value to array in proper order.
+	unique_weapon.attack.primary.physical[index] = value # Assign value to array in proper order.
 	return unique_weapon
 
 
@@ -335,17 +348,8 @@ func key_begins_with_charged_attack(unique_weapon: Dictionary,
 		return unique_weapon
 	
 	## Index of the move within array, such as attack 1 would index to 0
-	var index: int
-	# Assign index of value inside array.
-	if key.contains("1"):
-		index = 0
-	elif key.contains("2"):
-		index = 1
-	elif key.contains("3"):
-		index = 2
-	elif key.contains("4"):
-		index = 3
-	else :
+	var index: int = assign_move_index(key)
+	if index < 0:
 		print("Error with charged attack index in key_begins_with_charged_attack")
 		return unique_weapon
 		
@@ -367,17 +371,8 @@ func key_begins_with_signature_attack(unique_weapon: Dictionary,
 		return unique_weapon
 	
 	## Index of the move within array, such as attack 1 would index to 0
-	var index: int
-	# Assign index of value inside array.
-	if key.contains("1"):
-		index = 0
-	elif key.contains("2"):
-		index = 1
-	elif key.contains("3"):
-		index = 2
-	elif key.contains("4"):
-		index = 3
-	else :
+	var index: int = assign_move_index(key)
+	if index < 0:
 		print("Error with attack index in key_begins_with_signature_attack")
 		return unique_weapon
 		
@@ -399,17 +394,8 @@ func key_begins_with_rear_charged_attack(unique_weapon: Dictionary,
 		return unique_weapon
 	
 	## Index of the move within array, such as attack 1 would index to 0
-	var index: int
-	# Assign index of value inside array.
-	if key.contains("1"):
-		index = 0
-	elif key.contains("2"):
-		index = 1
-	elif key.contains("3"):
-		index = 2
-	elif key.contains("4"):
-		index = 3
-	else :
+	var index: int = assign_move_index(key)
+	if index < 0:
 		print("Error with rear charged attack index in key_begins_with_rear_charged_attack")
 		return unique_weapon
 	
@@ -435,17 +421,8 @@ func key_begins_with_rear_signature_attack(unique_weapon: Dictionary,
 		return unique_weapon
 	
 	## Index of the move within array, such as attack 1 would index to 0
-	var index: int
-	# Assign index of value inside array.
-	if key.contains("1"):
-		index = 0
-	elif key.contains("2"):
-		index = 1
-	elif key.contains("3"):
-		index = 2
-	elif key.contains("4"):
-		index = 3
-	else :
+	var index: int = assign_move_index(key)
+	if index < 0:
 		print("Error with rear signature attack index in key_begins_with_rear_signature_attack")
 		return unique_weapon
 	
