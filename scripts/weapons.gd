@@ -98,9 +98,7 @@ func determine_weapon_table_columns() -> Array:
 
 ## creates Column headers for all weapons for lookup purposes.
 func family_weapon_columns_dictionary(table_columns: Array) -> void:
-
 	var common_headers: Dictionary = weapon_dict.common_table_headers
-	
 	# loop for each weapon family
 	for family in weapon_dict.weapon_family:
 		weapon_move_Xref_dict[family] = common_headers.duplicate()
@@ -121,7 +119,6 @@ func family_weapon_columns_dictionary(table_columns: Array) -> void:
 				
 				# Append "_Damage" to end for making key to scrape json 
 				move_name = move_name + "_Damage"
-				
 				# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
 				xref_family_tree.set(entry, move_name)
 	#print(weapon_move_Xref_dict)
@@ -145,14 +142,14 @@ func step_through_weapons() -> void:
 		
 		## Iterate through the files and check if they are in the target folder.
 		for file_path in FileUtils.zip_files:
-			prepare_individual_weapon_to_scrape(file_path, target_folder, 
+			current_table_row = prepare_individual_weapon_to_scrape(file_path, target_folder, 
 		current_table_row, current_family, current_family_lower,
 		xref_family_tree, xref_common_table_headers)
 
 
 func prepare_individual_weapon_to_scrape(file_path: String, target_folder: String, 
 		current_table_row: int, current_family: String, current_family_lower: String,
-		xref_family_tree: Variant, xref_common_table_headers: Dictionary) -> void:
+		xref_family_tree: Variant, xref_common_table_headers: Dictionary) -> int:
 	## Check if the file path starts with the desired folder path
 	## (e.g., "my_folder/" or "res://my_folder/").
 	if target_folder.is_empty() or file_path.begins_with(target_folder):
@@ -179,6 +176,7 @@ func prepare_individual_weapon_to_scrape(file_path: String, target_folder: Strin
 				current_child, current_child_lower, xref_family_tree, 
 				xref_common_table_headers, current_table_row)
 		iw.free()
+	return current_table_row
 
 
 ## Call this to print the table to console for troubleshooting
