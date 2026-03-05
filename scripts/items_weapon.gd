@@ -42,11 +42,11 @@ func scrape_weapon_item_data(
 				#"projectile":[],
 				#"rand_pct_modifier": [],
 			#},
-			"signature": {
-				"physical": [],
+			#"signature": {
+				#"physical": [],
 				#"projectile":[],
 				#"rand_pct_modifier": [],
-			},
+			#},
 		},
 		#"guard": {
 			#"bash_damage": {
@@ -326,7 +326,6 @@ func key_begins_with_primary_attack(unique_weapon: Dictionary,
 	## Create branch if it doesn't exist.
 	if not unique_weapon.attack.has("primary"):
 		unique_weapon.attack.set("primary", {} ) #It'll be at least 1 value
-	
 	if not unique_weapon.attack.primary.has("physical"):
 		unique_weapon.attack.primary.set("physical", [0]) #It'll be at least 1 value
 	
@@ -356,7 +355,6 @@ func key_begins_with_charged_attack(unique_weapon: Dictionary,
 	## Create branch if it doesn't exist.
 	if not unique_weapon.attack.has("charged"):
 		unique_weapon.attack.set("charged", {} ) #It'll be at least 1 value
-	
 	if not unique_weapon.attack.charged.has("physical"):
 		unique_weapon.attack.charged.set("physical", [0]) #It'll be at least 1 value
 	
@@ -382,14 +380,20 @@ func key_begins_with_signature_attack(unique_weapon: Dictionary,
 	if index < 0:
 		print("Error with attack index in key_begins_with_signature_attack")
 		return unique_weapon
-		
+	
+	## Create branch if it doesn't exist.
+	if not unique_weapon.attack.has("signature"):
+		unique_weapon.attack.set("signature", {} ) #It'll be at least 1 value
+	if not unique_weapon.attack.signature.has("physical"):
+		unique_weapon.attack.signature.set("physical", [0]) #It'll be at least 1 value
+	
 	# Grow array as needed for number of attacks. Changes based on weapon family.
 	var array_min_size: int = index + 1
-	if unique_weapon.attack.signature.size() < array_min_size:
+	if unique_weapon.attack.signature.physical.size() < array_min_size:
 		# Make array bigger if index is larger than array.
-		unique_weapon.attack.signature.resize(array_min_size)
-		
-	unique_weapon.attack.signature[index] = value # Assign value to array in proper order.
+		unique_weapon.attack.signature.physical.resize(array_min_size)
+	
+	unique_weapon.attack.signature.physical[index] = value # Assign value to array in proper order.
 	return unique_weapon
 
 
@@ -408,15 +412,18 @@ func key_begins_with_rear_charged_attack(unique_weapon: Dictionary,
 	
 	## Create branch if it doesn't exist.
 	if not unique_weapon.attack.has("rear_charged"):
-		unique_weapon.attack.set("rear_charged", [0]) #It'll be at least 1 value
+		unique_weapon.attack.set("rear_charged", {} ) #It'll be at least 1 value
+	if not unique_weapon.attack.rear_charged.has("physical"):
+		unique_weapon.attack.rear_charged.set("physical", [0]) #It'll be at least 1 value
+	
 		
 	## Grow array as needed for number of attacks. Changes based on weapon family.
 	var array_min_size: int = index + 1
-	if unique_weapon.attack.rear_charged.size() < array_min_size:
+	if unique_weapon.attack.rear_charged.physical.size() < array_min_size:
 		# Make array bigger if index is larger than array.
-		unique_weapon.attack.rear_charged.resize(array_min_size)
+		unique_weapon.attack.rear_charged.physical.resize(array_min_size)
 		
-	unique_weapon.attack.rear_charged[index] = value # Assign value to array in proper order.
+	unique_weapon.attack.rear_charged.physical[index] = value # Assign value to array in proper order.
 	return unique_weapon
 
 
@@ -435,13 +442,15 @@ func key_begins_with_rear_signature_attack(unique_weapon: Dictionary,
 	
 	## Create branch if it doesn't exist.
 	if not unique_weapon.attack.has("rear_signature"):
-		unique_weapon.attack.set("rear_signature", [0]) #It'll be at least 1 value
+		unique_weapon.attack.set("rear_signature", {} ) #It'll be at least 1 value
+	if not unique_weapon.attack.rear_signature.has("physical"):
+		unique_weapon.attack.rear_signature.set("physical", [0]) #It'll be at least 1 value
 	
 	# Grow array as needed for number of attacks. Changes based on weapon family.
 	var array_min_size: int = index + 1
-	if unique_weapon.attack.rear_signature.size() < array_min_size:
+	if unique_weapon.attack.rear_signature.physical.size() < array_min_size:
 		# Make array bigger if index is larger than array.
-		unique_weapon.attack.rear_signature.resize(array_min_size)
+		unique_weapon.attack.rear_signature.physical.resize(array_min_size)
 		
-	unique_weapon.attack.rear_signature[index] = value # Assign value to array in proper order.
+	unique_weapon.attack.rear_signature.physical[index] = value # Assign value to array in proper order.
 	return unique_weapon
