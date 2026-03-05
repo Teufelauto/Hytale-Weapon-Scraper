@@ -10,9 +10,9 @@ const KEYS_WITH_INT_VALUES: Array = [
 	"MaxStack"
 ]
 
-##==================================================================================================
-##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-##==================================================================================================
+##==============================================================================
+##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+##==============================================================================
 
 ## This function is called from weapons class. Other functions in this class result from it.
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
@@ -27,14 +27,32 @@ func scrape_weapon_item_data(
 		xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	
-	## Dictionary for a singular weapon, equivalent one row in the weapon table. Becomes output json
+	## Dictionary for a singular weapon, equivalent one row in the weapon table. 
+	## Becomes output json
 	## Unusual branches constructed as needed elsewhere, such as dagger rear-attack.
 	var unique_weapon: Dictionary = {
 		"attack": {
-			"primary": [],
-			"charged": [],
-			"signature": [],
+			"primary": {
+				"physical": [],
+				#"projectile":[],
+				#"rand_pct_modifier": [],
+			},
+			"charged": {
+				"physical": [],
+				#"projectile":[],
+				#"rand_pct_modifier": [],
+			},
+			"signature": {
+				"physical": [],
+				#"projectile":[],
+				#"rand_pct_modifier": [],
+			},
 		},
+		#"guard": {
+			#"bash_damage": {
+				#"physical": [],
+			#},
+		#},
 		#"recipe":{}, ## This is where recipe brach could be added.
 	}
 	

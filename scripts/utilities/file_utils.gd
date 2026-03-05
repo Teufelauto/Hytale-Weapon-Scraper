@@ -1,6 +1,5 @@
 class_name FileUtils
 extends FileAccess
-
 ## Various file handling helper functions.
 ##
 ## Various static functions for loading json, csv, or saving them. This class

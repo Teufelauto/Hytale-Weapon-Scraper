@@ -13,11 +13,6 @@ static var weapon_encyclopedia: Dictionary = {}
 ## Dictionary of column name equivalents for weapon family 
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
-
-var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
-var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
-var current_template_parent: String ## Keeps track of the currently loaded template.
-
 # Weapon Table construction
 ## Determine how many rows are in the weapon_table by counting each weapon's files
 static var total_number_of_weapons:int = 0
@@ -25,6 +20,9 @@ static var weapon_table_height: int = 0
 static var weapon_table_width: int = 0
 static var weapon_table_column_array: Array = []
 static var weapon_table: Array[Array] = [] ## Table to contain all the data
+var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
+var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
+var current_template_parent: String ## Keeps track of the currently loaded template.
 
 
 ##==================================================================================================
