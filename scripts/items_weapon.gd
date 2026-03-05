@@ -46,37 +46,46 @@ func scrape_weapon_item_data(
 	
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
-		
-		## The header that appears at the top of the Table for the column we're working on.
-		var column_header = weapon_table_column_array[current_column]
-		
-		## PascalCase or Pascal_Snake_Case for attack moves. Loses data for back-stabbing.
-		## Get the value from the intermediate dict to make the key for the item weapon dict.
-		## The retrieved key is for looking inside item_weapon_as_dict to find the value for filling in the table.
-		var retrieved_key = xref_family_tree.get(column_header)
-		
-		## ------ This is the Meat & Potatos of it ------------
-		## Value to be put in the Table or unique dictionary
-		var value = get_key_value(item_weapon_as_dict, app_headers, retrieved_key, 
-				xref_common_table_headers, column_header)
-		
-		# Makes value integer if able. (item level and max durability. 
-		#Attacks functions already return int)
-		if retrieved_key in KEYS_WITH_INT_VALUES:
-			value = int(value)
-		
-		#Assign value to Table
-		var column_index_string: String = weapon_dict.weapon_table_columns.find_key(column_header)
-		var column_index: int = int(column_index_string) #number was string, as a key in json
-		weapon_table[current_row][column_index] = value
-		
+		var columnheader_value: Dictionary = process_column(current_column, 
+				xref_family_tree, item_weapon_as_dict, app_headers, 
+				xref_common_table_headers, current_row)
+		var column_header: String = columnheader_value.get("column_header")
+		var value: Variant = columnheader_value.get("value")
 		#Assign value to current child dictionary, posibly in subdictionaries or arrays.
 		unique_weapon = assign_values_to_unique_dictionary(unique_weapon, column_header, value)
 		
 	## Add this child to the Big Dictionary under family.
 	weapon_encyclopedia[current_family_lower].set(current_child_lower, unique_weapon.duplicate())
 	
+
+## Find one value from item_weapon_as_dict.
+func process_column(current_column: Variant, xref_family_tree: Dictionary, 
+		item_weapon_as_dict: Dictionary, app_headers: Dictionary,  
+			xref_common_table_headers: Dictionary, current_row: int) -> Dictionary:
+	## The header that appears at the top of the Table for the column we're working on.
+	var column_header = weapon_table_column_array[current_column]
 	
+	## PascalCase or Pascal_Snake_Case for attack moves. Loses data for back-stabbing.
+	## Get the value from the intermediate dict to make the key for the item weapon dict.
+	## The retrieved key is for looking inside item_weapon_as_dict to find the value for filling in the table.
+	var retrieved_key = xref_family_tree.get(column_header)
+	
+	## Value to be put in the Table or unique dictionary
+	var value = get_key_value(item_weapon_as_dict, app_headers, retrieved_key, 
+			xref_common_table_headers, column_header)
+	
+	# Makes value integer if able. (item level and max durability. 
+	#Attacks functions already return int)
+	if retrieved_key in KEYS_WITH_INT_VALUES:
+		value = int(value)
+	
+	#Assign value to Table
+	var column_index_string: String = weapon_dict.weapon_table_columns.find_key(column_header)
+	var column_index: int = int(column_index_string) #number was string, as a key in json
+	weapon_table[current_row][column_index] = value
+	return { "column_header": column_header, "value": value }
+
+
 ## Parse weapon server/item/items damage info json and turn it into a Dictionary 
 func parse_weapon_item_info(file_path: String) -> Dictionary:
 	#need the file path and name of the current weapon. Holey Canolli, it's case-sensative.
