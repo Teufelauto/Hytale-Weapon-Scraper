@@ -2,7 +2,9 @@
 	"info_for_devs": "If new materials for weapons are introduced, add them to the weapon_child 
 		  array, being mindful of capitalization. New weapon families can be similiarly added, 
 		  as long as they have the same json structure. weapon_table_columns may be reordered by 
-		  changing only key values, without sorting, if desired. Do not change columns 0-3",
+		  changing only key values, without sorting, if desired. Do not change columns 0-3. 
+		  Godot Engine can parse json files with trailing commas, so they are encouraged in this 
+		  document, as it makes editing easier, and is better for Git.",
 	"weapon_table_columns": {
 		"0": "item_count",
 		"1": "id",
