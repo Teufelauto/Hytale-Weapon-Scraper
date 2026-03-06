@@ -4,6 +4,16 @@ extends Object
 ##
 ## Loads, processes, verifies, corrects, saves. Becomes source for below static vars.
 
+## Index for build_numbers and build_folders Arrays. Also for choosing active Assets.
+enum Assets { 
+	PREVIOUS_PRE_RELEASE, 
+	LATEST_PRE_RELEASE, 
+	PREVIOUS_RELEASE, 
+	LATEST_RELEASE,
+	USER_DEFINED_1,
+	USER_DEFINED_2,
+}
+enum Track { ASSETS_1, ASSETS_2, DIFF_1, DIFF_2 }
 ## App Settings Data loaded from / saved to user://app_settings.json
 static var settings:Dictionary = {}
 
@@ -35,18 +45,6 @@ static var active_build_numbers: Array = [0, 0]
 static var active_assets: Array = [null, null]
 ## True if both exported csv and json files exist for that index. 
 static var assets_processed: Array = [false, false]
-
-## Index for build_numbers and build_folders Arrays. Also for choosing active Assets.
-enum Assets { 
-	PREVIOUS_PRE_RELEASE, 
-	LATEST_PRE_RELEASE, 
-	PREVIOUS_RELEASE, 
-	LATEST_RELEASE,
-	USER_DEFINED_1,
-	USER_DEFINED_2,
-}
-
-enum Track { ASSETS_1, ASSETS_2,  DIFF_1, DIFF_2 }
 
 
 ## Sets up app the first time it is loaded by copying files to user:// and defining assets location

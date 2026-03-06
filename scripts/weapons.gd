@@ -13,11 +13,6 @@ static var weapon_encyclopedia: Dictionary = {}
 ## Dictionary of column name equivalents for weapon family 
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
-
-var item_weapon_as_dict: Dictionary = {} ## JSON as Dictionary of Weapon_Sword_Crude or whatever
-var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
-var current_template_parent: String ## Keeps track of the currently loaded template.
-
 # Weapon Table construction
 ## Determine how many rows are in the weapon_table by counting each weapon's files
 static var total_number_of_weapons:int = 0
@@ -25,6 +20,8 @@ static var weapon_table_height: int = 0
 static var weapon_table_width: int = 0
 static var weapon_table_column_array: Array = []
 static var weapon_table: Array[Array] = [] ## Table to contain all the data
+var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
+var current_template_parent: String ## Keeps track of the currently loaded template.
 
 
 ##==================================================================================================
@@ -47,20 +44,14 @@ func headless_main(asset_being_processed: int) -> void:
 		FileUtils.export_array_as_csv(weapon_table, exported_csv_1_save_path) # Export to csv
 		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_1_save_path) # export to json
 		
-		
-	
 	else: ## asset_being_processed == 2
 		FileUtils.export_array_as_csv(weapon_table, exported_csv_2_save_path) # Export to csv
 		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
 		
-		
-	
-	
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
 ## The table can be exported as CSV or used internally. 
 func initialize_weapon_table() -> void:
-	
 	weapon_table.clear() ## Must clear before second go round, or extra cells
 	total_number_of_weapons = 0 ## Must clear before second go round, or extra cells
 	
@@ -68,21 +59,16 @@ func initialize_weapon_table() -> void:
 	# Determine Rows: A family is Mace, or Sword, etc
 	for family in weapon_dict.weapon_family.keys():
 		#print("family: ", family)
-		
 		var target_folder: String = "Server/Item/Items/Weapon/" + family + "/"
 		## Iterate through the files and check if they are in the target folder.
 		for file_path in FileUtils.zip_files:
 		## Check if the file path starts with the desired folder path
 			if file_path.begins_with(target_folder):
 				total_number_of_weapons += 1
-		#print(total_number_of_weapons)
-	
-	## Temp - add bunches of extra rows because we may not be usung tables for base anymore...
 	weapon_table_height = total_number_of_weapons + 1 # Add 1 for the column headers
 	
 	# Determine Columns from weapon dictionary json
 	weapon_table_column_array = determine_weapon_table_columns()
-	#print(weapon_table_column_array)
 	weapon_table_width = weapon_table_column_array.size() # columns in array
 	
 	# Create the outer array
@@ -90,9 +76,8 @@ func initialize_weapon_table() -> void:
 		# Append inner arrays to form the 2D structure
 		weapon_table.append([])
 		for column in range(weapon_table_width):
-			# Initialize each cell with a default value (e.g., 0 for an empty cell)
+			# Initialize each cell with a default value
 			weapon_table[row].append("")
-	# You can then set specific values. weapon_table[Row][Column]
 	# Populate the Column Headers for the table.
 	for column in range(weapon_table_width):
 		weapon_table[0][column] = weapon_table_column_array[column]
@@ -113,17 +98,13 @@ func determine_weapon_table_columns() -> Array:
 
 ## creates Column headers for all weapons for lookup purposes.
 func family_weapon_columns_dictionary(table_columns: Array) -> void:
-
 	var common_headers: Dictionary = weapon_dict.common_table_headers
-	
 	# loop for each weapon family
 	for family in weapon_dict.weapon_family:
 		weapon_move_Xref_dict[family] = common_headers.duplicate()
 		var xref_family_tree = weapon_move_Xref_dict[family]
 		var family_tree = weapon_dict.weapon_family[family]
-		
-		#print(family)
-		#print(xref_family_tree)
+		#print(family, xref_family_tree)
 		
 		# loop through each column in the table
 		for entry in table_columns:
@@ -138,7 +119,6 @@ func family_weapon_columns_dictionary(table_columns: Array) -> void:
 				
 				# Append "_Damage" to end for making key to scrape json 
 				move_name = move_name + "_Damage"
-				
 				# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
 				xref_family_tree.set(entry, move_name)
 	#print(weapon_move_Xref_dict)
@@ -148,10 +128,6 @@ func family_weapon_columns_dictionary(table_columns: Array) -> void:
 func step_through_weapons() -> void:
 	var current_table_row: int  = 0 #start with 0 and increment for each value
 	var xref_common_table_headers: Dictionary = weapon_dict.common_table_headers
-	# EXPERIMENT for gui display----------------------------------------------------------------------------
-	#var wpn_str: String = "Retrieving the weapons of Hytale!"
-	#label_processing.set_text(wpn_str)
-	#await get_tree().create_timer(0.5).timeout
 	
 	#select weapon family- battleaxe, dagger etc
 	for current_family in weapon_dict.weapon_family.keys():
@@ -166,37 +142,41 @@ func step_through_weapons() -> void:
 		
 		## Iterate through the files and check if they are in the target folder.
 		for file_path in FileUtils.zip_files:
-		## Check if the file path starts with the desired folder path
-		## (e.g., "my_folder/" or "res://my_folder/").
-		## If target_folder is empty, it processes all files.
-			if target_folder.is_empty() or file_path.begins_with(target_folder):
-				#print()
-				#print("Found weapon file in target folder: ", file_path)
-				
-				current_table_row += 1
-				
-				## The below block pulls out the current_child String from path.
-				## count is the index for .get_slice method.
-				var count: int = file_path.get_slice_count("/") - 1
-				## current_child is the descriptor, such as crude, or copper.
-				var current_child: String = file_path.get_slice("/", count) 
-				current_child = current_child.trim_suffix(".json")
-				var left_stripper: String = "Weapon_" + current_family + "_"
-				current_child = current_child.trim_prefix(left_stripper)
-				#print(current_child)
-				
-				## lower_case string version of current_Child
-				var current_child_lower: String = current_child.to_lower()
-				# Second level is child
-				weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) 
-							
-				## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
-				var iw := ItemsWeapon.new()
-				
-				iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, \
-						current_child, current_child_lower, xref_family_tree, \
-						xref_common_table_headers, current_table_row)
-				iw.free()
+			current_table_row = prepare_individual_weapon_to_scrape(file_path, target_folder, 
+		current_table_row, current_family, current_family_lower,
+		xref_family_tree, xref_common_table_headers)
+
+
+func prepare_individual_weapon_to_scrape(file_path: String, target_folder: String, 
+		current_table_row: int, current_family: String, current_family_lower: String,
+		xref_family_tree: Variant, xref_common_table_headers: Dictionary) -> int:
+	## Check if the file path starts with the desired folder path
+	## (e.g., "my_folder/" or "res://my_folder/").
+	if target_folder.is_empty() or file_path.begins_with(target_folder):
+		#print()
+		#print("Found weapon file in target folder: ", file_path)
+		current_table_row += 1
+		## The below block pulls out the current_child String from path.
+		var count: int = file_path.get_slice_count("/") - 1
+		## current_child is the descriptor, such as crude, or copper.
+		var current_child: String = file_path.get_slice("/", count) 
+		current_child = current_child.trim_suffix(".json")
+		var left_stripper: String = "Weapon_" + current_family + "_"
+		current_child = current_child.trim_prefix(left_stripper)
+		#print(current_child)
+		
+		## lower_case string version of current_Child
+		var current_child_lower: String = current_child.to_lower()
+		# Second level is child
+		weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) 
+		
+		## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
+		var iw := ItemsWeapon.new()
+		iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, 
+				current_child, current_child_lower, xref_family_tree, 
+				xref_common_table_headers, current_table_row)
+		iw.free()
+	return current_table_row
 
 
 ## Call this to print the table to console for troubleshooting
