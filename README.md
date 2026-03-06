@@ -4,9 +4,10 @@
 - App takes about 45 seconds to go through the two 3 GB Assets.zip on a 9800x3D computer with an NVME drive. It may appear frozen, but it's probably still parsing. It will save the files, and close when it's done. If running --headless in a terminal, you can see the progress as it processes each weapon.
 - Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
 
-- Version 0.4.0 saves each output with the Release/Pre-Release build-number in the filename. Compares two Assets without needing them to be reprocessed if output exists already.
+- Version 0.5.0 nests attack damage one fork higher so random damage modifier can be paraellel. Also allows other tyopes of damage beyond 'physical'.
+- Version 0.4.0 saves each output with the Release/Pre-Release build-number in the filename. Compares two Assets without needing them to be reprocessed if output exists already. (Files must be in the folders identified in app_settings.json)
 - More parameters will be added to output, but the goal is to not make breaking changes affecting APIs using this app.
-### Example json output
+### Example json output (with data obfuscated)
 ```json
 {
   "battleaxe": {
@@ -42,24 +43,29 @@ There is no GUI yet. It just opens a rectangle while it runs, then closes when t
 
 App creates folder:
 
-WIN: C:/Users/%UserName%/AppData/Roaming/Hytale-Weapon-Scraper
+WIN: `C:/Users/%UserName%/AppData/Roaming/Hytale-Weapon-Scraper`
 
-LINUX:  ~/.local/share/Hytale-Weapon-Scraper
+LINUX:  `~/.local/share/Hytale-Weapon-Scraper`
 
 The app creates an app_settings.json in this folder. If you want to change filenames or paths, or which version of Hytale to scrape, do it here.
 
 ## app_settings.json
-The app scrapes the latest Pre-Release on your system, by default. If you wish to scrape a different version, change true to false for pre-release, and false to true for either latest release, or user_defined. Change the user_defined Assets_Path to the desired path, such as a previous version.
+The app scrapes the latest Pre-Release on your system, by default. If you wish to scrape a different version, change true to false for pre-release, and false to true for either latest release, or user_defined. Change the user_defined Assets_Path to the desired path, such as a previous version you've saved somewhere on your machine.
 
-Values may be changed in this file to modify load-path, save-path, and filename without a GUI. run_app_headless should be set to true, because the GUI is not ready. Choose only 0ne of the assets to change to true. You can change asset path values to a different location if you wish to analyze a zip saved in a custom location. So, if you wish to analyze an older release of the Assets.zip file, you can modify the pregenerated path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. Filenames can be whatever you like.
+Values may be changed in this file to modify load-path, save-path, and filename without a GUI. run_app_headless should be set to true, because the GUI is not ready. Choose only 0ne of the assets to change to true. You can change asset path values to a different location if you wish to analyze a zip saved in a custom location. So, if you wish to analyze an older release of the Assets.zip file, you can modify the pregenerated path. All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. Filenames can be whatever you like. Extensions will be added by app if forgotten.
  
 
-Use "/" rather than "\\" in file paths, and end the path with a "/".
+Use "/" rather than "\\" in file paths, and end the path with a "/". A missed trailing slash may or may not be caught and corrected by the app.
 
-The JSON or CSV can be saved to a different location by changing path or name in app_settings.json
+- The JSON or CSV can be saved to a different location by changing path or name in app_settings.json. All the processed assets are saved in the `\Hytale-Weapon-Scraper\output\` folder by default. All files must be moved to the newly specified folders, if changed, to prevent reprocessing data. 
+- All 3 diff files are saved in one folder named `\Hytale-Weapon-Scraper\diff_results\`. Their folders may be changed at your whim.
+- The `csv_wpn_diff` is a table that can be imported into a spreadsheet. This is the easiest way for a human to view the changes at a glance, or while manually editing a wiki.
+- The `json_wpn_diff` is that table turned into a cleanly formatted json.
+- The `verbose_wpn_diff` is a json that explains what the diffs are, where they are, rather than just the keys and values. I'm not a fan, but someone may be able to do something progamatically with it, so it stays. Specify a garbage folder for it if you want.
+  
 ## weapon_dictionary.json
-Editing Weapon_Dictionary.json will allow you to add new weapons or actions, or remove certain columns from the output. That would require a tutorial. Additional weapons are being configured. Still need to add info to table from another location in the zip, regarding attack timing.
-
+- Editing Weapon_Dictionary.json will allow you to add new weapons or actions.
+- Additional weapons are added by following the existing pattern, being very aware to match capitalization. Weapon name should be capitalized just like fond in the `Assets.zip\Server\Item\Items\Weapon`. Attack moves should be a hybrid Pascal_Snake_Case, as found in the weapon's json.
 
 ## Compiling
 - Coded in Godot 4.6.1. (Because it's easy to compile.)
