@@ -274,6 +274,10 @@ func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
 	
 	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_primary_attack"):
+		unique_weapon = key_begins_with_rear_primary_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
 	elif key.begins_with("rear_charged_attack"):
 		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
 	
@@ -428,6 +432,37 @@ func create_attack_signature_branch_if_needed(unique_weapon: Dictionary) -> Dict
 		unique_weapon.attack.set("signature", {} ) #It'll be at least 1 value
 	return unique_weapon
 
+
+## Determine data to enter rear primary attack branch of json. (Not used by daggers)
+## This is a 'Just in case' function.
+func key_begins_with_rear_primary_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with rear primary attack index in key_begins_with_rear_primary_attack")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	unique_weapon = create_attack_branch_if_needed(unique_weapon)
+	unique_weapon = create_attack_charged_branch_if_needed(unique_weapon)
+	if not unique_weapon.attack.primary.has("rear_physical"):
+		unique_weapon.attack.primary.set("rear_physical", [0]) #It'll be at least 1 value
+	
+
+	## Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.primary.rear_physical.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.primary.rear_physical.resize(array_min_size)
+		
+	unique_weapon.attack.primary.rear_physical[index] = value # Assign value to array in proper order.
+	return unique_weapon
+	
 
 ## Determine data to enter rear charged attack branch of json.
 func key_begins_with_rear_charged_attack(unique_weapon: Dictionary, 
