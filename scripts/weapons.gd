@@ -117,9 +117,11 @@ func family_weapon_columns_dictionary(table_columns: Array) -> void:
 				var look: String = entry.replace("_damage","_name") 
 				var move_name: String = family_tree.get(look,"")
 				
-				# Append "_Damage" to end for making key to scrape json 
-				move_name = move_name + "_Damage"
-				# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
+				if not move_name.contains("Damage"):
+					## Append "_Damage" to end for making key to scrape json.
+					## Breaks projectiles (or anything without damage at end of key)
+					move_name = move_name + "_Damage"
+					# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
 				xref_family_tree.set(entry, move_name)
 	#print(weapon_move_Xref_dict)
 
