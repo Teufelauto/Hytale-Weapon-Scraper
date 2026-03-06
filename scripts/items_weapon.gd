@@ -158,7 +158,7 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 		return common_key_in_weapon_check(item_weapon_as_dict, key)
 	
 	## Check if key is random modifier to attack damage in JSON.
-	elif column_header.begins_with("rndm_pct_mod_"):
+	elif column_header.begins_with("rand_pct_mod_"):
 		return extract_rand_physical_attack_dmg(item_weapon_as_dict, key)
 	
 	## Check if key is rear attack damage in JSON.
@@ -216,7 +216,7 @@ func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:Strin
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
 ## Get RandomPercentageModifier
-func extract_rand_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name: String) -> int:
+func extract_rand_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name: String) -> float:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return 0
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
@@ -483,7 +483,7 @@ func key_begins_with_rear_signature_attack(unique_weapon: Dictionary,
 	return unique_weapon
 
 
-## Determine data to enter rear signature attack branch of json.
+## Determine data to enter pct mod attack branch of json.
 func key_begins_with_rand_pct_mod_primary_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
@@ -512,10 +512,62 @@ func key_begins_with_rand_pct_mod_primary_attack(unique_weapon: Dictionary,
 	return unique_weapon
 	
 	
+	## Determine data to enter pct mod attack branch of json.
+func key_begins_with_rand_pct_mod_charged_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with rand modifier")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	unique_weapon = create_attack_branch_if_needed(unique_weapon)
+	unique_weapon = create_attack_primary_branch_if_needed(unique_weapon)
+	if not unique_weapon.attack.charged.has("rand_pct_modifier"):
+		unique_weapon.attack.charged.set("rand_pct_modifier", [0]) #It'll be at least 1 value
+	
+	# Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.charged.rand_pct_modifier.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.charged.rand_pct_modifier.resize(array_min_size)
+		
+	unique_weapon.attack.charged.rand_pct_modifier[index] = value # Assign value to array in proper order.
+	return unique_weapon
 	
 	
+	## Determine data to enter pct mod attack branch of json.
+func key_begins_with_rand_pct_mod_signature_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
 	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
 	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with rand modifier")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	unique_weapon = create_attack_branch_if_needed(unique_weapon)
+	unique_weapon = create_attack_primary_branch_if_needed(unique_weapon)
+	if not unique_weapon.attack.signature.has("rand_pct_modifier"):
+		unique_weapon.attack.signature.set("rand_pct_modifier", [0]) #It'll be at least 1 value
+	
+	# Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.signature.rand_pct_modifier.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.signature.rand_pct_modifier.resize(array_min_size)
+		
+	unique_weapon.attack.signaturery.rand_pct_modifier[index] = value # Assign value to array in proper order.
+	return unique_weapon
 	
 	
 	
