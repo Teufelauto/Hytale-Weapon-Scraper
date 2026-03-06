@@ -157,6 +157,10 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 		# need to retrieve from template if not in item_dict
 		return common_key_in_weapon_check(item_weapon_as_dict, key)
 	
+	## Check if key is shooting attack damage in JSON.
+	elif column_header.begins_with("shoot_"):
+		return extract_shoot_attack_dmg(item_weapon_as_dict, key)
+	
 	## Check if key is random modifier to attack damage in JSON.
 	elif column_header.begins_with("rand_pct_mod_"):
 		return extract_rand_physical_attack_dmg(item_weapon_as_dict, key)
@@ -214,6 +218,14 @@ func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 	elif key.begins_with("rand_pct_mod_signature_attack"):
 		unique_weapon = key_begins_with_rand_pct_mod_signature_attack(unique_weapon, key, value)
 		
+	# Determine if we need to enter primary projectile attack branch.
+	elif key.begins_with("shoot_primary"):
+		unique_weapon = key_begins_with_shoot_primary_attack(unique_weapon, key, value)	
+	
+	# Determine if we need to enter primary projectile attack branch.
+	elif key.begins_with("shoot_signature"):
+		unique_weapon = key_begins_with_shoot_signature_attack(unique_weapon, key, value)	
+	
 	## Recipee integration may go here.
 	#elif key.begins_with("recipee"):
 		#unique_weapon.set(key, value)
@@ -256,10 +268,29 @@ func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:Strin
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
 			.has("BaseDamage"):
 		return 0
-	
 	## We can finally see what kind of damage is done.
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
 			.BaseDamage.get("Physical", 0)
+
+
+## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
+## This is a lot
+func extract_shoot_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
+	if not item_weapon_as_dict.has("InteractionVars"): 
+		return 1111
+	if not item_weapon_as_dict.InteractionVars.has(move_name):
+		print(move_name)
+		return 1112
+	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
+		return 1113
+	# The [0] is to deal with the array inside json.
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
+		return 1114
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
+			.has("BaseDamage"):
+		return 1115
+	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
+			.BaseDamage.get("Projectile", 1116)
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
@@ -296,8 +327,6 @@ func extract_rear_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
 			.DamageCalculator.has("BaseDamage"):
 		return 0
-	
-	## We can finally see what kind of damage is done.
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
 			.DamageCalculator.BaseDamage.get("Physical", 0)
 
@@ -565,6 +594,64 @@ func key_begins_with_rand_pct_mod_signature_attack(unique_weapon: Dictionary,
 	return unique_weapon
 
 
+## Determine data to enter primary attack branch of json.
+func key_begins_with_shoot_primary_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with primary attack index in assign_values_to_unique_dictionary")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	unique_weapon = create_attack_branch_if_needed(unique_weapon)
+	unique_weapon = create_attack_primary_branch_if_needed(unique_weapon)
+	if not unique_weapon.attack.primary.has("projectile"):
+		unique_weapon.attack.primary.set("projectile", [0]) #It'll be at least 1 value
+	
+	# Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.primary.projectile.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.primary.projectile.resize(array_min_size)
+		
+	unique_weapon.attack.primary.projectile[index] = value # Assign value to array in proper order.
+	return unique_weapon
+
+
+## Determine data to enter signature attack branch of json.
+func key_begins_with_shoot_signature_attack(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_weapon
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with attack index in key_begins_with_signature_attack")
+		return unique_weapon
+	
+	## Create branch if it doesn't exist.
+	unique_weapon = create_attack_branch_if_needed(unique_weapon)
+	unique_weapon = create_attack_signature_branch_if_needed(unique_weapon)
+	if not unique_weapon.attack.signature.has("projectile"):
+		unique_weapon.attack.signature.set("projectile", [0]) #It'll be at least 1 value
+	
+	# Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_weapon.attack.signature.projectile.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_weapon.attack.signature.projectile.resize(array_min_size)
+	
+	unique_weapon.attack.signature.projectile[index] = value # Assign value to array in proper order.
+	return unique_weapon
+
+
 ## Assign index of value inside array.
 ## Helper for key_begins_with_ group of functions.
 func assign_move_index(key: String) -> int:
@@ -578,6 +665,8 @@ func assign_move_index(key: String) -> int:
 		index = 2
 	elif key.contains("4"):
 		index = 3
+	elif key.contains("5"):
+		index = 4
 	return index
 
 
