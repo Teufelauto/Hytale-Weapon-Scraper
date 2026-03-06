@@ -139,7 +139,7 @@ func parse_template_weapon_item_info(weapon_family: String, parent: String) -> D
 		var item_weapon_info_as_dict: Dictionary = JSON.parse_string(item_weapon_info_string)
 		return item_weapon_info_as_dict
 
-
+## Add elif with any new move type ============================================
 ## Get value for the table cell
 func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key: String, 
 		xref_common_table_headers: Dictionary, column_header: String) -> Variant:
@@ -172,6 +172,54 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 	else:
 		print("Error: Couldn't find the key value to scrape!")
 		return null
+
+## add elif for any new move type ============================================
+## Puts the found value in the correct place inside the unique weapon dictionary.
+func assign_values_to_unique_dictionary(unique_weapon: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if key == "item_count": # We don't want Item Count in the JSON.
+		return unique_weapon # So we skip it and go back to scrape function without assigning value.
+	
+	# Determine if we need to enter primary attack branch.
+	if key.begins_with("primary_attack"):
+		unique_weapon = key_begins_with_primary_attack(unique_weapon, key, value)
+	
+	# Determine if we need to enter charged branch.
+	elif key.begins_with("charged_attack"):
+		unique_weapon = key_begins_with_charged_attack(unique_weapon, key, value)
+	
+	# Determine if we need to enter signature branch.
+	elif key.begins_with("signature_attack"):
+		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_primary_attack"):
+		unique_weapon = key_begins_with_rear_primary_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_charged_attack"):
+		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
+	
+	# Determine if we need to make or enter rear signature branch.
+	elif key.begins_with("rear_signature_attack"):
+		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
+	
+	elif key.begins_with("rand_pct_mod_primary_attack"):
+		unique_weapon = key_begins_with_rand_pct_mod_primary_attack(unique_weapon, key, value)
+	
+	elif key.begins_with("rand_pct_mod_charged_attack"):
+		unique_weapon = key_begins_with_rand_pct_mod_charged_attack(unique_weapon, key, value)
+	
+	elif key.begins_with("rand_pct_mod_signature_attack"):
+		unique_weapon = key_begins_with_rand_pct_mod_signature_attack(unique_weapon, key, value)
+		
+	## Recipee integration may go here.
+	#elif key.begins_with("recipee"):
+		#unique_weapon.set(key, value)
+	else:
+		unique_weapon.set(key, value)
+	return unique_weapon
 
 
 ## Deterimine if item weapon has key in top level. If not, tries to retrieve
@@ -254,54 +302,6 @@ func extract_rear_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:
 			.DamageCalculator.BaseDamage.get("Physical", 0)
 
 
-## Puts the found value in the correct place inside the unique weapon dictionary.
-func assign_values_to_unique_dictionary(unique_weapon: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if key == "item_count": # We don't want Item Count in the JSON.
-		return unique_weapon # So we skip it and go back to scrape function without assigning value.
-	
-	# Determine if we need to enter primary attack branch.
-	if key.begins_with("primary_attack"):
-		unique_weapon = key_begins_with_primary_attack(unique_weapon, key, value)
-	
-	# Determine if we need to enter charged branch.
-	elif key.begins_with("charged_attack"):
-		unique_weapon = key_begins_with_charged_attack(unique_weapon, key, value)
-	
-	# Determine if we need to enter signature branch.
-	elif key.begins_with("signature_attack"):
-		unique_weapon = key_begins_with_signature_attack(unique_weapon, key, value)
-	
-	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_primary_attack"):
-		unique_weapon = key_begins_with_rear_primary_attack(unique_weapon, key, value)
-	
-	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_charged_attack"):
-		unique_weapon = key_begins_with_rear_charged_attack(unique_weapon, key, value)
-	
-	# Determine if we need to make or enter rear signature branch.
-	elif key.begins_with("rear_signature_attack"):
-		unique_weapon = key_begins_with_rear_signature_attack(unique_weapon, key, value)
-	
-	elif key.begins_with("rand_pct_mod_primary_attack"):
-		unique_weapon = key_begins_with_rand_pct_mod_primary_attack(unique_weapon, key, value)
-	
-	elif key.begins_with("rand_pct_mod_charged_attack"):
-		unique_weapon = key_begins_with_rand_pct_mod_charged_attack(unique_weapon, key, value)
-	
-	elif key.begins_with("rand_pct_mod_signature_attack"):
-		unique_weapon = key_begins_with_rand_pct_mod_signature_attack(unique_weapon, key, value)
-		
-	## Recipee integration may go here.
-	#elif key.begins_with("recipee"):
-		#unique_weapon.set(key, value)
-	else:
-		unique_weapon.set(key, value)
-	return unique_weapon
-
-
 ## Determine data to enter primary attack branch of json.
 func key_begins_with_primary_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
@@ -328,36 +328,6 @@ func key_begins_with_primary_attack(unique_weapon: Dictionary,
 		unique_weapon.attack.primary.physical.resize(array_min_size)
 		
 	unique_weapon.attack.primary.physical[index] = value # Assign value to array in proper order.
-	return unique_weapon
-
-
-## Assign index of value inside array.
-## Helper for key_begins_with_ group of functions.
-func assign_move_index(key: String) -> int:
-	# Arbitrarily incorrect to not be valid value.
-	var index: int = -1
-	if key.contains("1"):
-		index = 0
-	elif key.contains("2"):
-		index = 1
-	elif key.contains("3"):
-		index = 2
-	elif key.contains("4"):
-		index = 3
-	return index
-
-
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
-func create_attack_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.has("attack"):
-		unique_weapon.set("attack", {} ) #It'll be at least 1 value
-	return unique_weapon
-
-
-## Create 'attack/primary' branch if it doesn't exist in weapon deictionary.
-func create_attack_primary_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.attack.has("primary"):
-		unique_weapon.attack.set("primary", {} ) #It'll be at least 1 value
 	return unique_weapon
 
 
@@ -390,13 +360,6 @@ func key_begins_with_charged_attack(unique_weapon: Dictionary,
 	return unique_weapon
 
 
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
-func create_attack_charged_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.attack.has("charged"):
-		unique_weapon.attack.set("charged", {} ) #It'll be at least 1 value
-	return unique_weapon
-
-
 ## Determine data to enter signature attack branch of json.
 func key_begins_with_signature_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
@@ -426,13 +389,6 @@ func key_begins_with_signature_attack(unique_weapon: Dictionary,
 	return unique_weapon
 
 
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
-func create_attack_signature_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
-	if not unique_weapon.attack.has("signature"):
-		unique_weapon.attack.set("signature", {} ) #It'll be at least 1 value
-	return unique_weapon
-
-
 ## Determine data to enter rear primary attack branch of json. (Not used by daggers)
 ## This is a 'Just in case' function.
 func key_begins_with_rear_primary_attack(unique_weapon: Dictionary, 
@@ -453,7 +409,6 @@ func key_begins_with_rear_primary_attack(unique_weapon: Dictionary,
 	if not unique_weapon.attack.primary.has("rear_physical"):
 		unique_weapon.attack.primary.set("rear_physical", [0]) #It'll be at least 1 value
 	
-
 	## Grow array as needed for number of attacks. Changes based on weapon family.
 	var array_min_size: int = index + 1
 	if unique_weapon.attack.primary.rear_physical.size() < array_min_size:
@@ -550,9 +505,9 @@ func key_begins_with_rand_pct_mod_primary_attack(unique_weapon: Dictionary,
 		
 	unique_weapon.attack.primary.rand_pct_modifier[index] = value # Assign value to array in proper order.
 	return unique_weapon
-	
-	
-	## Determine data to enter pct mod attack branch of json.
+
+
+## Determine data to enter pct mod attack branch of json.
 func key_begins_with_rand_pct_mod_charged_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
@@ -579,9 +534,9 @@ func key_begins_with_rand_pct_mod_charged_attack(unique_weapon: Dictionary,
 		
 	unique_weapon.attack.charged.rand_pct_modifier[index] = value # Assign value to array in proper order.
 	return unique_weapon
-	
-	
-	## Determine data to enter pct mod attack branch of json.
+
+
+## Determine data to enter pct mod attack branch of json.
 func key_begins_with_rand_pct_mod_signature_attack(unique_weapon: Dictionary, 
 		key: String, value: Variant) -> Dictionary:
 	
@@ -608,7 +563,50 @@ func key_begins_with_rand_pct_mod_signature_attack(unique_weapon: Dictionary,
 		
 	unique_weapon.attack.signaturery.rand_pct_modifier[index] = value # Assign value to array in proper order.
 	return unique_weapon
+
+
+## Assign index of value inside array.
+## Helper for key_begins_with_ group of functions.
+func assign_move_index(key: String) -> int:
+	# Assign impossible value so invalid key will return indication.
+	var index: int = -1
+	if key.contains("1"):
+		index = 0
+	elif key.contains("2"):
+		index = 1
+	elif key.contains("3"):
+		index = 2
+	elif key.contains("4"):
+		index = 3
+	return index
+
+
+## Create 'attack' branch if it doesn't exist in weapon deictionary.
+func create_attack_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.has("attack"):
+		unique_weapon.set("attack", {} ) #It'll be at least 1 value
+	return unique_weapon
+
+
+## Create 'attack/primary' branch if it doesn't exist in weapon deictionary.
+func create_attack_primary_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.attack.has("primary"):
+		unique_weapon.attack.set("primary", {} ) #It'll be at least 1 value
+	return unique_weapon
+
 	
-	
+## Create 'attack' branch if it doesn't exist in weapon deictionary.
+func create_attack_charged_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.attack.has("charged"):
+		unique_weapon.attack.set("charged", {} ) #It'll be at least 1 value
+	return unique_weapon
+
+
+## Create 'attack' branch if it doesn't exist in weapon deictionary.
+func create_attack_signature_branch_if_needed(unique_weapon: Dictionary) -> Dictionary:
+	if not unique_weapon.attack.has("signature"):
+		unique_weapon.attack.set("signature", {} ) #It'll be at least 1 value
+	return unique_weapon
+
 	
 		
