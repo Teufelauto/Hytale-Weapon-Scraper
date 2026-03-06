@@ -59,8 +59,8 @@
 		"durability_loss_on_hit": "DurabilityLossOnHit",
 		"max_stack": "MaxStack",
 	},
-	"weapon_family":{
-		"Battleaxe":{
+	"weapon_family": {
+		"Battleaxe": {
 			"primary_attack_1_name": "Swing_Down_Left",
 			"primary_attack_2_name": "Swing_Down_Right",
 			"primary_attack_3_name": "Swing_Down",
@@ -104,7 +104,6 @@
 			"primary_attack_1_name": "Spear_Stab"
 		},
 		"Axe":{
-			"parent": "Template_Weapon_Sword", 
 			"primary_attack_1_name": "Axe_Swing_Down_Left",
 			"primary_attack_2_name": "Axe_Swing_Up_Right",
 			"charged_attack_1_name": "Axe_Swing_Left_Charged"
@@ -123,9 +122,9 @@
 			"primary_attack_3_name": "Longsword_Swing_Up_Left",
 			"charged_attack_1_name": "Longsword_Stab_Charged"
 		},
-		"Gun":{
-			"parent": "Template_Weapon_Sword", 
-			"primary_attack_1_name": "Gun_Swing_Left"
+		"Gun": {
+			"primary_attack_1_name": "Gun_Swing_Left",
+			"rand_pct_mod_primary_attack_1_name": "Gun_Swing_Left"
 		}
 	},
 	"Template":[
