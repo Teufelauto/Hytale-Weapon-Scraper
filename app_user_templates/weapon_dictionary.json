@@ -27,22 +27,35 @@
 		"20": "signature_attack_1_damage",
 		"21": "signature_attack_2_damage",
 		"22": "signature_attack_3_damage",
-		"23": "rear_charged_attack_1_damage",
-		"24": "rear_charged_attack_2_damage",
-		"25": "rear_signature_attack_1_damage",
-		"26": "rear_signature_attack_2_damage",
-		"27": "rear_signature_attack_3_damage",
-		"28": "rand_pct_mod_primary_attack_1_damage",
-		"29": "rand_pct_mod_primary_attack_2_damage",
-		"30": "rand_pct_mod_primary_attack_3_damage",
-		"31": "rand_pct_mod_primary_attack_4_damage",
-		"32": "rand_pct_mod_charged_attack_1_damage",
-		"33": "rand_pct_mod_charged_attack_2_damage",
-		"34": "rand_pct_mod_charged_attack_3_damage",
-		"35": "rand_pct_mod_signature_attack_1_damage",
-		"36": "rand_pct_mod_signature_attack_2_damage",
-		"37": "rand_pct_mod_signature_attack_3_damage",
-
+		"23": "rear_primary_attack_1_damage",
+		"24": "rear_primary_attack_2_damage",
+		"25": "rear_primary_attack_3_damage",
+		"26": "rear_primary_attack_4_damage",
+		"27": "rear_charged_attack_1_damage",
+		"28": "rear_charged_attack_2_damage",
+		"29": "rear_charged_attack_3_damage",
+		"30": "rear_signature_attack_1_damage",
+		"31": "rear_signature_attack_2_damage",
+		"32": "rear_signature_attack_3_damage",
+		"33": "rand_pct_mod_primary_attack_1_damage",
+		"34": "rand_pct_mod_primary_attack_2_damage",
+		"35": "rand_pct_mod_primary_attack_3_damage",
+		"36": "rand_pct_mod_primary_attack_4_damage",
+		"37": "rand_pct_mod_charged_attack_1_damage",
+		"38": "rand_pct_mod_charged_attack_2_damage",
+		"39": "rand_pct_mod_charged_attack_3_damage",
+		"40": "rand_pct_mod_signature_attack_1_damage",
+		"41": "rand_pct_mod_signature_attack_2_damage",
+		"42": "rand_pct_mod_signature_attack_3_damage",
+		"43": "primary_shoot_strength_0_damage",
+		"44": "primary_shoot_strength_1_damage",
+		"45": "primary_shoot_strength_2_damage",
+		"46": "primary_shoot_strength_3_damage",
+		"47": "primary_shoot_strength_4_damage",
+		"48": "signature_volly_damage",
+		
+		
+		
 	},
 	"common_table_headers": {
 		"item_count": "item_count",
@@ -59,80 +72,33 @@
 		"durability_loss_on_hit": "DurabilityLossOnHit",
 		"max_stack": "MaxStack",
 	},
-	"weapon_family":{
-		"Battleaxe":{
-			"primary_attack_1_name": "Swing_Down_Left",
-			"primary_attack_2_name": "Swing_Down_Right",
-			"primary_attack_3_name": "Swing_Down",
-			"charged_attack_1_name": "Downstrike",
-			"signature_attack_1_name": "Signature_Whirlwind"
+	"weapon_family": {
+		"Arrow": {
+			"primary_attack_1_name": "Knife_Swing_Left",
+			"primary_attack_2_name": "Knife_Swing_Right",
+			"primary_attack_3_name": "Knife_Stab",
+			"primary_attack_4_name": "Knife_Lunge",
 		},
-		"Daggers": {
-			"primary_attack_1_name": "Swing_Left",
-			"primary_attack_2_name": "Swing_Right",
-			"primary_attack_3_name": "Stab_Left",
-			"primary_attack_4_name": "Stab_Right",
-			"charged_attack_1_name": "Pounce_Sweep",
-			"charged_attack_2_name": "Pounce_Stab",
-			"rear_charged_attack_1_name": "Pounce_Sweep",
-			"rear_charged_attack_2_name": "Pounce_Stab",
-			"signature_attack_1_name": "Razorstrike_Slash",
-			"signature_attack_2_name": "Razorstrike_Sweep",
-			"signature_attack_3_name": "Razorstrike_Lunge",
-			"rear_signature_attack_1_name": "Razorstrike_Slash",
-			"rear_signature_attack_2_name": "Razorstrike_Sweep",
-			"rear_signature_attack_3_name": "Razorstrike_Lunge"
+		"Shortbow": {
+			"primary_shoot_strength_0_name": "Primary_Shoot_Damage_Strength_0",
+			"primary_shoot_strength_1_name": "Primary_Shoot_Damage_Strength_1",
+			"primary_shoot_strength_2_name": "Primary_Shoot_Damage_Strength_2",
+			"primary_shoot_strength_3_name": "Primary_Shoot_Damage_Strength_3",
+			"primary_shoot_strength_4_name": "Primary_Shoot_Damage_Strength_4",
+			"signature_volly_name": "Signature_Volley_Damage",
 		},
-		"Mace": {
-			"primary_attack_1_name": "Swing_Left",
-			"primary_attack_2_name": "Swing_Right",
-			"primary_attack_3_name": "Swing_Up_Left",
-			"charged_attack_1_name": "Swing_Left_Charged",
-			"charged_attack_2_name": "Swing_Right_Charged",
-			"charged_attack_3_name": "Swing_Up_Left_Charged",
-			"signature_attack_1_name": "Groundslam"
+		
+		
+		"Gun": {
+			"primary_attack_1_name": "Gun_Swing_Left",
+			"rand_pct_mod_primary_attack_1_name": "Gun_Swing_Left",
 		},
-		"Sword":{
-			"primary_attack_1_name": "Swing_Left",
-			"primary_attack_2_name": "Swing_Right",
-			"primary_attack_3_name": "Swing_Down",
-			"charged_attack_1_name": "Thrust",
-			"signature_attack_1_name": "Vortexstrike_Spin",
-			"signature_attack_2_name": "Vortexstrike_Stab"
-		},
-		"Spear":{
-			"primary_attack_1_name": "Spear_Stab"
-		},
-		"Axe":{
-			"parent": "Template_Weapon_Sword", 
-			"primary_attack_1_name": "Axe_Swing_Down_Left",
-			"primary_attack_2_name": "Axe_Swing_Up_Right",
-			"charged_attack_1_name": "Axe_Swing_Left_Charged"
-		},
-		"Club":{
-			"primary_attack_1_name": "Club_Swing_Left",
-			"primary_attack_2_name": "Club_Swing_Right",
-			"charged_attack_1_name": "Club_Swing_Down_Charged",
-			"rand_pct_mod_primary_attack_1_name": "Club_Swing_Left",
-			"rand_pct_mod_primary_attack_2_name": "Club_Swing_Right",
-			"rand_pct_mod_charged_attack_1_name": "Club_Swing_Down_Charged",
-		},
-		"Longsword":{
-			"primary_attack_1_name": "Longsword_Swing_Left",
-			"primary_attack_2_name": "Longsword_Swing_Right",
-			"primary_attack_3_name": "Longsword_Swing_Up_Left",
-			"charged_attack_1_name": "Longsword_Stab_Charged"
-		},
-		"Gun":{
-			"parent": "Template_Weapon_Sword", 
-			"primary_attack_1_name": "Gun_Swing_Left"
-		}
 	},
-	"Template":[
+	"Template": [
 		"Icon",
 		"Quality",
 		"ItemLevel",
 		"MaxDurability",
-		"DurabilityLossOnHit"
+		"DurabilityLossOnHit",
 	]
 }
