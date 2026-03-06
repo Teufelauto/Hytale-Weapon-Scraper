@@ -284,7 +284,12 @@ func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 	elif key.begins_with("rand_pct_mod_primary_attack"):
 		unique_weapon = key_begins_with_rand_pct_mod_primary_attack(unique_weapon, key, value)
 	
+	elif key.begins_with("rand_pct_mod_charged_attack"):
+		unique_weapon = key_begins_with_rand_pct_mod_charged_attack(unique_weapon, key, value)
 	
+	elif key.begins_with("rand_pct_mod_signature_attack"):
+		unique_weapon = key_begins_with_rand_pct_mod_signature_attack(unique_weapon, key, value)
+		
 	## Recipee integration may go here.
 	#elif key.begins_with("recipee"):
 		#unique_weapon.set(key, value)
