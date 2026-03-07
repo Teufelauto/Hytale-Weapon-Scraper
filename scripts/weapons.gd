@@ -102,7 +102,7 @@ func family_weapon_columns_dictionary(table_columns: Array) -> void:
 	for family in weapon_dict.weapon_family:
 		weapon_move_Xref_dict[family] = weapon_dict.common_table_headers.duplicate()
 		var xref_family_tree = weapon_move_Xref_dict[family]
-		var family_specific_dict: Dictionary = weapon_dict.weapon_family[family]
+		#var family_specific_dict: Dictionary = weapon_dict.weapon_family[family]
 		# loop through each column in the table
 		for entry in table_columns:
 			# skip the common headers that are the same for all weapons.
@@ -114,7 +114,7 @@ func family_weapon_columns_dictionary(table_columns: Array) -> void:
 				var look: String = ""
 				if entry.ends_with("_damage"):
 					look = entry.replace("_damage","_name") 
-				var move_name_src_key: String = family_specific_dict.get(look,"")
+				var move_name_src_key: String = weapon_dict.weapon_family[family].get(look,"")
 				
 				if move_name_src_key.contains("Damage"): # "Damage" already in name, like projectiles
 					pass
