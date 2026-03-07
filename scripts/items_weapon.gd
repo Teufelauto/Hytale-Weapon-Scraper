@@ -590,7 +590,7 @@ func key_begins_with_rand_pct_mod_signature_attack(unique_weapon: Dictionary,
 		# Make array bigger if index is larger than array.
 		unique_weapon.attack.signature.rand_pct_modifier.resize(array_min_size)
 		
-	unique_weapon.attack.signaturery.rand_pct_modifier[index] = value # Assign value to array in proper order.
+	unique_weapon.attack.signature.rand_pct_modifier[index] = value # Assign value to array in proper order.
 	return unique_weapon
 
 
