@@ -96,36 +96,38 @@ func determine_weapon_table_columns() -> Array:
 	return table_columns
 
 
-## creates Column headers for all weapons for lookup purposes.
+## creates Column header cross-reference for all weapons for lookup purposes.
 func family_weapon_columns_dictionary(table_columns: Array) -> void:
 	# loop for each weapon family
 	for family in weapon_dict.weapon_family:
 		weapon_move_Xref_dict[family] = weapon_dict.common_table_headers.duplicate()
-		var xref_family_tree = weapon_move_Xref_dict[family]
-		#var family_specific_dict: Dictionary = weapon_dict.weapon_family[family]
 		# loop through each column in the table
 		for entry in table_columns:
 			# skip the common headers that are the same for all weapons.
-			if xref_family_tree.has(entry): 
+			if weapon_move_Xref_dict[family].has(entry): 
 				continue
 			else:
-				# Assign unique sub-dictionary entries for remaining columns in family
-				# modify header string to match dictionary string
-				var look: String = ""
-				if entry.ends_with("_damage"):
-					look = entry.replace("_damage","_name") 
-				var move_name_src_key: String = weapon_dict.weapon_family[family].get(look,"")
-				
-				if move_name_src_key.contains("Damage"): # "Damage" already in name, like projectiles
-					pass
-				else:
-					## Append "_Damage" to end for making key to scrape json.
-					## Breaks projectiles (or anything without damage at end of key)
-					move_name_src_key = move_name_src_key + "_Damage"
-				
-				# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
-				xref_family_tree.set(entry, move_name_src_key)
-	#print(weapon_move_Xref_dict)
+				add_entry_key_to_xref_dict(family, entry)
+
+
+## This function will need to grow as new types of keys are entered in the dictionary.
+## "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
+func add_entry_key_to_xref_dict(family:String, entry:String ) -> void:
+	## Assign unique sub-dictionary entries for remaining columns in family
+	## Modify header string to match dictionary string
+	var look: String = ""
+	if entry.ends_with("_damage"):
+		look = entry.replace("_damage","_name") 
+	var move_name_src_key: String = weapon_dict.weapon_family[family].get(look,"")
+	
+	if move_name_src_key.contains("Damage"): # "Damage" already in name, like projectiles
+		pass
+	else:
+		## Append "_Damage" to end for making key to scrape json.
+		## Breaks projectiles (or anything without Damage at end of key)
+		move_name_src_key = move_name_src_key + "_Damage"
+	
+	weapon_move_Xref_dict[family].set(entry, move_name_src_key)
 
 
 ## Step through all weapons and descriptors (children) to create Table and Dict
