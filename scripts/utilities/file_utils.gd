@@ -12,7 +12,7 @@ static var zip_files: PackedStringArray ## Path and File list inside zip. An arr
 static func open_assets_zip(path_to_zip: String) -> void:
 	var error = zip_reader.open(path_to_zip)
 	if error != OK:
-		print("Failed to open ZIP file: ", error)
+		printerr("Failed to open ZIP file: ", error)
 		return
 	zip_files = zip_reader.get_files() ## Obtain list of files contained in zip
 
@@ -125,14 +125,14 @@ static func export_dict_to_json(dict: Dictionary, save_path: String = "user://ne
 		file.close()
 		print("Dictionary saved as json to: " + save_path)
 	else:
-		print("Failed to save dictionary as json.")
+		printerr("Failed to save dictionary as json.")
 
 
 ## Save Table Array into CSV at a specified location
 static func export_array_as_csv(table_data: Array, path: String = "user://new.csv") -> void:
 	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
-		print("Error opening file: ", FileAccess.get_open_error())
+		printerr("Error opening file: ", FileAccess.get_open_error())
 		return
 
 	for line_data in table_data:
@@ -184,7 +184,7 @@ static func copy_file_from_source_to_destination(full_source: String,
 		if error == OK:
 			print("File copied successfully to: ", full_destination)
 		else:
-			print("Error copying file: ", error_string(error))
+			printerr("Error copying file: ", error_string(error))
 
 
 ## Returns folder where Hytale data lives.
@@ -246,7 +246,7 @@ static func save_to_txt_file(content: String, path: String) -> void:
 		file.close()
 		print("File saved successfully to" + path)
 	else:
-		print("Failed to open file: ", FileAccess.get_open_error())
+		printerr("Failed to open file: ", FileAccess.get_open_error())
 
 
 
