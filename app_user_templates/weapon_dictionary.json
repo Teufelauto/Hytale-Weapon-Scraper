@@ -95,12 +95,5 @@
 			"primary_attack_1_name": "Gun_Swing_Left",
 			"rand_pct_mod_primary_attack_1_name": "Gun_Swing_Left",
 		},
-	},
-	"Template": [
-		"Icon",
-		"Quality",
-		"ItemLevel",
-		"MaxDurability",
-		"DurabilityLossOnHit",
-	]
+	}
 }
