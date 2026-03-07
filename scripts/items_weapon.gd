@@ -277,20 +277,20 @@ func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:Strin
 ## This is a lot
 func extract_shoot_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
-		return 1111
+		return 0 #10001
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
 		print(move_name)
-		return 1112
+		return 0 #10002
 	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return 1113
+		return 0 #10003
 	# The [0] is to deal with the array inside json.
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
-		return 1114
+		return 0 #10004
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
 			.has("BaseDamage"):
-		return 1115
+		return 0 #10005
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.BaseDamage.get("Projectile", 1116)
+			.BaseDamage.get("Projectile", 0) #10006)
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
