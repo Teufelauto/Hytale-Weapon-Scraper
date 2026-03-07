@@ -98,14 +98,11 @@ func determine_weapon_table_columns() -> Array:
 
 ## creates Column headers for all weapons for lookup purposes.
 func family_weapon_columns_dictionary(table_columns: Array) -> void:
-	var common_headers: Dictionary = weapon_dict.common_table_headers
 	# loop for each weapon family
 	for family in weapon_dict.weapon_family:
-		weapon_move_Xref_dict[family] = common_headers.duplicate()
+		weapon_move_Xref_dict[family] = weapon_dict.common_table_headers.duplicate()
 		var xref_family_tree = weapon_move_Xref_dict[family]
-		var family_tree = weapon_dict.weapon_family[family]
-		#print(family, xref_family_tree)
-		
+		var family_specific_dict: Dictionary = weapon_dict.weapon_family[family]
 		# loop through each column in the table
 		for entry in table_columns:
 			# skip the common headers that are the same for all weapons.
@@ -114,15 +111,20 @@ func family_weapon_columns_dictionary(table_columns: Array) -> void:
 			else:
 				# Assign unique sub-dictionary entries for remaining columns in family
 				# modify header string to match dictionary string
-				var look: String = entry.replace("_damage","_name") 
-				var move_name: String = family_tree.get(look,"")
+				var look: String = ""
+				if entry.ends_with("_damage"):
+					look = entry.replace("_damage","_name") 
+				var move_name_src_key: String = family_specific_dict.get(look,"")
 				
-				if not move_name.contains("Damage"):
+				if move_name_src_key.contains("Damage"): # "Damage" already in name, like projectiles
+					pass
+				else:
 					## Append "_Damage" to end for making key to scrape json.
 					## Breaks projectiles (or anything without damage at end of key)
-					move_name = move_name + "_Damage"
-					# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
-				xref_family_tree.set(entry, move_name)
+					move_name_src_key = move_name_src_key + "_Damage"
+				
+				# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
+				xref_family_tree.set(entry, move_name_src_key)
 	#print(weapon_move_Xref_dict)
 
 
