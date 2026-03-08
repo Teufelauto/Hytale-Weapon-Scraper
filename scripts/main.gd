@@ -45,7 +45,7 @@ func retrieve_app_settings() -> void:
 	app.check_for_processed_books()
 	
 
-## Call the Weapons class for each Assets.zip to be processed
+## (Headless) Call the Weapons class for each Assets.zip to be processed
 func process_assets() -> void:
 	
 	## Process first Asset
