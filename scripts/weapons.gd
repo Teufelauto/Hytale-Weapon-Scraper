@@ -158,21 +158,11 @@ func step_through_weapons() -> void:
 
 
 func prepare_child_wpn_to_scrape(current_table_row: int, file_path: String,
-		 current_family: String, current_family_lower: String,
+		current_family: String, current_family_lower: String,
 		xref_child: Dictionary, xref_common_table_headers: Dictionary) -> int:
 	current_table_row += 1
 	
-	## The below block pulls out the current_child String from path.
-	var count: int = file_path.get_slice_count("/") - 1
-	## current_child is the descriptor, such as crude, or copper.
-	var current_child: String = file_path.get_slice("/", count) 
-	current_child = current_child.trim_suffix(".json")
-	var left_stripper: String = "Weapon_" + current_family + "_"
-	current_child = current_child.trim_prefix(left_stripper)
-	#print(current_child)
-	
-	## lower_case string version of current_Child
-	#var current_child_lower: String = current_child.to_lower()
+	var current_child: String = find_child_frm_path(file_path, current_family)
 	# Second level is child
 	weapon_encyclopedia[current_family_lower].set(current_child.to_lower(), {}) 
 	
@@ -182,6 +172,18 @@ func prepare_child_wpn_to_scrape(current_table_row: int, file_path: String,
 			xref_child, xref_common_table_headers, current_table_row)
 	iw.free()
 	return current_table_row
+
+
+## Pulls out the current_child String from path.
+func find_child_frm_path(file_path: String, current_family: String)-> String:
+	var count: int = file_path.get_slice_count("/") - 1
+	## current_child is the descriptor, such as crude, or copper.
+	var current_child: String = file_path.get_slice("/", count) 
+	current_child = current_child.trim_suffix(".json")
+	var left_stripper: String = "Weapon_" + current_family + "_"
+	current_child = current_child.trim_prefix(left_stripper)
+	#print(current_child)
+	return current_child
 
 
 ## Call this to print the table to console for troubleshooting
