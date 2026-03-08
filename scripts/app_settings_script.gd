@@ -16,7 +16,10 @@ enum Assets {
 enum Track { ASSETS_1, ASSETS_2, DIFF_1, DIFF_2 }
 ## App Settings Data loaded from / saved to user://app_settings.json
 static var settings:Dictionary = {}
-
+## The raw output from the jsons, each json is a Dict inside.
+static var reference_encyclopedia: Dictionary = {
+	"weapons": {},
+}
 static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
 static var exported_csv_1_save_path: String ## Output csv file path
