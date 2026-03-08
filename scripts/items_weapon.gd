@@ -157,6 +157,12 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 		# need to retrieve from template if not in item_dict
 		return common_key_in_weapon_check(item_weapon_as_dict, key)
 	
+	## Check if key is frontal attack damage: "primary, charged, signature"
+	elif column_header.begins_with("primary_attack_") \
+			or column_header.begins_with("charged_attack_") \
+			or column_header.begins_with("signature_attack_"):
+		return extract_physical_attack_dmg(item_weapon_as_dict,key)
+	
 	## Check if key is shooting attack damage in JSON.
 	elif column_header.begins_with("shoot_"):
 		return extract_shoot_attack_dmg(item_weapon_as_dict, key)
@@ -169,9 +175,10 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 	elif column_header.begins_with("rear_"):
 		return extract_rear_physical_attack_dmg(item_weapon_as_dict, key)
 	
-	## Check if key is frontal attack damage in JSON.
-	elif not item_weapon_as_dict.has(key):
-		return extract_physical_attack_dmg(item_weapon_as_dict,key)
+	
+	
+	#elif not item_weapon_as_dict.has(key):
+		#return extract_physical_attack_dmg(item_weapon_as_dict,key)
 	
 	else:
 		print("Error: Couldn't find the key value to scrape!")
