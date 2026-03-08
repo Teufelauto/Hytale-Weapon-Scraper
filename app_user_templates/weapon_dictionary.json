@@ -75,11 +75,12 @@
 		"max_stack": "MaxStack",
 	},
 	"weapon_family": {
-		"Arrow": {
-			"primary_attack_1_name": "Knife_Swing_Left",
-			"primary_attack_2_name": "Knife_Swing_Right",
-			"primary_attack_3_name": "Knife_Stab",
-			"primary_attack_4_name": "Knife_Lunge",
+		"Battleaxe": {
+			"primary_attack_1_name": "Swing_Down_Left",
+			"primary_attack_2_name": "Swing_Down_Right",
+			"primary_attack_3_name": "Swing_Down",
+			"charged_attack_1_name": "Downstrike",
+			"signature_attack_1_name": "Signature_Whirlwind"
 		},
 		"Shortbow": {
 			"shoot_primary_1_name": "Primary_Shoot_Damage_Strength_0",
@@ -95,5 +96,46 @@
 			"primary_attack_1_name": "Gun_Swing_Left",
 			"rand_pct_mod_primary_attack_1_name": "Gun_Swing_Left",
 		},
-	}
+		"Sword":{
+			"primary_attack_1_name": "Swing_Left",
+			"primary_attack_2_name": "Swing_Right",
+			"primary_attack_3_name": "Swing_Down",
+			"charged_attack_1_name": "Thrust",
+			"signature_attack_1_name": "Vortexstrike_Spin",
+			"signature_attack_2_name": "Vortexstrike_Stab"
+		},
+		"Spear":{
+			"primary_attack_1_name": "Spear_Stab"
+		},
+		"Axe":{
+			"primary_attack_1_name": "Axe_Swing_Down_Left",
+			"primary_attack_2_name": "Axe_Swing_Up_Right",
+			"charged_attack_1_name": "Axe_Swing_Left_Charged"
+		},
+		"Club":{
+			"primary_attack_1_name": "Club_Swing_Left",
+			"primary_attack_2_name": "Club_Swing_Right",
+			"charged_attack_1_name": "Club_Swing_Down_Charged",
+			"rand_pct_mod_primary_attack_1_name": "Club_Swing_Left",
+			"rand_pct_mod_primary_attack_2_name": "Club_Swing_Right",
+			"rand_pct_mod_charged_attack_1_name": "Club_Swing_Down_Charged",
+		},
+		"Longsword":{
+			"primary_attack_1_name": "Longsword_Swing_Left",
+			"primary_attack_2_name": "Longsword_Swing_Right",
+			"primary_attack_3_name": "Longsword_Swing_Up_Left",
+			"charged_attack_1_name": "Longsword_Stab_Charged"
+		},
+		"Gun": {
+			"primary_attack_1_name": "Gun_Swing_Left",
+			"rand_pct_mod_primary_attack_1_name": "Gun_Swing_Left"
+		}
+	},
+	"Template":[
+		"Icon",
+		"Quality",
+		"ItemLevel",
+		"MaxDurability",
+		"DurabilityLossOnHit"
+	]
 }
