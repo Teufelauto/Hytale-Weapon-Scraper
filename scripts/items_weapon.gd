@@ -18,8 +18,8 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
 func scrape_weapon_item_data(file_path: String, 
-		current_family: String, current_family_lower: String, 
-		current_child: String, current_child_lower: String, 
+		current_family: String, 
+		current_child: String, 
 		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	

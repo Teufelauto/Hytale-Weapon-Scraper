@@ -138,7 +138,7 @@ func step_through_weapons() -> void:
 	#select weapon family- battleaxe, dagger etc
 	for current_family in weapon_dict.weapon_family.keys():
 		
-		var xref_family_tree = weapon_move_Xref_dict[current_family]
+		var child_xref_header_to_simple: Dictionary = weapon_move_Xref_dict[current_family]
 		
 		## lower_case string version of current_Family  
 		var current_family_lower: String = current_family.to_lower()
@@ -148,40 +148,43 @@ func step_through_weapons() -> void:
 		
 		## Iterate through the files and check if they are in the target folder.
 		for file_path in FileUtils.zip_files:
-			current_table_row = prepare_individual_weapon_to_scrape(file_path, target_folder, 
-		current_table_row, current_family, current_family_lower,
-		xref_family_tree, xref_common_table_headers)
+			## Check if the file path starts with the desired folder path
+			## (e.g., "my_folder/" or "res://my_folder/").
+			if target_folder.is_empty() or file_path.begins_with(target_folder):
+			
+				current_table_row = prepare_indvl_wpn_to_scrape(current_table_row, file_path, 
+						 current_family, current_family_lower,
+						child_xref_header_to_simple, xref_common_table_headers)
 
 
-func prepare_individual_weapon_to_scrape(file_path: String, target_folder: String, 
-		current_table_row: int, current_family: String, current_family_lower: String,
-		xref_family_tree: Variant, xref_common_table_headers: Dictionary) -> int:
-	## Check if the file path starts with the desired folder path
-	## (e.g., "my_folder/" or "res://my_folder/").
-	if target_folder.is_empty() or file_path.begins_with(target_folder):
+func prepare_indvl_wpn_to_scrape(current_table_row: int, file_path: String,
+		 current_family: String, current_family_lower: String,
+		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary) -> int:
+	### Check if the file path starts with the desired folder path
+	### (e.g., "my_folder/" or "res://my_folder/").
+	#if target_folder.is_empty() or file_path.begins_with(target_folder):
 		#print()
 		#print("Found weapon file in target folder: ", file_path)
-		current_table_row += 1
-		## The below block pulls out the current_child String from path.
-		var count: int = file_path.get_slice_count("/") - 1
-		## current_child is the descriptor, such as crude, or copper.
-		var current_child: String = file_path.get_slice("/", count) 
-		current_child = current_child.trim_suffix(".json")
-		var left_stripper: String = "Weapon_" + current_family + "_"
-		current_child = current_child.trim_prefix(left_stripper)
-		#print(current_child)
-		
-		## lower_case string version of current_Child
-		var current_child_lower: String = current_child.to_lower()
-		# Second level is child
-		weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) 
-		
-		## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
-		var iw := ItemsWeapon.new()
-		iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, 
-				current_child, current_child_lower, xref_family_tree, 
-				xref_common_table_headers, current_table_row)
-		iw.free()
+	current_table_row += 1
+	## The below block pulls out the current_child String from path.
+	var count: int = file_path.get_slice_count("/") - 1
+	## current_child is the descriptor, such as crude, or copper.
+	var current_child: String = file_path.get_slice("/", count) 
+	current_child = current_child.trim_suffix(".json")
+	var left_stripper: String = "Weapon_" + current_family + "_"
+	current_child = current_child.trim_prefix(left_stripper)
+	#print(current_child)
+	
+	## lower_case string version of current_Child
+	#var current_child_lower: String = current_child.to_lower()
+	# Second level is child
+	weapon_encyclopedia[current_family_lower].set(current_child.to_lower(), {}) 
+	
+	## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
+	var iw := ItemsWeapon.new()
+	iw.scrape_weapon_item_data(file_path, current_family, current_child,
+			xref_family_tree, xref_common_table_headers, current_table_row)
+	iw.free()
 	return current_table_row
 
 
