@@ -18,8 +18,7 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
 func scrape_weapon_item_data(file_path: String, 
-		current_family: String, 
-		current_child: String, 
+		current_family: String, current_child: String, 
 		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	
@@ -48,10 +47,13 @@ func scrape_weapon_item_data(file_path: String,
 	for current_column in weapon_table_column_array.size():
 		var columnheader_value: Dictionary = process_column(current_column, 
 				xref_family_tree, item_weapon_as_dict, app_headers, 
-				xref_common_table_headers, current_row)
+				xref_common_table_headers)
 		var column_header: String = columnheader_value.get("column_header")
 		var value: Variant = columnheader_value.get("value")
-		#Assign value to current child dictionary, posibly in subdictionaries or arrays.
+		
+		## Assign value to Table
+		weapon_table[current_row][current_column] = value
+		## Assign value to current child dictionary, posibly in subdictionaries or arrays.
 		unique_weapon = assign_values_to_unique_dictionary(unique_weapon, column_header, value)
 		
 	## Add this child to the Big Dictionary under family.
@@ -90,7 +92,7 @@ func update_common_family_dictionaries(current_family: String, current_parent: S
 ## Find one value from item_weapon_as_dict.
 func process_column(current_column: int, xref_family_tree: Dictionary, 
 		item_weapon_as_dict: Dictionary, app_headers: Dictionary,  
-			xref_common_table_headers: Dictionary, current_row: int) -> Dictionary:
+			xref_common_table_headers: Dictionary) -> Dictionary:
 	## The header that appears at the top of the Table for the column we're working on.
 	var column_header = weapon_table_column_array[current_column]
 	
@@ -108,10 +110,6 @@ func process_column(current_column: int, xref_family_tree: Dictionary,
 	if retrieved_key in KEYS_WITH_INT_VALUES:
 		value = int(value)
 	
-	#Assign value to Table
-	var column_index_string: String = weapon_dict.weapon_table_columns.find_key(column_header)
-	var column_index: int = int(column_index_string) #number was string, as a key in json
-	weapon_table[current_row][column_index] = value
 	return { "column_header": column_header, "value": value }
 
 
