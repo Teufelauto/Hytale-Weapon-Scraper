@@ -151,21 +151,17 @@ func step_through_weapons() -> void:
 			## Check if the file path starts with the desired folder path
 			## (e.g., "my_folder/" or "res://my_folder/").
 			if target_folder.is_empty() or file_path.begins_with(target_folder):
-			
-				current_table_row = prepare_indvl_wpn_to_scrape(current_table_row, file_path, 
-						 current_family, current_family_lower,
+				## returns int for row numbering purposes.
+				current_table_row = prepare_child_wpn_to_scrape(current_table_row, 
+						file_path, current_family, current_family_lower,
 						child_xref_header_to_simple, xref_common_table_headers)
 
 
-func prepare_indvl_wpn_to_scrape(current_table_row: int, file_path: String,
+func prepare_child_wpn_to_scrape(current_table_row: int, file_path: String,
 		 current_family: String, current_family_lower: String,
-		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary) -> int:
-	### Check if the file path starts with the desired folder path
-	### (e.g., "my_folder/" or "res://my_folder/").
-	#if target_folder.is_empty() or file_path.begins_with(target_folder):
-		#print()
-		#print("Found weapon file in target folder: ", file_path)
+		xref_child: Dictionary, xref_common_table_headers: Dictionary) -> int:
 	current_table_row += 1
+	
 	## The below block pulls out the current_child String from path.
 	var count: int = file_path.get_slice_count("/") - 1
 	## current_child is the descriptor, such as crude, or copper.
@@ -183,7 +179,7 @@ func prepare_indvl_wpn_to_scrape(current_table_row: int, file_path: String,
 	## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
 	var iw := ItemsWeapon.new()
 	iw.scrape_weapon_item_data(file_path, current_family, current_child,
-			xref_family_tree, xref_common_table_headers, current_table_row)
+			xref_child, xref_common_table_headers, current_table_row)
 	iw.free()
 	return current_table_row
 

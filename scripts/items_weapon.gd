@@ -19,7 +19,7 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
 func scrape_weapon_item_data(file_path: String, 
 		current_family: String, current_child: String, 
-		xref_family_tree: Dictionary, xref_common_table_headers: Dictionary, 
+		xref_child: Dictionary, xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	
 	## Dictionary for a singular weapon, equivalent one row in the weapon table. 
@@ -46,7 +46,7 @@ func scrape_weapon_item_data(file_path: String,
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
 		var columnheader_value: Dictionary = process_column(current_column, 
-				xref_family_tree, item_weapon_as_dict, app_headers, 
+				xref_child, item_weapon_as_dict, app_headers, 
 				xref_common_table_headers)
 		var column_header: String = columnheader_value.get("column_header")
 		var value: Variant = columnheader_value.get("value")
@@ -90,23 +90,23 @@ func update_common_family_dictionaries(current_family: String, current_parent: S
 
 
 ## Find one value from item_weapon_as_dict.
-func process_column(current_column: int, xref_family_tree: Dictionary, 
+func process_column(current_column: int, xref_child: Dictionary, 
 		item_weapon_as_dict: Dictionary, app_headers: Dictionary,  
 			xref_common_table_headers: Dictionary) -> Dictionary:
 	## The header that appears at the top of the Table for the column we're working on.
-	var column_header = weapon_table_column_array[current_column]
+	var column_header: String = weapon_table_column_array[current_column]
 	
 	## PascalCase or Pascal_Snake_Case for attack moves. Loses data for back-stabbing.
 	## Get the value from the intermediate dict to make the key for the item weapon dict.
 	## The retrieved key is for looking inside item_weapon_as_dict to find the value for filling in the table.
-	var retrieved_key = xref_family_tree.get(column_header)
+	var retrieved_key: String = xref_child.get(column_header)
 
 	## Value to be put in the Table or unique dictionary
 	var value = get_key_value(item_weapon_as_dict, app_headers, retrieved_key, 
 			xref_common_table_headers, column_header)
 	
-	# Makes value integer if able. (item level and max durability. 
-	#Attacks functions already return int)
+	## Makes value integer if able. (item level and max durability. 
+	## Attacks functions already return int)
 	if retrieved_key in KEYS_WITH_INT_VALUES:
 		value = int(value)
 	
