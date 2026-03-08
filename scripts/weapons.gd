@@ -96,32 +96,38 @@ func determine_weapon_table_columns() -> Array:
 	return table_columns
 
 
-## creates Column headers for all weapons for lookup purposes.
+## creates Column header cross-reference for all weapons for lookup purposes.
 func family_weapon_columns_dictionary(table_columns: Array) -> void:
-	var common_headers: Dictionary = weapon_dict.common_table_headers
 	# loop for each weapon family
 	for family in weapon_dict.weapon_family:
-		weapon_move_Xref_dict[family] = common_headers.duplicate()
-		var xref_family_tree = weapon_move_Xref_dict[family]
-		var family_tree = weapon_dict.weapon_family[family]
-		#print(family, xref_family_tree)
-		
+		weapon_move_Xref_dict[family] = weapon_dict.common_table_headers.duplicate()
 		# loop through each column in the table
 		for entry in table_columns:
 			# skip the common headers that are the same for all weapons.
-			if xref_family_tree.has(entry): 
+			if weapon_move_Xref_dict[family].has(entry): 
 				continue
 			else:
-				# Assign unique sub-dictionary entries for remaining columns in family
-				# modify header string to match dictionary string
-				var look: String = entry.replace("_damage","_name") 
-				var move_name: String = family_tree.get(look,"")
-				
-				# Append "_Damage" to end for making key to scrape json 
-				move_name = move_name + "_Damage"
-				# "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
-				xref_family_tree.set(entry, move_name)
-	#print(weapon_move_Xref_dict)
+				add_entry_key_to_xref_dict(family, entry)
+
+
+## This function will need to grow as new types of keys are entered in the dictionary.
+## "key":"value" -> "primary_attack_1_name":"Swing_Down_Damage"
+func add_entry_key_to_xref_dict(family:String, entry:String ) -> void:
+	## Assign unique sub-dictionary entries for remaining columns in family
+	## Modify header string to match dictionary string
+	var look: String = ""
+	if entry.ends_with("_damage"):
+		look = entry.replace("_damage","_name") 
+	var move_name_src_key: String = weapon_dict.weapon_family[family].get(look,"")
+	
+	if move_name_src_key.contains("Damage"): # "Damage" already in name, like projectiles
+		pass
+	else:
+		## Append "_Damage" to end for making key to scrape json.
+		## Breaks projectiles (or anything without Damage at end of key)
+		move_name_src_key = move_name_src_key + "_Damage"
+	
+	weapon_move_Xref_dict[family].set(entry, move_name_src_key)
 
 
 ## Step through all weapons and descriptors (children) to create Table and Dict
@@ -132,7 +138,7 @@ func step_through_weapons() -> void:
 	#select weapon family- battleaxe, dagger etc
 	for current_family in weapon_dict.weapon_family.keys():
 		
-		var xref_family_tree = weapon_move_Xref_dict[current_family]
+		var child_xref_header_to_simple: Dictionary = weapon_move_Xref_dict[current_family]
 		
 		## lower_case string version of current_Family  
 		var current_family_lower: String = current_family.to_lower()
@@ -142,41 +148,42 @@ func step_through_weapons() -> void:
 		
 		## Iterate through the files and check if they are in the target folder.
 		for file_path in FileUtils.zip_files:
-			current_table_row = prepare_individual_weapon_to_scrape(file_path, target_folder, 
-		current_table_row, current_family, current_family_lower,
-		xref_family_tree, xref_common_table_headers)
+			## Check if the file path starts with the desired folder path
+			## (e.g., "my_folder/" or "res://my_folder/").
+			if target_folder.is_empty() or file_path.begins_with(target_folder):
+				## returns int for row numbering purposes.
+				current_table_row = prepare_child_wpn_to_scrape(current_table_row, 
+						file_path, current_family, current_family_lower,
+						child_xref_header_to_simple, xref_common_table_headers)
 
 
-func prepare_individual_weapon_to_scrape(file_path: String, target_folder: String, 
-		current_table_row: int, current_family: String, current_family_lower: String,
-		xref_family_tree: Variant, xref_common_table_headers: Dictionary) -> int:
-	## Check if the file path starts with the desired folder path
-	## (e.g., "my_folder/" or "res://my_folder/").
-	if target_folder.is_empty() or file_path.begins_with(target_folder):
-		#print()
-		#print("Found weapon file in target folder: ", file_path)
-		current_table_row += 1
-		## The below block pulls out the current_child String from path.
-		var count: int = file_path.get_slice_count("/") - 1
-		## current_child is the descriptor, such as crude, or copper.
-		var current_child: String = file_path.get_slice("/", count) 
-		current_child = current_child.trim_suffix(".json")
-		var left_stripper: String = "Weapon_" + current_family + "_"
-		current_child = current_child.trim_prefix(left_stripper)
-		#print(current_child)
-		
-		## lower_case string version of current_Child
-		var current_child_lower: String = current_child.to_lower()
-		# Second level is child
-		weapon_encyclopedia[current_family_lower].set(current_child_lower, {}) 
-		
-		## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
-		var iw := ItemsWeapon.new()
-		iw.scrape_weapon_item_data(file_path, current_family, current_family_lower, 
-				current_child, current_child_lower, xref_family_tree, 
-				xref_common_table_headers, current_table_row)
-		iw.free()
+func prepare_child_wpn_to_scrape(current_table_row: int, file_path: String,
+		current_family: String, current_family_lower: String,
+		xref_child: Dictionary, xref_common_table_headers: Dictionary) -> int:
+	current_table_row += 1
+	
+	var current_child: String = find_child_frm_path(file_path, current_family)
+	# Second level is child
+	weapon_encyclopedia[current_family_lower].set(current_child.to_lower(), {}) 
+	
+	## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
+	var iw := ItemsWeapon.new()
+	iw.scrape_weapon_item_data(file_path, current_family, current_child,
+			xref_child, xref_common_table_headers, current_table_row)
+	iw.free()
 	return current_table_row
+
+
+## Pulls out the current_child String from path.
+func find_child_frm_path(file_path: String, current_family: String)-> String:
+	var count: int = file_path.get_slice_count("/") - 1
+	## current_child is the descriptor, such as crude, or copper.
+	var current_child: String = file_path.get_slice("/", count) 
+	current_child = current_child.trim_suffix(".json")
+	var left_stripper: String = "Weapon_" + current_family + "_"
+	current_child = current_child.trim_prefix(left_stripper)
+	#print(current_child)
+	return current_child
 
 
 ## Call this to print the table to console for troubleshooting
