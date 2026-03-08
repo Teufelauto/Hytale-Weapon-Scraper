@@ -88,7 +88,7 @@ func update_common_family_dictionaries(current_family: String, current_parent: S
 
 
 ## Find one value from item_weapon_as_dict.
-func process_column(current_column: Variant, xref_family_tree: Dictionary, 
+func process_column(current_column: int, xref_family_tree: Dictionary, 
 		item_weapon_as_dict: Dictionary, app_headers: Dictionary,  
 			xref_common_table_headers: Dictionary, current_row: int) -> Dictionary:
 	## The header that appears at the top of the Table for the column we're working on.
@@ -175,14 +175,10 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 	elif column_header.begins_with("rear_"):
 		return extract_rear_physical_attack_dmg(item_weapon_as_dict, key)
 	
-	
-	
-	#elif not item_weapon_as_dict.has(key):
-		#return extract_physical_attack_dmg(item_weapon_as_dict,key)
-	
 	else:
 		print("Error: Couldn't find the key value to scrape!")
 		return null
+
 
 ## add elif for any new move type ============================================
 ## Puts the found value in the correct place inside the unique weapon dictionary.
@@ -233,9 +229,6 @@ func assign_values_to_unique_dictionary(unique_weapon: Dictionary,
 	elif key.begins_with("shoot_signature"):
 		unique_weapon = key_begins_with_shoot_signature_attack(unique_weapon, key, value)	
 	
-	## Recipee integration may go here.
-	#elif key.begins_with("recipee"):
-		#unique_weapon.set(key, value)
 	else:
 		unique_weapon.set(key, value)
 	return unique_weapon
