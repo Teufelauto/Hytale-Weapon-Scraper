@@ -19,6 +19,7 @@ static var settings:Dictionary = {}
 ## The raw output from the jsons, each json is a Dict inside.
 static var reference_encyclopedia: Dictionary = {
 	"weapons": {},
+	"armor": {},
 }
 static var asset_1_zip_path: String ## old, or previous zip
 static var asset_2_zip_path: String ## the new chosen Assets.zip data source
