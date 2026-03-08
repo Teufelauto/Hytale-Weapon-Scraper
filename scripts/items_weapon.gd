@@ -17,11 +17,9 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## This function is called from weapons class. Other functions in this class result from it.
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
-func scrape_weapon_item_data(file_path: String, 
-		current_family: String, current_child: String, 
+func scrape_weapon_item_data(current_family: String, current_child: String, 
 		xref_child: Dictionary, xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
-	
 	## Dictionary for a singular weapon, equivalent one row in the weapon table. 
 	var unique_weapon: Dictionary #= {
 	## "Sword_Crude" or "Mace_Copper" etc
@@ -33,11 +31,10 @@ func scrape_weapon_item_data(file_path: String,
 		"weapon_family": current_family,
 		"descriptor": current_child,
 		}
-	#print()# Seperates each iteration
 	print(current_row, ": ", weapon_id) # Display the current weapon being worked on.
-	## === Read from ZIP, a Specific Weapon Dictionary from Assets.json ===
-	## JSON as Dictionary of Weapon_Sword_Crude or whatever
-	var item_weapon_as_dict: Dictionary = parse_weapon_item_info(file_path)
+	## Read from compiled encyclopedia
+	var item_weapon_as_dict: Dictionary = reference_encyclopedia.weapons \
+			[current_family.to_lower()].get(current_child.to_lower())
 	
 	## Skip default values if "Parent" does not exist in json.
 	var current_parent: String = item_weapon_as_dict.get("Parent", "undefined")
@@ -62,19 +59,15 @@ func scrape_weapon_item_data(file_path: String,
 
 ## Parse weapon server/item/items damage info json and turn it into a Dictionary 
 func parse_weapon_item_info(file_path: String) -> Dictionary:
-	#need the file path and name of the current weapon. Holey Canolli, it's case-sensative.
-	#var file_path_inside_zip: String = "Server/Item/Items/Weapon/" + weapon_family \
-			#+ "/Weapon_" + weapon_id + ".json"
-			
 	# Read json inside zip
 	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path)
 	if file_buffer.is_empty():
-		print("Failed to read json weapon file or file is empty")
+		printerr("Failed to read json weapon file or file is empty")
 		return { null:null }
 	else:
 		#print("Successfully read file: ", file_path)
 		# Convert Byte Array into String. utf8 for safety
-		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()# FileAccess.get_file_as_string(file_path)
+		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()
 		var _item_weapon_info_as_dict: Dictionary = JSON.parse_string(_item_weapon_info_string)
 		return _item_weapon_info_as_dict
 

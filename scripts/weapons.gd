@@ -43,14 +43,8 @@ func headless_main(asset_being_processed: int) -> void:
 	
 	#print_weapon_table_to_console() # For troubleshooting
 	
-	if asset_being_processed == 1:
-		FileUtils.export_array_as_csv(weapon_table, exported_csv_1_save_path) # Export to csv
-		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_1_save_path) # export to json
-		
-	else: ## asset_being_processed == 2
-		FileUtils.export_array_as_csv(weapon_table, exported_csv_2_save_path) # Export to csv
-		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
-		
+	choose_what_to_export(asset_being_processed)
+
 
 ## This is the 2d array, matrix, or table, where the info scraped from the JSONs gets put.
 ## The table can be exported as CSV or used internally. 
@@ -158,6 +152,48 @@ func enter_weapons_in_reference_encyclopedia() -> void:
 				iw.free()
 				print("Retrieving " + current_family_lower + " " + current_child_lower)
 
+### Step through all weapons and descriptors (children) to create Table and Dict
+#func step_through_weapons() -> void:
+	#var current_table_row: int  = 0 #start with 0 and increment for each value
+	#var xref_common_table_headers: Dictionary = weapon_dict.common_table_headers
+	#
+	##select weapon family- battleaxe, dagger etc
+	#for current_family in weapon_dict.weapon_family.keys():
+		#
+		#var child_xref_header_to_simple: Dictionary = weapon_move_Xref_dict[current_family]
+		#
+		### lower_case string version of current_Family  
+		#var current_family_lower: String = current_family.to_lower()
+		#weapon_encyclopedia.set(current_family_lower, {}) # Top level is Family
+		#
+		#var target_folder: String = "Server/Item/Items/Weapon/" + current_family + "/"
+		#
+		### Iterate through the files and check if they are in the target folder.
+		#for file_path in FileUtils.zip_files:
+			### Check if the file path starts with the desired folder path
+			### (e.g., "my_folder/" or "res://my_folder/").
+			#if target_folder.is_empty() or file_path.begins_with(target_folder):
+				### returns int for row numbering purposes.
+				#current_table_row = prepare_child_wpn_to_scrape(current_table_row, 
+						#file_path, current_family, current_family_lower,
+						#child_xref_header_to_simple, xref_common_table_headers)
+
+#func prepare_child_wpn_to_scrape(current_table_row: int, file_path: String,
+		#current_family: String, current_family_lower: String,
+		#xref_child: Dictionary, xref_common_table_headers: Dictionary) -> int:
+	#current_table_row += 1
+	#
+	#var current_child: String = find_child_frm_path(file_path, current_family)
+	## Second level is child
+	#weapon_encyclopedia[current_family_lower].set(current_child.to_lower(), {}) 
+	#
+	### Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
+	#var iw := ItemsWeapon.new()
+	#iw.scrape_weapon_item_data(file_path, current_family, current_child,
+			#xref_child, xref_common_table_headers, current_table_row)
+	#iw.free()
+	#return current_table_row
+
 
 ## Step through all weapons and descriptors (children) to create Table and Dict
 func step_through_weapons() -> void:
@@ -197,7 +233,7 @@ func prepare_child_wpn_to_scrape(current_table_row: int, file_path: String,
 	
 	## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
 	var iw := ItemsWeapon.new()
-	iw.scrape_weapon_item_data(file_path, current_family, current_child,
+	iw.scrape_weapon_item_data(current_family, current_child,
 			xref_child, xref_common_table_headers, current_table_row)
 	iw.free()
 	return current_table_row
@@ -221,3 +257,14 @@ func print_weapon_table_to_console() -> void:
 	for row in range(weapon_table_height):
 		print(weapon_table[row])
 	print("")
+
+
+func choose_what_to_export(asset_being_processed: int):
+	if asset_being_processed == 1:
+		FileUtils.export_array_as_csv(weapon_table, exported_csv_1_save_path) # Export to csv
+		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_1_save_path) # export to json
+		
+	else: ## asset_being_processed == 2
+		FileUtils.export_array_as_csv(weapon_table, exported_csv_2_save_path) # Export to csv
+		FileUtils.export_dict_to_json(weapon_encyclopedia, exported_json_2_save_path) # export to json
+		
