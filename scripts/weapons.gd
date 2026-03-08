@@ -36,6 +36,9 @@ func headless_main(asset_being_processed: int) -> void:
 	
 	initialize_weapon_table() # Create a mostly blank 2d array to hold csv data.
 	
+	# create a dict of all the jsons at once. Better for parent templates.
+	#reference_encyclopedia = create_reference_encyclopedia()
+	
 	step_through_weapons()
 	
 	#print_weapon_table_to_console() # For troubleshooting
@@ -128,6 +131,42 @@ func add_entry_key_to_xref_dict(family:String, entry:String ) -> void:
 		move_name_src_key = move_name_src_key + "_Damage"
 	
 	weapon_move_Xref_dict[family].set(entry, move_name_src_key)
+
+
+func create_reference_encyclopedia() -> Dictionary:
+	var current_table_row: int  = 0 #start with 0 and increment for each value
+	var xref_common_table_headers: Dictionary = weapon_dict.common_table_headers
+	
+	#select weapon family- battleaxe, dagger etc
+	for current_family in weapon_dict.weapon_family.keys():
+		
+		var child_xref_header_to_simple: Dictionary = weapon_move_Xref_dict[current_family]
+		
+		## lower_case string version of current_Family  
+		var current_family_lower: String = current_family.to_lower()
+		reference_encyclopedia.weapons.set(current_family_lower, {}) # Top level is Family
+		
+		var target_folder: String = "Server/Item/Items/Weapon/" + current_family + "/"
+		
+		## Iterate through the files and check if they are in the target folder.
+		for file_path in FileUtils.zip_files:
+			## Check if the file path starts with the desired folder path
+			## (e.g., "my_folder/" or "res://my_folder/").
+			if target_folder.is_empty() or file_path.begins_with(target_folder):
+				## returns int for row numbering purposes.
+				current_table_row += 1
+	
+				var current_child: String = find_child_frm_path(file_path, current_family)
+				# Second level is child
+				reference_encyclopedia.weapons[current_family_lower].set(current_child.to_lower(), {}) 
+				
+				## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
+				var iw := ItemsWeapon.new()
+				iw.scrape_weapon_item_data(file_path, current_family, current_child,
+						child_xref_header_to_simple, xref_common_table_headers, current_table_row)
+				iw.free()
+	
+	return {}
 
 
 ## Step through all weapons and descriptors (children) to create Table and Dict
