@@ -31,20 +31,21 @@ func scrape_weapon_item_data(
 		"descriptor": current_child,
 	}
 	print("Processing ", current_row, ": ", weapon_id) # Display the current weapon being worked on.
-	## Read from compiled encyclopedia
+	## Currently processing child read from source encyclopedia
 	var item_weapon_as_dict: Dictionary = reference_encyclopedia.weapons \
 			[current_family].get(current_child)
 	
-	## Skip default values if "Parent" does not exist in json.
+	## Weapon id'd as parent in the currently processing child. i.e. "Template_Weapon_Shortbow"
 	var current_parent: String = item_weapon_as_dict.get("Parent", "undefined")
-	update_common_family_dictionaries(current_family, current_parent)
+	update_parent_dictionaries(current_family, current_parent)
 	
 	## Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
-		var columnheader_value: Dictionary = process_column(current_family,current_column, 
+		## Dictionary of two results: { "column_header": column_header, "value": value }
+		var columnheader_and_value: Dictionary = process_column(current_family,current_column, 
 				item_weapon_as_dict, app_headers)
-		var column_header: String = columnheader_value.get("column_header")
-		var value: Variant = columnheader_value.get("value")
+		var column_header: String = columnheader_and_value.get("column_header")
+		var value: Variant = columnheader_and_value.get("value")
 		
 		## Assign value to Table
 		weapon_table[current_row][current_column] = value
@@ -55,14 +56,12 @@ func scrape_weapon_item_data(
 	weapon_encyclopedia[current_family.to_lower()].set(current_child.to_lower(), unique_weapon.duplicate())
 
 
-## If current family not current_item_template, update current_template_family and item_template_dict
-func update_common_family_dictionaries(current_family: String, current_parent: String) -> void:
+## Define the Parent Dictionary to inherit from, if required.
+func update_parent_dictionaries(current_family: String, current_parent: String) -> void:
 	#check if template is up to date for the current family
-	if current_parent != current_template_parent:
-		item_template_dict = parse_template_weapon_item_info(current_family, current_parent)
-		current_template_parent = current_parent
-	else:
-		return
+	if current_parent != bequeathing_parent:
+		item_parent_dict = reference_encyclopedia.weapons[current_family].get(current_parent, {} )
+		bequeathing_parent = current_parent
 
 
 ## Find one value from item_weapon_as_dict.
@@ -215,8 +214,8 @@ func common_key_in_weapon_check(item_weapon_as_dict:Dictionary, key: String) -> 
 	if item_weapon_as_dict.has(key):
 		return item_weapon_as_dict.get(key)
 		
-	elif item_template_dict.has(key):
-		return item_template_dict.get(key)
+	elif item_parent_dict.has(key):
+		return item_parent_dict.get(key)
 		
 	elif key == "MaxStack": ## Special case: If MaxStack is undefined, make it = 1 (unstackable)
 		return 1

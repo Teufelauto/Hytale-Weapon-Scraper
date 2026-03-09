@@ -23,8 +23,8 @@ static var weapon_table: Array[Array] = [] ## Table to contain all the data
 ## Dictionary equivalent of weapon_table output
 static var weapon_encyclopedia: Dictionary = {}
 
-var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
-var current_template_parent: String ## Keeps track of the currently loaded template.
+var item_parent_dict: Dictionary = {} ## JSON as Dictionary of current Weapon's parent template
+var bequeathing_parent: String = "undefined" ## Keeps track of the currently loaded template.
 
 
 ##==================================================================================================
