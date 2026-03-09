@@ -18,8 +18,7 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
 func scrape_weapon_item_data(current_family: String, current_child: String, 
-		xref_child: Dictionary, xref_common_table_headers: Dictionary, 
-		current_row: int) -> void:
+		xref_child: Dictionary, current_row: int) -> void:
 	## Dictionary for a singular weapon, equivalent one row in the weapon table. 
 	var unique_weapon: Dictionary = {}
 	## "Sword_Crude" or "Mace_Copper" etc
@@ -43,8 +42,7 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
 		var columnheader_value: Dictionary = process_column(current_column, 
-				xref_child, item_weapon_as_dict, app_headers, 
-				xref_common_table_headers)
+				xref_child, item_weapon_as_dict, app_headers)
 		var column_header: String = columnheader_value.get("column_header")
 		var value: Variant = columnheader_value.get("value")
 		
@@ -69,8 +67,7 @@ func update_common_family_dictionaries(current_family: String, current_parent: S
 
 ## Find one value from item_weapon_as_dict.
 func process_column(current_column: int, xref_child: Dictionary, 
-		item_weapon_as_dict: Dictionary, app_headers: Dictionary,  
-			xref_common_table_headers: Dictionary) -> Dictionary:
+		item_weapon_as_dict: Dictionary, app_headers: Dictionary) -> Dictionary:
 	## The header that appears at the top of the Table for the column we're working on.
 	var column_header: String = weapon_table_column_array[current_column]
 	
@@ -80,8 +77,7 @@ func process_column(current_column: int, xref_child: Dictionary,
 	var retrieved_key: String = xref_child.get(column_header)
 
 	## Value to be put in the Table or unique dictionary
-	var value = get_key_value(item_weapon_as_dict, app_headers, retrieved_key, 
-			xref_common_table_headers, column_header)
+	var value = get_key_value(item_weapon_as_dict, app_headers, retrieved_key, column_header)
 	
 	## Makes value integer if able. (item level and max durability. 
 	## Attacks functions already return int)
@@ -118,7 +114,7 @@ func parse_template_weapon_item_info(weapon_family: String, parent: String) -> D
 ## Add elif with any new move type ============================================
 ## Get value for the table cell
 func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key: String, 
-		xref_common_table_headers: Dictionary, column_header: String) -> Variant:
+		column_header: String) -> Variant:
 	
 	## Skip the moves that don't exist for this weapon.
 	if key == "_Damage" :
@@ -129,7 +125,7 @@ func get_key_value(item_weapon_as_dict:Dictionary, app_headers: Dictionary, key:
 		return app_headers.get(key)
 		
 	## Check if key is in the first level inside JSON.
-	elif xref_common_table_headers.find_key(key) :
+	elif weapon_dict.common_table_headers.find_key(key) :
 		# need to retrieve from template if not in item_dict
 		return common_key_in_weapon_check(item_weapon_as_dict, key)
 	
