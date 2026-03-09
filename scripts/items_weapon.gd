@@ -18,7 +18,7 @@ const KEYS_WITH_INT_VALUES: Array = [
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
 func scrape_weapon_item_data(current_family: String, current_child: String, 
-		xref_child: Dictionary, current_row: int) -> void:
+		current_row: int) -> void:
 	## Dictionary for a singular weapon, equivalent one row in the weapon table. 
 	var unique_weapon: Dictionary = {}
 	## "Sword_Crude" or "Mace_Copper" etc
@@ -33,12 +33,13 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 	print("Processing ", current_row, ": ", weapon_id) # Display the current weapon being worked on.
 	## Read from compiled encyclopedia
 	var item_weapon_as_dict: Dictionary = reference_encyclopedia.weapons \
-			[current_family.to_lower()].get(current_child.to_lower())
+			[current_family].get(current_child)
 	
 	## Skip default values if "Parent" does not exist in json.
 	var current_parent: String = item_weapon_as_dict.get("Parent", "undefined")
 	update_common_family_dictionaries(current_family, current_parent)
 	
+	var xref_child: Dictionary = weapon_families_Xref_dict[current_family]#[current_child]
 	 ##Create weapon_table using weapon_move_Xref_dict to correlate columns with lookup.
 	for current_column in weapon_table_column_array.size():
 		var columnheader_value: Dictionary = process_column(current_column, 

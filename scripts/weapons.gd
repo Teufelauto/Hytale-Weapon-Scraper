@@ -136,22 +136,22 @@ func enter_weapons_in_reference_encyclopedia() -> void:
 	## select weapon family- battleaxe, dagger etc
 	for current_family in weapon_dict.weapon_family.keys():
 		## lower_case string version of current_Family  
-		var current_family_lower: String = current_family.to_lower()
-		reference_encyclopedia.weapons.set(current_family_lower, {} ) 
+		reference_encyclopedia.weapons.set(current_family, {} ) 
 		var target_folder: String = "Server/Item/Items/Weapon/" + current_family + "/"
 		## Iterate through the files and check if they are in the target folder.
 		for file_path in FileUtils.zip_files:
 			## Check if the file path starts with the desired folder path
 			if target_folder.is_empty() or file_path.begins_with(target_folder):
-				var current_child_lower: String = (find_child_frm_path(\
-						file_path, current_family)).to_lower()
+				
+				var current_child: String = find_child_frm_path(\
+						file_path, current_family)
+				
 				## Create 3rd level child dict branch.
-				reference_encyclopedia.weapons[current_family_lower] \
-						.set(current_child_lower, {} ) 
+				reference_encyclopedia.weapons[current_family].set(current_child, {} ) 
 				## i.e. reference_encyclopedia.weapons.battleaxe.copper
-				reference_encyclopedia.weapons[current_family_lower][current_child_lower] \
+				reference_encyclopedia.weapons[current_family][current_child] \
 						= parse_weapon_item_info(file_path)
-				print("Retrieving " + current_family_lower + " " + current_child_lower)
+				print("Retrieving " + current_family + " " + current_child)
 
 
 ## Parse weapon server/item/items weapon info json and turn it into a Dictionary
@@ -175,29 +175,23 @@ func step_through_weapons() -> void:
 		
 	#select weapon family- battleaxe, dagger etc
 	for current_family in weapon_dict.weapon_family.keys():
+		weapon_encyclopedia.set(current_family.to_lower(), {}) # Top level is Family
 		
-		var child_xref_header_to_simple: Dictionary = weapon_families_Xref_dict[current_family]
-		
-		## lower_case string version of current_Family  
-		var current_family_lower: String = current_family.to_lower()
-		weapon_encyclopedia.set(current_family_lower, {}) # Top level is Family
-		
-		for current_child in reference_encyclopedia.weapons[current_family_lower]:
-			current_table_row = prepare_child_wpn_to_scrape(current_table_row, 
-						current_family, current_child, child_xref_header_to_simple)
+		for current_child in reference_encyclopedia.weapons[current_family]:
+			current_table_row += 1
+			prepare_child_wpn_to_scrape(current_table_row, 
+						current_family, current_child)
 
 
-func prepare_child_wpn_to_scrape(current_table_row: int, 
-		current_family: String, current_child: String,
-		xref_child: Dictionary) -> int:
-	current_table_row += 1
+func prepare_child_wpn_to_scrape(current_table_row: int, current_family: String, 
+		current_child: String) -> int:
+	
 	## Create Second level child
 	weapon_encyclopedia[current_family.to_lower()].set(current_child.to_lower(), {}) 
 	
-	## Instance of ItemsWeapon class. Inside for-loop, so will get reset like any var.
+	## Instance of ItemsWeapon class.
 	var iw := ItemsWeapon.new()
-	iw.scrape_weapon_item_data(current_family, current_child,
-			xref_child, current_table_row)
+	iw.scrape_weapon_item_data(current_family, current_child, current_table_row)
 	iw.free()
 	return current_table_row
 
