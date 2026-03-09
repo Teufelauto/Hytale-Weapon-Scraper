@@ -134,7 +134,11 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 	elif column_header.begins_with("primary_attack_") \
 			or column_header.begins_with("charged_attack_") \
 			or column_header.begins_with("signature_attack_"):
-		return extract_physical_attack_dmg(item_child_dict,key)
+		var dmg: int = extract_physical_attack_dmg(item_child_dict,key)
+		if dmg < 0:
+			dmg = extract_physical_attack_dmg(item_parent_dict,key)
+		if dmg < 0: dmg = 0
+		return dmg
 	
 	## Check if key is shooting attack damage in JSON.
 	elif column_header.begins_with("shoot_"):
@@ -222,7 +226,7 @@ func common_key_in_weapon_check(item_weapon_as_dict:Dictionary, key: String) -> 
 	elif key == "MaxStack": ## Special case: If MaxStack is undefined, make it = 1 (unstackable)
 		return 1
 	else:
-		print("No top level key, ", key, ", in weapon's json.")
+		print("No key, ", key, ", in weapon's json.")
 		return "undefined"
 
 
@@ -230,20 +234,20 @@ func common_key_in_weapon_check(item_weapon_as_dict:Dictionary, key: String) -> 
 ## This is a lot
 func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
-		return 0
+		return -1
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
-		return 0
+		return -2
 	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return 0
+		return -3
 	# The [0] is to deal with the array inside json.
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
-		return 0
+		return -4
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
 			.has("BaseDamage"):
-		return 0
+		return -5
 	## We can finally see what kind of damage is done.
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.BaseDamage.get("Physical", 0)
+			.BaseDamage.get("Physical", -6)
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
