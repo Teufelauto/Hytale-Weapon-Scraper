@@ -21,7 +21,7 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 		xref_child: Dictionary, xref_common_table_headers: Dictionary, 
 		current_row: int) -> void:
 	## Dictionary for a singular weapon, equivalent one row in the weapon table. 
-	var unique_weapon: Dictionary #= {
+	var unique_weapon: Dictionary = {}
 	## "Sword_Crude" or "Mace_Copper" etc
 	var weapon_id: String = current_family + "_" + current_child  
 	## List of columns made by the app for catagorizing data.
@@ -30,8 +30,8 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 		"id": weapon_id,
 		"weapon_family": current_family,
 		"descriptor": current_child,
-		}
-	print(current_row, ": ", weapon_id) # Display the current weapon being worked on.
+	}
+	print("Processing ", current_row, ": ", weapon_id) # Display the current weapon being worked on.
 	## Read from compiled encyclopedia
 	var item_weapon_as_dict: Dictionary = reference_encyclopedia.weapons \
 			[current_family.to_lower()].get(current_child.to_lower())
@@ -55,21 +55,6 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 		
 	## Add this child to the Big Dictionary under family.
 	weapon_encyclopedia[current_family.to_lower()].set(current_child.to_lower(), unique_weapon.duplicate())
-
-
-## Parse weapon server/item/items damage info json and turn it into a Dictionary 
-func parse_weapon_item_info(file_path: String) -> Dictionary:
-	# Read json inside zip
-	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path)
-	if file_buffer.is_empty():
-		printerr("Failed to read json weapon file or file is empty")
-		return { null:null }
-	else:
-		#print("Successfully read file: ", file_path)
-		# Convert Byte Array into String. utf8 for safety
-		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()
-		var _item_weapon_info_as_dict: Dictionary = JSON.parse_string(_item_weapon_info_string)
-		return _item_weapon_info_as_dict
 
 
 ## If current family not current_item_template, update current_template_family and item_template_dict

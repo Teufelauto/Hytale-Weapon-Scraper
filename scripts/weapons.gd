@@ -2,17 +2,17 @@ class_name Weapons
 extends App
 ## Process Weapons in the Assets.zip
 ##
-## We create a table for storing the info in a spreadsheet first. After each row 
-## is populated, the line of json is added. 
+## Creates a table for storing the info in a spreadsheet.
+## Also creates a json of the data. 
 
-## The weapon dictionary is a JSON that can be user-changed as weapons are 
-## added to game, or maneuvers changed.
+## Loaded from json on App start. File can be user-changed as weapons are 
+## added to game, or maneuvers changed. 
 static var weapon_dict: Dictionary = {}
-## Dictionary equivalent of weapon_table output
-static var weapon_encyclopedia: Dictionary = {}
-## Dictionary of column name equivalents for weapon family 
+
+## Dictionary of column name equivalents for current weapon family 
 ## weapon_move_Xref_dict.family.column_name to get value of move name
 static var weapon_move_Xref_dict: Dictionary = {}
+
 # Weapon Table construction
 ## Determine how many rows are in the weapon_table by counting each weapon's files
 static var total_number_of_weapons:int = 0
@@ -20,6 +20,9 @@ static var weapon_table_height: int = 0
 static var weapon_table_width: int = 0
 static var weapon_table_column_array: Array = []
 static var weapon_table: Array[Array] = [] ## Table to contain all the data
+## Dictionary equivalent of weapon_table output
+static var weapon_encyclopedia: Dictionary = {}
+
 var item_template_dict: Dictionary = {} ## JSON as Dictionary of current Weapon template
 var current_template_parent: String ## Keeps track of the currently loaded template.
 
@@ -144,13 +147,26 @@ func enter_weapons_in_reference_encyclopedia() -> void:
 				## 3rd level is child
 				reference_encyclopedia.weapons[current_family_lower] \
 						.set(current_child_lower, {} ) 
-				## We now have dictionary key reasy for value to be contents of json.
 				## i.e. reference_encyclopedia.weapons.battleaxe.copper
-				var iw := ItemsWeapon.new() ## Instance of ItemsWeapon class.
 				reference_encyclopedia.weapons[current_family_lower][current_child_lower] \
-						= iw.parse_weapon_item_info(file_path)
-				iw.free()
+						= parse_weapon_item_info(file_path)
 				print("Retrieving " + current_family_lower + " " + current_child_lower)
+
+
+## Parse weapon server/item/items weapon info json and turn it into a Dictionary
+func parse_weapon_item_info(file_path: String) -> Dictionary:
+	# Read json inside zip
+	var file_buffer: PackedByteArray = FileUtils.zip_reader.read_file(file_path)
+	if file_buffer.is_empty():
+		printerr("Failed to read json weapon file or file is empty")
+		return { null:null }
+	else:
+		#print("Successfully read file: ", file_path)
+		# Convert Byte Array into String. utf8 for safety
+		var _item_weapon_info_string: String = file_buffer.get_string_from_utf8()
+		var _item_weapon_info_as_dict: Dictionary = JSON.parse_string(_item_weapon_info_string)
+		return _item_weapon_info_as_dict
+
 
 ### Step through all weapons and descriptors (children) to create Table and Dict
 #func step_through_weapons() -> void:
