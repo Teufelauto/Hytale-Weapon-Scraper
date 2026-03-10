@@ -50,71 +50,89 @@ static var active_assets: Array = [null, null]
 ## True if both exported csv and json files exist for that index. 
 static var assets_processed: Array = [false, false]
 
+##==================================================================================================
 
 ## Sets up app the first time it is loaded by copying files to user:// and defining assets location
 func check_if_first_load() -> void:
+	## Create folders if necessary
+	FileUtils.create_user_data_folder("docs")
+	FileUtils.create_user_data_folder("output")
+	FileUtils.create_user_data_folder("diff_results")
+	
+	## Copy the App Setttings into the user folder.
+	first_load_app_settings()
+	## Copy Weapon Dictionary to user so it can be edited by user.
+	first_load_weapon_dictionary()
+	## Copy Instructions to user so it can be read by user.
+	first_load_instructions()
+	## Copy license to user so it can be read by user.
+	first_load_license()
+
+
+func first_load_app_settings() -> void:
 	## Need to copy the App Setttings into the user folder, 
 	## so they can be edited by the user by headless method.
-	var file_folder: String
-	var file_short_path: String
-	var full_source: String
-	var full_destination: String
+	
 	var file_name: String = "app_settings.json"
 	var file_exists: bool = FileUtils.check_user_file_exists(file_name)
+	
 	if not file_exists: 
-		full_source = "res://app_user_templates/" + file_name
-		full_destination = "user://" + file_name
+		var full_source: String = "res://app_user_templates/" + file_name
+		var full_destination: String = "user://" + file_name
 		
 		# copy app_settings to user. This has default data.
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
 		first_load_auto_determine_assets_location() # get target path and save path data into JSON
-		
 	else:
 		print("User folder already contains app_settings.")
 		
 	## Copy Weapon Dictionary to user so it can be edited by user.
 	file_name = "weapon_dictionary.json"
 	file_exists = FileUtils.check_user_file_exists(file_name)
+
+
+func first_load_weapon_dictionary() -> void:
+	## Copy Weapon Dictionary to user so it can be edited by user.
+	var file_name: String = "weapon_dictionary.json"
+	var file_exists: bool = FileUtils.check_user_file_exists(file_name)
+	
 	if not file_exists: 
-		full_source = "res://app_user_templates/" + file_name
-		full_destination = "user://" + file_name
+		var full_source: String = "res://app_user_templates/" + file_name
+		var full_destination: String = "user://" + file_name
 		# copy weapons dictinary to user
 		FileUtils.copy_file_from_source_to_destination(full_source, full_destination) 
 	else:
 		print("User folder already contains weapon_dictionary.")
-	
-	# Create documentation folder if necessary
-	FileUtils.create_user_data_folder("docs")
-	
+
+
+func first_load_instructions() -> void:
 	## Copy Instructions to user so it can be read by user.
-	file_folder = "docs/"
-	file_name = "Instructions.txt"
-	file_short_path = file_folder + file_name
-	file_exists = FileUtils.check_user_file_exists(file_short_path)
+	var file_folder: String = "docs/"
+	var file_name: String = "Instructions.txt"
+	var file_short_path: String = file_folder + file_name
+	var file_exists: bool = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
-		full_destination = "user://" + file_short_path
+		var full_destination: String = "user://" + file_short_path
 		# copy instructions to user
 		var app_res := AppResources.new()
 		FileUtils.save_to_txt_file(app_res.INSTRUCTIONS,full_destination)
 	else:
 		print("docs folder already contains Instructions.txt.")
-			
+
+
+func first_load_license() -> void:
 	## Copy license to user so it can be read by user.
-	file_folder = "docs/"
-	file_name = "LICENSE.txt"
-	file_short_path = file_folder + file_name
-	file_exists = FileUtils.check_user_file_exists(file_short_path)
+	var file_folder: String = "docs/"
+	var file_name: String = "LICENSE.txt"
+	var file_short_path: String = file_folder + file_name
+	var file_exists: bool = FileUtils.check_user_file_exists(file_short_path)
 	if not file_exists: 
-		full_destination = "user://" + file_short_path
+		var full_destination: String = "user://" + file_short_path
 		# copy license to user
 		var app_res := AppResources.new()
 		FileUtils.save_to_txt_file(app_res.LICENSE,full_destination)
 	else:
 		print("docs folder already contains LICENSE.txt.")
-	
-	# Create Output folder if necessary
-	FileUtils.create_user_data_folder("output")
-	FileUtils.create_user_data_folder("diff_results")
 
 
 ## The first time app_settings is created, pre-fill file-path for assets.
