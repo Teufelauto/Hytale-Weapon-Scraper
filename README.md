@@ -1,7 +1,8 @@
 # Hytale-Weapon-Scraper
 - Turn zipped weapon assets into a JSON for easy access, and a CSV table for easy viewing.
 - Compare two Game Builds of your choice for differences in weapons.
-- App takes about 45 seconds to go through the two 3 GB Assets.zip on a 9800x3D computer with an NVME drive. It may appear frozen, but it's probably still parsing. It will save the files, and close when it's done. If running --headless in a terminal, you can see the progress as it processes each weapon.
+- If Hytale is not installed on machine, the app will have issues with the first run. If it creates the app_settings.json file, edit that to specify paths to your Assets.zip files.
+- App may take a minute to go through the two 3 GB Assets.zip being compared with an NVME drive. It may appear frozen, but it's probably still parsing. It will save the files, and close when it's done. If running --headless in a terminal, you can see the progress as it processes each weapon.
 - Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
 
 - Version 0.5.0 nests attack damage one fork higher so random damage modifier can be paraellel. Also allows other tyopes of damage beyond 'physical'.
@@ -10,33 +11,41 @@
 ### Example json output (with data obfuscated)
 ```json
 {
-  "battleaxe": {
-    "adamantite": {
+  "sword": {
+    "bronze": {
+      "id": "Sword_Bronze",
+      "weapon_family": "Sword",
+      "descriptor": "Bronze",
+      "parent": "Template_Weapon_Sword",
+      "model": path,
+      "texture": path,
+      "icon": path,
+      "item_level": int,
+      "quality": string,
+      "max_durability": int,
+      "max_stack": 1,
+      "durability_loss_on_hit": float,
       "attack": {
-        "primary": [
-          integer,
-          integer,
-          integer
-        ],
-        "charged": [
-          integer
-        ],
-        "signature": [
-          integer
-        ]
-      },
-      "id": "Battleaxe_Adamantite",
-      "weapon_family": "Battleaxe",
-      "descriptor": "Adamantite",
-      "model": String,
-      "texture": String,
-      "icon": String,
-      "item_level": integer,
-      "quality": String,
-      "max_durability": integer,
-      "durability_loss_on_hit": float
-    },
-    "cobalt": { ... etc.
+        "primary": {
+          "physical": [
+            int,
+            int,
+            int
+          ]
+        },
+        "charged": {
+          "physical": [
+            int
+          ]
+        },
+        "signature": {
+          "physical": [
+            int,
+            int
+          ]
+        }
+      }
+    },  ... etc.
 ```
 # Instructions
 There is no GUI yet. It just opens a rectangle while it runs, then closes when the json and csv are written.
