@@ -45,7 +45,7 @@ func retrieve_app_settings() -> void:
 	app.check_for_processed_books()
 	
 
-## Call the Weapons class for each Assets.zip to be processed
+## (Headless) Call the Weapons class for each Assets.zip to be processed
 func process_assets() -> void:
 	
 	## Process first Asset
@@ -97,6 +97,7 @@ func diff_the_assets() -> void:
 				App.exported_json_2_save_path) ## Creates Diff in hard to read json
 	else:
 		print("No json diff processed. Need two json assets to compare.")
+
 
 
 	

@@ -5,7 +5,7 @@
 		 a different location if you wish to analyze a zip saved in a custom location. So, if you 
 		 wish to analyze an older release of the Assets.zip file, you can modify the user section. 
 		 All paths must use forward-slashes: ( / ). All paths must end with a forward-slash. 
-		 Filenames can be whatever you like.",
+		 Filenames can be whatever you like. Trailing commas are allowed in this document.",
 	"run_app_headless": true,
 	"assets": {
 		"pre_release": {
