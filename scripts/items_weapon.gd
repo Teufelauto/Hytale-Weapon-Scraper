@@ -135,22 +135,35 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 			or column_header.begins_with("charged_attack_") \
 			or column_header.begins_with("signature_attack_"):
 		var dmg: int = extract_physical_attack_dmg(item_child_dict,key)
-		if dmg < 0:
-			dmg = extract_physical_attack_dmg(item_parent_dict,key)
-		if dmg < 0: dmg = 0
+		#print("Attack damage, or broken branch at: ", dmg)
+		if dmg < 0: ## Negative value means no valid value found.
+			dmg = extract_physical_attack_dmg(item_parent_dict,key) ## Inherit
+		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
 		return dmg
 	
 	## Check if key is shooting attack damage in JSON.
 	elif column_header.begins_with("shoot_"):
-		return extract_shoot_attack_dmg(item_child_dict, key)
+		var dmg: int = extract_shoot_attack_dmg(item_child_dict, key)
+		if dmg < 0:
+			dmg = extract_shoot_attack_dmg(item_parent_dict, key) ## Inherit
+		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
+		return dmg
 	
 	## Check if key is random modifier to attack damage in JSON.
 	elif column_header.begins_with("rand_pct_mod_"):
-		return extract_rand_physical_attack_dmg(item_child_dict, key)
+		var mod: float = extract_rand_physical_attack_dmg(item_child_dict, key)
+		if mod < 0:
+			mod = extract_rand_physical_attack_dmg(item_parent_dict, key) ## Inherit
+		if mod < 0: mod = 0 ## Not in child or parent, so make it 0
+		return mod
 	
 	## Check if key is rear attack damage in JSON.
 	elif column_header.begins_with("rear_"):
-		return extract_rear_physical_attack_dmg(item_child_dict, key)
+		var dmg: int = extract_rear_physical_attack_dmg(item_child_dict, key)
+		if dmg < 0:
+			dmg = extract_rear_physical_attack_dmg(item_parent_dict, key)
+		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
+		return dmg
 	
 	else:
 		print("Error: Couldn't find the key value to scrape!")
@@ -231,7 +244,7 @@ func common_key_in_weapon_check(item_weapon_as_dict:Dictionary, key: String) -> 
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-## This is a lot
+## Negative returns are for inheritance flow control.
 func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return -1
@@ -251,61 +264,62 @@ func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:Strin
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-## This is a lot
+## Negative returns are for inheritance flow control.
 func extract_shoot_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
-		return 0 #10001
+		return -1
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
 		print(move_name)
-		return 0 #10002
+		return -2 
 	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return 0 #10003
+		return -3 
 	# The [0] is to deal with the array inside json.
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
-		return 0 #10004
+		return -4 
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
 			.has("BaseDamage"):
-		return 0 #10005
+		return -5 
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.BaseDamage.get("Projectile", 0) #10006)
+			.BaseDamage.get("Projectile", -6) 
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-## Get RandomPercentageModifier
+## Get RandomPercentageModifier Negative returns are for inheritance flow control.
 func extract_rand_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name: String) -> float:
 	if not item_weapon_as_dict.has("InteractionVars"): 
-		return 0
+		return -1
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
-		return 0
+		return -2
 	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return 0
+		return -3
 	# The [0] is to deal with the array inside json.
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
-		return 0
+		return -4
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.get("RandomPercentageModifier",0)
+			.get("RandomPercentageModifier", -5)
 
 
 ## Back-Stabbing Daggers get a special function. AngledDamage is the brach to follow.
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
+## Negative returns are for inheritance flow control.
 func extract_rear_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name: String) -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
-		return 0
+		return -1
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
-		return 0
+		return -2
 	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return 0
+		return -3
 	# The [0] is to deal with the array inside json.
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("AngledDamage"): 
-		return 0
+		return -4
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
 			.has("DamageCalculator"):
-		return 0
+		return -5
 	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
 			.DamageCalculator.has("BaseDamage"):
-		return 0
+		return -6
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
-			.DamageCalculator.BaseDamage.get("Physical", 0)
+			.DamageCalculator.BaseDamage.get("Physical", -7)
 
 
 ## Determine data to enter primary attack branch of json.
