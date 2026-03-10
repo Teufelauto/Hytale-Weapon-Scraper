@@ -139,36 +139,13 @@ func first_load_license() -> void:
 func first_load_auto_determine_assets_location()->void:
 	## Load here so we can get default data, write over it, then save it.
 	load_app_settings_from_json() 
-	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
+	var hytale_roaming_folder: String = FileUtils.retrieve_roaming_Hytale_folder_location()
 	
 	## Pre-save paths. User defined pre-set to pre_release
-	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
-			+ build_folders[Assets.PREVIOUS_PRE_RELEASE] + "/"
+	first_auto_load_from_prerelease(hytale_roaming_folder)
 	
-	settings.assets.pre_release.previous_pre_release.set("assets_path", 
-			hytale_roaming_folder + previous_pre_release_path)
-	
-	settings.assets.user.user_defined_1.set("assets_path", 
-			hytale_roaming_folder + previous_pre_release_path) 
-	
-	var latest_pre_release_path: String = "/install/pre-release/package/game/latest/"
-	
-	settings.assets.pre_release.latest_pre_release.set("assets_path", 
-			hytale_roaming_folder + latest_pre_release_path)
-			
-	settings.assets.user.user_defined_2.set("assets_path", 
-			hytale_roaming_folder + latest_pre_release_path) 
-	
-	var previous_release_path: String = \
-			"/install/release/package/game/" + build_folders[Assets.PREVIOUS_RELEASE] + "/"
-			
-	settings.assets.release.previous_release.set("assets_path", 
-			hytale_roaming_folder + previous_release_path)
-	
-	var latest_release_path: String = "/install/release/package/game/latest/"
-	
-	settings.assets.release.latest_release.set("assets_path", 
-			hytale_roaming_folder + latest_release_path)
+	## Pre-save paths. release
+	first_auto_load_from_release(hytale_roaming_folder)
 	
 	## We fill in the user://output/ directery path so the user is not confused by "user://"
 	first_auto_load_output()
@@ -191,6 +168,39 @@ func load_app_settings_from_json() -> void:
 	choose_which_filepaths_to_process() 
 	
 	refresh_assets_paths()
+
+
+func first_auto_load_from_prerelease(hytale_roaming_folder: String) -> void:
+	## Pre-save paths. User defined pre-set to pre_release
+	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
+			+ build_folders[Assets.PREVIOUS_PRE_RELEASE] + "/"
+	
+	settings.assets.pre_release.previous_pre_release.set("assets_path", 
+			hytale_roaming_folder + previous_pre_release_path)
+	
+	settings.assets.user.user_defined_1.set("assets_path", 
+			hytale_roaming_folder + previous_pre_release_path) 
+	
+	var latest_pre_release_path: String = "/install/pre-release/package/game/latest/"
+	
+	settings.assets.pre_release.latest_pre_release.set("assets_path", 
+			hytale_roaming_folder + latest_pre_release_path)
+			
+	settings.assets.user.user_defined_2.set("assets_path", 
+			hytale_roaming_folder + latest_pre_release_path) 
+
+
+func first_auto_load_from_release(hytale_roaming_folder: String) -> void:
+	var previous_release_path: String = \
+			"/install/release/package/game/" + build_folders[Assets.PREVIOUS_RELEASE] + "/"
+			
+	settings.assets.release.previous_release.set("assets_path", 
+			hytale_roaming_folder + previous_release_path)
+	
+	var latest_release_path: String = "/install/release/package/game/latest/"
+	
+	settings.assets.release.latest_release.set("assets_path", 
+			hytale_roaming_folder + latest_release_path)
 
 
 func first_auto_load_output() -> void:
@@ -478,7 +488,14 @@ func convert_build_numbers_to_names() -> void:
 			"build-" + str(build_numbers[Assets.LATEST_RELEASE])
 	
 	## USER_DEFINED_1 value
-	
+	build_folders_user1()
+	## USER_DEFINED_2 value
+	build_folders_user2()
+
+	print(build_folders)
+
+
+func build_folders_user1() -> void:
 	## Retrieved from app_settings.json for user defined. If user knows where zip came from,
 	## they can choose correct type for archiving.
 	
@@ -491,8 +508,9 @@ func convert_build_numbers_to_names() -> void:
 	
 	build_folders[Assets.USER_DEFINED_1] = "build-" \
 			+ str(build_numbers[Assets.USER_DEFINED_1])
-	
-	## USER_DEFINED_2 value
+
+
+func build_folders_user2() -> void:
 	if settings.assets.user.user_defined_2.build_type.get("pre_release", false):
 		build_type[Assets.USER_DEFINED_2] = "pre-release"
 	elif settings.assets.user.user_defined_2.build_type.get("release", false):
@@ -502,8 +520,6 @@ func convert_build_numbers_to_names() -> void:
 	
 	build_folders[Assets.USER_DEFINED_2] = "build-" \
 			+ str(build_numbers[Assets.USER_DEFINED_2])
-
-	print(build_folders)
 
 
 ## Assign load and save paths based upon data from app_settings.json
@@ -697,7 +713,6 @@ func assemble_output_filename(generic_filename: String, scrape_assets_index: int
 		is_diff: bool = false) -> String:
 	
 	match is_diff:
-		
 		## Export book (encyclopedia) filenames
 		false when generic_filename.ends_with(".json"):
 			return generic_filename.replacen(".json", 
@@ -719,7 +734,6 @@ func assemble_output_filename(generic_filename: String, scrape_assets_index: int
 			return generic_filename.replacen(".csv", "_" 
 					+ active_build_type[0] + "-" + str(active_build_numbers[0]) + "_v_" 
 					+ active_build_type[1] + "-" + str(active_build_numbers[1]) + ".csv")
-	
 	return generic_filename
 
 
