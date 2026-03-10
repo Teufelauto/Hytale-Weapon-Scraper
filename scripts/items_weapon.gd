@@ -10,10 +10,6 @@ const KEYS_WITH_INT_VALUES: Array = [
 	"MaxStack"
 ]
 
-##==============================================================================
-##\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-##==============================================================================
-
 ## This function is called from weapons class. Other functions in this class result from it.
 ## Important Class function for getting data out of the Items/Weapons/(family folder)/(json file)
 ## Current_family is the weapon family (sword etc) and current_child is "crude" or "iron" etc
@@ -53,8 +49,9 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 		## Assign value to current child dictionary, posibly in subdictionaries or arrays.
 		unique_child = assign_values_to_unique_dictionary(unique_child, column_header, value)
 		
-	## Add this child to the Big Dictionary under family.
-	weapon_encyclopedia[current_family.to_lower()].set(current_child.to_lower(), unique_child.duplicate())
+	## Now that all columns are processed, add this child to the Big Dictionary under family.
+	weapon_encyclopedia[current_family.to_lower()].set(current_child.to_lower(), 
+			unique_child.duplicate())
 
 
 ## Define item_parent_dict, the Parent Dictionary to inherit from, if required.
@@ -70,10 +67,10 @@ func process_column(current_family: String, current_column: int,
 		item_child_dict: Dictionary, app_headers: Dictionary) -> Dictionary:
 	## The header that appears at the top of the Table for the column we're working on.
 	var column_header: String = weapon_table_column_array[current_column]
-	
 	## PascalCase or Pascal_Snake_Case for attack moves. Loses data for back-stabbing.
 	## Get the value from the intermediate dict to make the key for the item weapon dict.
-	## The retrieved key is for looking inside item_weapon_as_dict to find the value for filling in the table.
+	## The retrieved key is for looking inside item_weapon_as_dict to find the value for 
+	## filling in the table.
 	var retrieved_key: String = weapon_families_Xref_dict[current_family].get(column_header)
 
 	## Value to be put in the Table or unique dictionary
@@ -112,6 +109,7 @@ func parse_template_weapon_item_info(weapon_family: String, parent: String) -> D
 		return item_weapon_info_as_dict
 
 
+#region Extract values
 ## Add elif with any new move type ============================================
 ## Get value for the table cell
 func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: String, 
@@ -161,67 +159,13 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 	elif column_header.begins_with("rear_"):
 		var dmg: int = extract_rear_physical_attack_dmg(item_child_dict, key)
 		if dmg < 0:
-			dmg = extract_rear_physical_attack_dmg(item_parent_dict, key)
+			dmg = extract_rear_physical_attack_dmg(item_parent_dict, key) ## Inherit
 		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
 		return dmg
-	
+
 	else:
 		print("Error: Couldn't find the key value to scrape!")
 		return null
-
-
-## add elif for any new move type ============================================
-## Puts the found value in the correct place inside the unique weapon dictionary.
-func assign_values_to_unique_dictionary(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if key == "item_count": # We don't want Item Count in the JSON.
-		return unique_child # So we skip it and go back to scrape function without assigning value.
-	
-	# Determine if we need to enter primary attack branch.
-	if key.begins_with("primary_attack"):
-		unique_child = key_begins_with_primary_attack(unique_child, key, value)
-	
-	# Determine if we need to enter charged branch.
-	elif key.begins_with("charged_attack"):
-		unique_child = key_begins_with_charged_attack(unique_child, key, value)
-	
-	# Determine if we need to enter signature branch.
-	elif key.begins_with("signature_attack"):
-		unique_child = key_begins_with_signature_attack(unique_child, key, value)
-	
-	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_primary_attack"):
-		unique_child = key_begins_with_rear_primary_attack(unique_child, key, value)
-	
-	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_charged_attack"):
-		unique_child = key_begins_with_rear_charged_attack(unique_child, key, value)
-	
-	# Determine if we need to make or enter rear signature branch.
-	elif key.begins_with("rear_signature_attack"):
-		unique_child = key_begins_with_rear_signature_attack(unique_child, key, value)
-	
-	elif key.begins_with("rand_pct_mod_primary_attack"):
-		unique_child = key_begins_with_rand_pct_mod_primary_attack(unique_child, key, value)
-	
-	elif key.begins_with("rand_pct_mod_charged_attack"):
-		unique_child = key_begins_with_rand_pct_mod_charged_attack(unique_child, key, value)
-	
-	elif key.begins_with("rand_pct_mod_signature_attack"):
-		unique_child = key_begins_with_rand_pct_mod_signature_attack(unique_child, key, value)
-		
-	# Determine if we need to enter primary projectile attack branch.
-	elif key.begins_with("shoot_primary"):
-		unique_child = key_begins_with_shoot_primary_attack(unique_child, key, value)	
-	
-	# Determine if we need to enter primary projectile attack branch.
-	elif key.begins_with("shoot_signature"):
-		unique_child = key_begins_with_shoot_signature_attack(unique_child, key, value)	
-	
-	else:
-		unique_child.set(key, value)
-	return unique_child
 
 
 ## Deterimine if item weapon has key in top level. If not, tries to retrieve
@@ -320,6 +264,62 @@ func extract_rear_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:
 		return -6
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
 			.DamageCalculator.BaseDamage.get("Physical", -7)
+#endregion
+
+
+#region Assembling json
+## add elif for any new move type ============================================
+## Puts the found value in the correct place inside the unique weapon dictionary.
+func assign_values_to_unique_dictionary(unique_child: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if key == "item_count": # We don't want Item Count in the JSON.
+		return unique_child # So we skip it and go back to scrape function without assigning value.
+	
+	# Determine if we need to enter primary attack branch.
+	if key.begins_with("primary_attack"):
+		unique_child = key_begins_with_primary_attack(unique_child, key, value)
+	
+	# Determine if we need to enter charged branch.
+	elif key.begins_with("charged_attack"):
+		unique_child = key_begins_with_charged_attack(unique_child, key, value)
+	
+	# Determine if we need to enter signature branch.
+	elif key.begins_with("signature_attack"):
+		unique_child = key_begins_with_signature_attack(unique_child, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_primary_attack"):
+		unique_child = key_begins_with_rear_primary_attack(unique_child, key, value)
+	
+	# Determine if we need to make or enter rear charged branch.
+	elif key.begins_with("rear_charged_attack"):
+		unique_child = key_begins_with_rear_charged_attack(unique_child, key, value)
+	
+	# Determine if we need to make or enter rear signature branch.
+	elif key.begins_with("rear_signature_attack"):
+		unique_child = key_begins_with_rear_signature_attack(unique_child, key, value)
+	
+	elif key.begins_with("rand_pct_mod_primary_attack"):
+		unique_child = key_begins_with_rand_pct_mod_primary_attack(unique_child, key, value)
+	
+	elif key.begins_with("rand_pct_mod_charged_attack"):
+		unique_child = key_begins_with_rand_pct_mod_charged_attack(unique_child, key, value)
+	
+	elif key.begins_with("rand_pct_mod_signature_attack"):
+		unique_child = key_begins_with_rand_pct_mod_signature_attack(unique_child, key, value)
+		
+	# Determine if we need to enter primary projectile attack branch.
+	elif key.begins_with("shoot_primary"):
+		unique_child = key_begins_with_shoot_primary_attack(unique_child, key, value)	
+	
+	# Determine if we need to enter primary projectile attack branch.
+	elif key.begins_with("shoot_signature"):
+		unique_child = key_begins_with_shoot_signature_attack(unique_child, key, value)	
+	
+	else:
+		unique_child.set(key, value)
+	return unique_child
 
 
 ## Determine data to enter primary attack branch of json.
@@ -641,8 +641,10 @@ func key_begins_with_shoot_signature_attack(unique_child: Dictionary,
 	
 	unique_child.attack.signature.projectile[index] = value # Assign value to array in proper order.
 	return unique_child
+#endregion
 
 
+#region Assembling json helper functions
 ## Assign index of value inside array.
 ## Helper for key_begins_with_ group of functions.
 func assign_move_index(key: String) -> int:
@@ -687,6 +689,6 @@ func create_attack_signature_branch_if_needed(unique_child: Dictionary) -> Dicti
 	if not unique_child.attack.has("signature"):
 		unique_child.attack.set("signature", {} ) #It'll be at least 1 value
 	return unique_child
-
+#endregion
 	
 		
