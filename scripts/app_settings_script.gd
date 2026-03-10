@@ -142,7 +142,6 @@ func first_load_auto_determine_assets_location()->void:
 	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
 	
 	## Pre-save paths. User defined pre-set to pre_release
-	
 	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
 			+ build_folders[Assets.PREVIOUS_PRE_RELEASE] + "/"
 	
@@ -156,33 +155,23 @@ func first_load_auto_determine_assets_location()->void:
 	
 	settings.assets.pre_release.latest_pre_release.set("assets_path", 
 			hytale_roaming_folder + latest_pre_release_path)
-	
+			
 	settings.assets.user.user_defined_2.set("assets_path", 
 			hytale_roaming_folder + latest_pre_release_path) 
 	
-	var previous_release_path: String = "/install/release/package/game/" \
-			+ build_folders[Assets.PREVIOUS_RELEASE] + "/"
+	var previous_release_path: String = \
+			"/install/release/package/game/" + build_folders[Assets.PREVIOUS_RELEASE] + "/"
+			
 	settings.assets.release.previous_release.set("assets_path", 
 			hytale_roaming_folder + previous_release_path)
 	
 	var latest_release_path: String = "/install/release/package/game/latest/"
+	
 	settings.assets.release.latest_release.set("assets_path", 
 			hytale_roaming_folder + latest_release_path)
 	
 	## We fill in the user://output/ directery path so the user is not confused by "user://"
-	var output_path: String = OS.get_user_data_dir().path_join("/output/") 
-	settings.output.pre_release.set("exported_json_save_path", output_path)
-	settings.output.user_defined.set("exported_json_save_path", output_path)
-	settings.output.release.set("exported_json_save_path", output_path)
-	settings.output.pre_release.set("csv_save_path", output_path)
-	settings.output.user_defined.set("csv_save_path", output_path)
-	settings.output.release.set("csv_save_path", output_path)
-	
-	## Diff default directories now in own folder
-	output_path = OS.get_user_data_dir().path_join("/diff_results/")
-	settings.output.weapon_diff.set("json_path", output_path)
-	settings.output.weapon_diff.set("csv_path", output_path)
-	settings.output.weapon_diff.set("json_from_csv_path", output_path)
+	first_auto_load_output()
 	
 	## Save the app settings to the user directory
 	FileUtils.export_dict_to_json(settings, "user://app_settings.json")
@@ -202,6 +191,23 @@ func load_app_settings_from_json() -> void:
 	choose_which_filepaths_to_process() 
 	
 	refresh_assets_paths()
+
+
+func first_auto_load_output() -> void:
+	## We fill in the user://output/ directery path so the user is not confused by "user://"
+	var output_path: String = OS.get_user_data_dir().path_join("/output/") 
+	settings.output.pre_release.set("exported_json_save_path", output_path)
+	settings.output.user_defined.set("exported_json_save_path", output_path)
+	settings.output.release.set("exported_json_save_path", output_path)
+	settings.output.pre_release.set("csv_save_path", output_path)
+	settings.output.user_defined.set("csv_save_path", output_path)
+	settings.output.release.set("csv_save_path", output_path)
+	
+	## Diff default directories now in own folder
+	output_path = OS.get_user_data_dir().path_join("/diff_results/")
+	settings.output.weapon_diff.set("json_path", output_path)
+	settings.output.weapon_diff.set("csv_path", output_path)
+	settings.output.weapon_diff.set("json_from_csv_path", output_path)
 
 
 ## Ensure paths in app_settings.json that may have gotten tampered with by user 
@@ -502,13 +508,13 @@ func convert_build_numbers_to_names() -> void:
 
 ## Assign load and save paths based upon data from app_settings.json
 func choose_which_filepaths_to_process() -> void:
+	## shortcut to get inside pre, rel, user branch
+	var branch: Dictionary
 	## previous, latest, of pre or rel. Or user_defined_1 or 2
 	var choice: String
 	## user, pre-release or release 
 	var output_choice: String
-	## shortcut to get inside pre, rel, user branch
-	var branch: Dictionary
-
+	
 	## Populate active assets array so we can know which files to scrape or diff
 	for i in 2:
 		# If pre-release
@@ -581,6 +587,9 @@ func choose_which_filepaths_to_process() -> void:
 			
 			active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
 			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
+		
+		
+		
 		
 		## Define paths to be used.
 		if i == 0:
