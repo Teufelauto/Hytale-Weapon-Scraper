@@ -508,109 +508,178 @@ func convert_build_numbers_to_names() -> void:
 
 ## Assign load and save paths based upon data from app_settings.json
 func choose_which_filepaths_to_process() -> void:
-	## shortcut to get inside pre, rel, user branch
-	var branch: Dictionary
-	## previous, latest, of pre or rel. Or user_defined_1 or 2
-	var choice: String
-	## user, pre-release or release 
-	var output_choice: String
+	## branch: shortcut to get inside pre, rel, user branch
+	## choice: previous, latest, of pre or rel. Or user_defined_1 or 2
+	## output_choice: user, pre-release or release 
+	
+	## "branch", "choice", "output_choice"
+	var three_vars: Dictionary = { "branch": {}, "choice": "", "output_choice": "" }
 	
 	## Populate active assets array so we can know which files to scrape or diff
 	for i in 2:
 		# If pre-release
 		if settings.assets.pre_release.previous_pre_release.scrape_assets[i]:
-			branch = settings.assets.get("pre_release")
-			choice = "previous_pre_release"
-			output_choice = "pre_release"
-			active_assets[i] = Assets.PREVIOUS_PRE_RELEASE
-			active_build_type[i] = "pre"
-			active_build_folders[i] = build_folders[Assets.PREVIOUS_PRE_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.PREVIOUS_PRE_RELEASE]
+			three_vars = scrape_previous_prerelease(i)
 		
 		elif settings.assets.pre_release.latest_pre_release.scrape_assets[i]:
-			branch = settings.assets.get("pre_release")
-			choice = "latest_pre_release"
-			output_choice = "pre_release"
-			active_assets[i] = Assets.LATEST_PRE_RELEASE
-			active_build_type[i] = "pre"
-			active_build_folders[i] = build_folders[Assets.LATEST_PRE_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.LATEST_PRE_RELEASE]
+			three_vars = scrape_latest_prerelease(i)
 		
 		# If Release
 		elif settings.assets.release.previous_release.scrape_assets[i]:
-			branch = settings.assets.get("release")
-			choice = "previous_release"
-			output_choice = "release"
-			active_assets[i] = Assets.PREVIOUS_RELEASE
-			active_build_type[i] = "rel"
-			active_build_folders[i] = build_folders[Assets.PREVIOUS_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.PREVIOUS_RELEASE]
+			three_vars = scrape_previous_release(i)
 		
 		elif settings.assets.release.latest_release.scrape_assets[i]:
-			branch = settings.assets.get("release")
-			choice = "latest_release"
-			output_choice = "release"
-			active_assets[i] = Assets.LATEST_RELEASE
-			active_build_type[i] = "rel"
-			active_build_folders[i] = build_folders[Assets.LATEST_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.LATEST_RELEASE]
+			three_vars = scrape_latest_release(i)
 			
 		# if User defined
 		elif settings.assets.user.user_defined_1.scrape_assets[i]:
-			branch = settings.assets.get("user")
-			choice = "user_defined_1"
-			output_choice = "user_defined"
-			active_assets[i] = Assets.USER_DEFINED_1
-			
-			if build_type[Assets.USER_DEFINED_1] == "pre-release":
-				active_build_type[i] = "pre"
-			elif build_type[Assets.USER_DEFINED_1] == "release":
-				active_build_type[i] = "rel"
-			else: ## in settings, build_type.user:true is technically optional
-				active_build_type[i] = "usr"
-
-			active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
-			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
+			three_vars = scrape_user_1(i)
 		
 		elif settings.assets.user.user_defined_2.scrape_assets[i]:
-			branch = settings.assets.get("user")
-			choice = "user_defined_2"
-			output_choice = "user_defined"
-			active_assets[i] = Assets.USER_DEFINED_2
-			
-			if build_type[Assets.USER_DEFINED_2] == "pre-release":
-				active_build_type[i] = "pre"
-			elif build_type[Assets.USER_DEFINED_2] == "release":
-				active_build_type[i] = "rel"
-			else: ## in settings, build_type.user:true is technically optional
-				active_build_type[i] = "usr"
-			
-			active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
-			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
-		
-		
-		
+			three_vars = scrape_user_2(i)
 		
 		## Define paths to be used.
-		if i == 0:
-			asset_1_zip_path = branch[choice].assets_path \
-					+ branch[choice].assets_filename
-			exported_csv_1_save_path = settings.output[output_choice].csv_save_path \
-					+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
-			exported_json_1_save_path = settings.output[output_choice].exported_json_save_path \
-					+ assemble_output_filename(settings.output[output_choice] \
-					.exported_json_filename, i)
-			
-			
-		else:
-			asset_2_zip_path = branch[choice].assets_path \
-					+ branch[choice].assets_filename
-			exported_csv_2_save_path = settings.output[output_choice].csv_save_path \
-					+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
-			exported_json_2_save_path = settings.output[output_choice].exported_json_save_path \
-					+ assemble_output_filename(settings.output[output_choice] \
-					.exported_json_filename, i)
+		define_save_paths(three_vars, i)
+	## saving the diffs with thier respectively formatted output.
+	define_diff_paths()
+	#print(active_assets)
+	#print(asset_1_zip_path)
+	#print(asset_2_zip_path)
+	#print(exported_csv_1_save_path)
+	#print(exported_json_2_save_path)
+	#print(active_build_folders)
+	#print(diff_csv_save_path)
+
+
+func scrape_previous_prerelease(i: int) -> Dictionary:
+	active_assets[i] = Assets.PREVIOUS_PRE_RELEASE
+	active_build_type[i] = "pre"
+	active_build_folders[i] = build_folders[Assets.PREVIOUS_PRE_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.PREVIOUS_PRE_RELEASE]
 	
+	var branch = settings.assets.get("pre_release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "previous_pre_release",
+		"output_choice": "pre_release",
+	}	
+	return three_vars
+
+
+func scrape_latest_prerelease(i: int) -> Dictionary:
+	active_assets[i] = Assets.LATEST_PRE_RELEASE
+	active_build_type[i] = "pre"
+	active_build_folders[i] = build_folders[Assets.LATEST_PRE_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.LATEST_PRE_RELEASE]
+	
+	var branch = settings.assets.get("pre_release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "latest_pre_release",
+		"output_choice": "pre_release",
+	}	
+	return three_vars
+
+
+func scrape_previous_release(i: int) -> Dictionary:
+	active_assets[i] = Assets.PREVIOUS_RELEASE
+	active_build_type[i] = "rel"
+	active_build_folders[i] = build_folders[Assets.PREVIOUS_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.PREVIOUS_RELEASE]
+	
+	var branch = settings.assets.get("release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "previous_release",
+		"output_choice": "release",
+	}	
+	return three_vars
+
+
+func scrape_latest_release(i: int) -> Dictionary:
+	active_assets[i] = Assets.LATEST_RELEASE
+	active_build_type[i] = "rel"
+	active_build_folders[i] = build_folders[Assets.LATEST_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.LATEST_RELEASE]
+	
+	var branch = settings.assets.get("release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "latest_release",
+		"output_choice": "release",
+	}	
+	return three_vars
+
+
+func scrape_user_1(i: int) -> Dictionary:
+	active_assets[i] = Assets.USER_DEFINED_1
+	
+	if build_type[Assets.USER_DEFINED_1] == "pre-release":
+		active_build_type[i] = "pre"
+	elif build_type[Assets.USER_DEFINED_1] == "release":
+		active_build_type[i] = "rel"
+	else: ## in settings, build_type.user:true is technically optional
+		active_build_type[i] = "usr"
+
+	active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
+	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
+	
+	var branch = settings.assets.get("user")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "user_defined_1",
+		"output_choice": "user_defined",
+	}	
+	return three_vars
+
+
+func scrape_user_2(i: int) -> Dictionary:
+	active_assets[i] = Assets.USER_DEFINED_2
+	
+	if build_type[Assets.USER_DEFINED_2] == "pre-release":
+		active_build_type[i] = "pre"
+	elif build_type[Assets.USER_DEFINED_2] == "release":
+		active_build_type[i] = "rel"
+	else: ## in settings, build_type.user:true is technically optional
+		active_build_type[i] = "usr"
+	
+	active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
+	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
+	
+	var branch = settings.assets.get("user")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "user_defined_2",
+		"output_choice": "user_defined",
+	}	
+	return three_vars
+	
+	
+func define_save_paths(three_vars: Dictionary, i: int) -> void:
+	## Define paths to be used.
+	var branch: Dictionary = three_vars.get("branch")
+	var choice: String = three_vars.get("choice")
+	var output_choice: String = three_vars.get("output_choice")
+	
+	if i == 0:
+		asset_1_zip_path = branch[choice].assets_path \
+				+ branch[choice].assets_filename
+		exported_csv_1_save_path = settings.output[output_choice].csv_save_path \
+				+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
+		exported_json_1_save_path = settings.output[output_choice].exported_json_save_path \
+				+ assemble_output_filename(settings.output[output_choice] \
+				.exported_json_filename, i)
+	else:
+		asset_2_zip_path = branch[choice].assets_path \
+				+ branch[choice].assets_filename
+		exported_csv_2_save_path = settings.output[output_choice].csv_save_path \
+				+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
+		exported_json_2_save_path = settings.output[output_choice].exported_json_save_path \
+				+ assemble_output_filename(settings.output[output_choice] \
+				.exported_json_filename, i)
+
+
+func define_diff_paths() -> void:
 	## saving the diffs with thier respectively formatted output.
 	diff_json_save_path = settings.output.weapon_diff.json_path \
 			+ assemble_output_filename(settings.output.weapon_diff.json_filename, 0, true)
@@ -620,14 +689,6 @@ func choose_which_filepaths_to_process() -> void:
 			
 	diff_json_from_csv_save_path = settings.output.weapon_diff.json_from_csv_path \
 			+ assemble_output_filename(settings.output.weapon_diff.json_from_csv_filename, 0, true)
-	
-	#print(active_assets)
-	#print(asset_1_zip_path)
-	#print(asset_2_zip_path)
-	#print(exported_csv_1_save_path)
-	#print(exported_json_2_save_path)
-	#print(active_build_folders)
-	#print(diff_csv_save_path)
 
 
 ## index is Asset #1 (0), or Asset #2 (1) for retrieving build folder name
