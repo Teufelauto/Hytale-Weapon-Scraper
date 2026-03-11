@@ -225,7 +225,84 @@ func first_auto_load_output() -> void:
 func verify_settings_formatting() -> void:
 	var entries_with_errors: int = 0 ## Increment for each error found
 	
-	## -- Assets slashes
+#region -- Assets slashes
+	entries_with_errors = verify_assets_slash(entries_with_errors)
+#endregion
+#region json slash -- Output slashes
+	entries_with_errors = verify_json_slash(entries_with_errors)
+#endregion
+#region csv path slash
+	entries_with_errors = verify_csv_slash(entries_with_errors)
+#endregion
+#region diff slash
+	entries_with_errors = verify_diff_slash(entries_with_errors)
+#endregion
+#region -- Assets extensions (.zip)
+	## User defined filename
+	for key in ["user_defined_1","user_defined_2"]:
+		entries_with_errors = verify_user_filename(key, entries_with_errors)
+	
+	## Pre-Release filename
+	for key in ["latest_pre_release","previous_pre_release"]:
+		entries_with_errors = verify_prerelease_filename(key, entries_with_errors)
+	
+	## Release filename
+	for key in ["latest_release","previous_release"]:
+		entries_with_errors = verify_release_filename(key, entries_with_errors)
+#endregion
+#region Output json extension
+	## -- Output extensions (.csv) (.json) - Need to deal with caps
+	## json extension
+	if not settings.output.user_defined.exported_json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_output_ext_user_json()
+	
+	if not settings.output.pre_release.exported_json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_output_ext_prerel_json()
+	
+	if not settings.output.release.exported_json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_output_ext_rel_json()
+#endregion
+#region ## csv extension
+	if not settings.output.user_defined.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_output_ext_user_csv()
+	
+	if not settings.output.pre_release.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_output_ext_prerel_csv()
+	
+	if not settings.output.release.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_output_ext_rel_csv()
+#endregion
+#region Weapon diff extension
+	## -- Weapon diff
+	if not settings.output.weapon_diff.json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_diff_ext_json()
+	
+	if not settings.output.weapon_diff.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_diff_ext_csv()
+	
+	if not settings.output.weapon_diff.json_from_csv_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_diff_ext_json_from_csv()
+	
+	## Save changes to file if errors found.
+	if entries_with_errors > 0:
+		print("Corrected %d simple formatting error(s) in app_settings.json" % entries_with_errors)
+		## Save the app settings to the user directory
+		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
+#endregion
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#region VERIFY FILE PATHS
+
+func verify_assets_slash(entries_with_errors: int) -> int:
 	for key in ["user_defined_1","user_defined_2"]:
 		if not settings.assets.user[key].assets_path.ends_with("/"):
 			entries_with_errors += 1
@@ -243,67 +320,9 @@ func verify_settings_formatting() -> void:
 			entries_with_errors += 1
 			settings.assets.release[key].assets_path = \
 					settings.assets.release[key].assets_path + "/"
-			
-	## -- Assets extensions (.zip)
-	
-	## User defined filename
-	for key in ["user_defined_1","user_defined_2"]:
-		if not settings.assets.user[key].assets_filename.ends_with(".zip"):
-			entries_with_errors += 1
-			var filename: String = settings.assets.user[key].assets_filename
-			
-			## Add extension if missing
-			if not filename.contains("."):
-				settings.assets.user[key].assets_filename = filename + ".zip"
-			
-			else:
-				## Change file name anyway. it NEEDS to be a zip for rest of code to work.
-				settings.assets.user[key].assets_filename = \
-						FileUtils.replace_file_extension(filename, ".zip")
-				print(key + " Assets filename in app_settings.json is not a zip: " + filename)
-	
-	## Pre-Release filename
-	for key in ["latest_pre_release","previous_pre_release"]:
-		if not settings.assets.pre_release[key].assets_filename.ends_with(".zip"):
-			entries_with_errors += 1
-			var filename: String = settings.assets.pre_release[key].assets_filename
-			
-			## Add extension if missing
-			if not filename.containsn("."):
-				settings.assets.pre_release[key].assets_filename = filename + ".zip"
-			
-			### Correct the extension if .ZIP, or .Zip etc.
-			#elif filename.containsn(".zip"):
-				#settings.assets.pre_release[key].set("assets_filename", 
-						#FileUtils.replace_file_extension(filename, ".zip"))
-			else:
-				## Change file name anyway. it NEEDS to be a zip for rest of code to work.
-				settings.assets.pre_release[key].set("assets_filename", 
-						FileUtils.replace_file_extension(filename, ".zip"))
-				print(key + " Assets filename in app_settings.json is not a zip: " + filename)
-	
-	## Release filename
-	for key in ["latest_release","previous_release"]:
-		if not settings.assets.release[key].assets_filename.ends_with(".zip"):
-			entries_with_errors += 1
-			var filename: String = settings.assets.release[key].assets_filename
-			
-			## Add extension if missing
-			if not filename.containsn("."):
-				settings.assets.release[key].assets_filename = filename + ".zip"
-			
-			### Correct the extension if .ZIP, or .Zip etc.
-			#elif filename.containsn(".zip"):
-				#settings.assets.release[key].set("assets_filename", 
-						#FileUtils.replace_file_extension(filename, ".zip"))
-			else:
-				## Change file name anyway. it NEEDS to be a zip for rest of code to work.
-				settings.assets.release[key].set("assets_filename", 
-						FileUtils.replace_file_extension(filename, ".zip"))
-				print(key + " Assets filename in app_settings.json is not a zip: " + filename)
-	
-	## -- Output slashes
-	## json path
+	return entries_with_errors
+
+func verify_json_slash(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.exported_json_save_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.output.user_defined.exported_json_save_path = \
@@ -318,8 +337,9 @@ func verify_settings_formatting() -> void:
 		entries_with_errors += 1
 		settings.output.release.exported_json_save_path = \
 				settings.output.release.exported_json_save_path + "/"
-	
-	## csv path
+	return entries_with_errors
+
+func verify_csv_slash(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.csv_save_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.output.user_defined.csv_save_path = \
@@ -334,8 +354,10 @@ func verify_settings_formatting() -> void:
 		entries_with_errors += 1
 		settings.output.release.csv_save_path = \
 				settings.output.release.csv_save_path + "/"
-	
-	## diff path
+	return entries_with_errors
+
+
+func verify_diff_slash(entries_with_errors: int) -> int:
 	if not settings.output.weapon_diff.json_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.output.weapon_diff.json_path = \
@@ -350,125 +372,158 @@ func verify_settings_formatting() -> void:
 		entries_with_errors += 1
 		settings.output.weapon_diff.json_from_csv_path = \
 				settings.output.weapon_diff.json_from_csv_path + "/"
-	
-	## -- Output extensions (.csv) (.json) - Need to deal with caps
-	## json extension
-	if not settings.output.user_defined.exported_json_filename.ends_with(".json"):
-		entries_with_errors += 1
-		var filename: String = settings.output.user_defined.exported_json_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.user_defined.exported_json_filename = filename + ".json"
-		## Correct the extension.
-		else:
-			settings.output.user_defined.set("exported_json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	if not settings.output.pre_release.exported_json_filename.ends_with(".json"):
-		entries_with_errors += 1
-		var filename: String = settings.output.pre_release.exported_json_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.pre_release.exported_json_filename = filename + ".json"
-		## Correct the extension.
-		else:
-			settings.output.pre_release.set("exported_json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	if not settings.output.release.exported_json_filename.ends_with(".json"):
-		entries_with_errors += 1
-		var filename: String = settings.output.release.exported_json_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.release.exported_json_filename = filename + ".json"
-		## Correct the extension.
-		else:
-			settings.output.release.set("exported_json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	## csv extension
-	if not settings.output.user_defined.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.user_defined.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.user_defined.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.user_defined.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	if not settings.output.pre_release.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.pre_release.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.pre_release.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.pre_release.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	if not settings.output.release.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.release.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.release.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.release.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	## -- Weapon diff
-	if not settings.output.weapon_diff.json_filename.ends_with(".json"):
-		entries_with_errors += 1
-		var filename: String = settings.output.weapon_diff.json_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.weapon_diff.json_filename = filename + ".json"
-		## Correct the extension.
-		else:
-			settings.output.weapon_diff.set("json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	if not settings.output.weapon_diff.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.weapon_diff.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.weapon_diff.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.weapon_diff.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	if not settings.output.weapon_diff.json_from_csv_filename.ends_with(".json"):
-		entries_with_errors += 1
-		var filename: String = settings.output.weapon_diff.json_from_csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.weapon_diff.json_from_csv_filename = filename + ".json"
-		## Correct the extension.
-		else:
-			settings.output.weapon_diff.set("json_from_csv_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	## Save changes to file if errors found.
-	if entries_with_errors > 0:
-		print("Corrected %d simple formatting error(s) in app_settings.json" % entries_with_errors)
-		## Save the app settings to the user directory
-		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
+	return entries_with_errors
 
+
+func verify_user_filename(key: String, entries_with_errors: int) -> int:
+	if not settings.assets.user[key].assets_filename.ends_with(".zip"):
+		entries_with_errors += 1
+		var filename: String = settings.assets.user[key].assets_filename
+		
+		## Add extension if missing
+		if not filename.contains("."):
+			settings.assets.user[key].assets_filename = filename + ".zip"
+		
+		else:
+			## Change file name anyway. it NEEDS to be a zip for rest of code to work.
+			settings.assets.user[key].assets_filename = \
+					FileUtils.replace_file_extension(filename, ".zip")
+			print(key + " Assets filename in app_settings.json is not a zip: " + filename)
+	return entries_with_errors
+
+
+func verify_prerelease_filename(key: String, entries_with_errors: int) -> int:
+	if not settings.assets.pre_release[key].assets_filename.ends_with(".zip"):
+		entries_with_errors += 1
+		var filename: String = settings.assets.pre_release[key].assets_filename
+		
+		## Add extension if missing
+		if not filename.containsn("."):
+			settings.assets.pre_release[key].assets_filename = filename + ".zip"
+		else:
+			## Change file name anyway. it NEEDS to be a zip for rest of code to work.
+			settings.assets.pre_release[key].set("assets_filename", 
+					FileUtils.replace_file_extension(filename, ".zip"))
+			print(key + " Assets filename in app_settings.json is not a zip: " + filename)
+	return entries_with_errors
+
+
+func verify_release_filename(key: String, entries_with_errors: int) -> int:
+	if not settings.assets.release[key].assets_filename.ends_with(".zip"):
+		entries_with_errors += 1
+		var filename: String = settings.assets.release[key].assets_filename
+		
+		## Add extension if missing
+		if not filename.containsn("."):
+			settings.assets.release[key].assets_filename = filename + ".zip"
+		else:
+			## Change file name anyway. it NEEDS to be a zip for rest of code to work.
+			settings.assets.release[key].set("assets_filename", 
+					FileUtils.replace_file_extension(filename, ".zip"))
+			print(key + " Assets filename in app_settings.json is not a zip: " + filename)
+	return entries_with_errors
+
+func verify_output_ext_user_json() -> void:
+	var filename: String = settings.output.user_defined.exported_json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.user_defined.exported_json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.user_defined.set("exported_json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_output_ext_prerel_json() -> void:
+	var filename: String = settings.output.pre_release.exported_json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.pre_release.exported_json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.pre_release.set("exported_json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_output_ext_rel_json() -> void:
+	var filename: String = settings.output.release.exported_json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.release.exported_json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.release.set("exported_json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_output_ext_user_csv() -> void:
+	var filename: String = settings.output.user_defined.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.user_defined.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.user_defined.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_output_ext_prerel_csv() -> void:
+	var filename: String = settings.output.pre_release.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.pre_release.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.pre_release.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_output_ext_rel_csv() -> void:
+	var filename: String = settings.output.release.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.release.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.release.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_diff_ext_json() -> void:
+	var filename: String = settings.output.weapon_diff.json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.weapon_diff.json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.weapon_diff.set("json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_diff_ext_csv() -> void:
+	var filename: String = settings.output.weapon_diff.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.weapon_diff.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.weapon_diff.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_diff_ext_json_from_csv() -> void:
+	var filename: String = settings.output.weapon_diff.json_from_csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.weapon_diff.json_from_csv_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.weapon_diff.set("json_from_csv_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+#endregion
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 func convert_build_numbers_to_names() -> void:
 	## PREVIOUS_PRE_RELEASE value
@@ -669,8 +724,8 @@ func scrape_user_2(i: int) -> Dictionary:
 		"output_choice": "user_defined",
 	}	
 	return three_vars
-	
-	
+
+
 func define_save_paths(three_vars: Dictionary, i: int) -> void:
 	## Define paths to be used.
 	var branch: Dictionary = three_vars.get("branch")
