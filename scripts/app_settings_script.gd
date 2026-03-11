@@ -220,24 +220,39 @@ func first_auto_load_output() -> void:
 	settings.output.weapon_diff.set("json_from_csv_path", output_path)
 
 
+#region VERIFY FORMATTING
 ## Ensure paths in app_settings.json that may have gotten tampered with by user 
 ## end with a slash "/". Also ensure correct file extensions.
 func verify_settings_formatting() -> void:
 	var entries_with_errors: int = 0 ## Increment for each error found
 	
-#region -- Assets slashes
+	entries_with_errors = verify_slashes(entries_with_errors)
+	entries_with_errors = verify_assets_filename(entries_with_errors)
+
+	## -- Output extensions (.csv) (.json) - Need to deal with caps
+	## json extension
+	entries_with_errors = verify_output_json_ext(entries_with_errors)
+	## output csv extension
+	entries_with_errors = verify_output_csv_ext(entries_with_errors)
+	## -- Weapon diff
+	entries_with_errors = verify_wpn_diff_ext(entries_with_errors)
+	
+	## Save changes to file if errors found.
+	if entries_with_errors > 0:
+		print("Corrected ", entries_with_errors, " simple formatting error(s) in app_settings.json")
+		## Save the app settings to the user directory
+		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
+
+
+func verify_slashes(entries_with_errors: int) -> int:
 	entries_with_errors = verify_assets_slash(entries_with_errors)
-#endregion
-#region json slash -- Output slashes
 	entries_with_errors = verify_json_slash(entries_with_errors)
-#endregion
-#region csv path slash
 	entries_with_errors = verify_csv_slash(entries_with_errors)
-#endregion
-#region diff slash
 	entries_with_errors = verify_diff_slash(entries_with_errors)
-#endregion
-#region -- Assets extensions (.zip)
+	return entries_with_errors
+
+
+func verify_assets_filename(entries_with_errors: int) -> int:
 	## User defined filename
 	for key in ["user_defined_1","user_defined_2"]:
 		entries_with_errors = verify_user_filename(key, entries_with_errors)
@@ -249,10 +264,10 @@ func verify_settings_formatting() -> void:
 	## Release filename
 	for key in ["latest_release","previous_release"]:
 		entries_with_errors = verify_release_filename(key, entries_with_errors)
-#endregion
-#region Output json extension
-	## -- Output extensions (.csv) (.json) - Need to deal with caps
-	## json extension
+	return entries_with_errors
+
+
+func verify_output_json_ext(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.exported_json_filename.ends_with(".json"):
 		entries_with_errors += 1
 		verify_output_ext_user_json()
@@ -264,8 +279,10 @@ func verify_settings_formatting() -> void:
 	if not settings.output.release.exported_json_filename.ends_with(".json"):
 		entries_with_errors += 1
 		verify_output_ext_rel_json()
-#endregion
-#region ## csv extension
+	return entries_with_errors
+
+
+func verify_output_csv_ext(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.csv_filename.ends_with(".csv"):
 		entries_with_errors += 1
 		verify_output_ext_user_csv()
@@ -277,9 +294,10 @@ func verify_settings_formatting() -> void:
 	if not settings.output.release.csv_filename.ends_with(".csv"):
 		entries_with_errors += 1
 		verify_output_ext_rel_csv()
-#endregion
-#region Weapon diff extension
-	## -- Weapon diff
+	return entries_with_errors
+
+
+func verify_wpn_diff_ext(entries_with_errors: int) -> int:
 	if not settings.output.weapon_diff.json_filename.ends_with(".json"):
 		entries_with_errors += 1
 		verify_diff_ext_json()
@@ -291,16 +309,8 @@ func verify_settings_formatting() -> void:
 	if not settings.output.weapon_diff.json_from_csv_filename.ends_with(".json"):
 		entries_with_errors += 1
 		verify_diff_ext_json_from_csv()
-	
-	## Save changes to file if errors found.
-	if entries_with_errors > 0:
-		print("Corrected %d simple formatting error(s) in app_settings.json" % entries_with_errors)
-		## Save the app settings to the user directory
-		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
-#endregion
+	return entries_with_errors
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#region VERIFY FILE PATHS
 
 func verify_assets_slash(entries_with_errors: int) -> int:
 	for key in ["user_defined_1","user_defined_2"]:
@@ -322,6 +332,7 @@ func verify_assets_slash(entries_with_errors: int) -> int:
 					settings.assets.release[key].assets_path + "/"
 	return entries_with_errors
 
+
 func verify_json_slash(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.exported_json_save_path.ends_with("/"):
 		entries_with_errors += 1
@@ -338,6 +349,7 @@ func verify_json_slash(entries_with_errors: int) -> int:
 		settings.output.release.exported_json_save_path = \
 				settings.output.release.exported_json_save_path + "/"
 	return entries_with_errors
+
 
 func verify_csv_slash(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.csv_save_path.ends_with("/"):
@@ -422,6 +434,7 @@ func verify_release_filename(key: String, entries_with_errors: int) -> int:
 					FileUtils.replace_file_extension(filename, ".zip"))
 			print(key + " Assets filename in app_settings.json is not a zip: " + filename)
 	return entries_with_errors
+
 
 func verify_output_ext_user_json() -> void:
 	var filename: String = settings.output.user_defined.exported_json_filename
@@ -520,10 +533,8 @@ func verify_diff_ext_json_from_csv() -> void:
 	else:
 		settings.output.weapon_diff.set("json_from_csv_filename", 
 				FileUtils.replace_file_extension(filename, ".json"))
-
-
 #endregion
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 func convert_build_numbers_to_names() -> void:
 	## PREVIOUS_PRE_RELEASE value
@@ -577,7 +588,7 @@ func build_folders_user2() -> void:
 			+ str(build_numbers[Assets.USER_DEFINED_2])
 
 
-## Assign load and save paths based upon data from app_settings.json
+#region Assign load and save paths based upon data from app_settings.json
 func choose_which_filepaths_to_process() -> void:
 	## branch: shortcut to get inside pre, rel, user branch
 	## choice: previous, latest, of pre or rel. Or user_defined_1 or 2
@@ -613,6 +624,7 @@ func choose_which_filepaths_to_process() -> void:
 		define_save_paths(three_vars, i)
 	## saving the diffs with thier respectively formatted output.
 	define_diff_paths()
+	
 	#print(active_assets)
 	#print(asset_1_zip_path)
 	#print(asset_2_zip_path)
@@ -760,6 +772,7 @@ func define_diff_paths() -> void:
 			
 	diff_json_from_csv_save_path = settings.output.weapon_diff.json_from_csv_path \
 			+ assemble_output_filename(settings.output.weapon_diff.json_from_csv_filename, 0, true)
+#endregion
 
 
 ## index is Asset #1 (0), or Asset #2 (1) for retrieving build folder name
