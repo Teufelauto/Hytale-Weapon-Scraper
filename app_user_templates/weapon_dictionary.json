@@ -55,6 +55,7 @@
 		"46": "shoot_primary_4_damage",
 		"47": "shoot_primary_5_damage",
 		"48": "shoot_signature_1_damage",
+		"49": "guard_bash_1_damage"
 	},
 	"common_table_headers": {
 		"item_count": "item_count",
@@ -72,19 +73,16 @@
 		"max_stack": "MaxStack",
 	},
 	"weapon_family": {
-		"Shortbow": {
-			"shoot_primary_1_name": "Primary_Shoot_Damage_Strength_0",
-			"shoot_primary_2_name": "Primary_Shoot_Damage_Strength_1",
-			"shoot_primary_3_name": "Primary_Shoot_Damage_Strength_2",
-			"shoot_primary_4_name": "Primary_Shoot_Damage_Strength_3",
-			"shoot_primary_5_name": "Primary_Shoot_Damage_Strength_4",
-			"shoot_signature_1_name": "Signature_Volley_Damage",
-		},
 		"Arrow": {
 			"primary_attack_1_name": "Knife_Swing_Left",
 			"primary_attack_2_name": "Knife_Swing_Right",
 			"primary_attack_3_name": "Knife_Stab",
 			"primary_attack_4_name": "Knife_Lunge",
+		},
+		"Axe": {
+			"primary_attack_1_name": "Axe_Swing_Down_Left",
+			"primary_attack_2_name": "Axe_Swing_Up_Right",
+			"charged_attack_1_name": "Axe_Swing_Left_Charged",
 		},
 		"Battleaxe": {
 			"primary_attack_1_name": "Swing_Down_Left",
@@ -92,6 +90,40 @@
 			"primary_attack_3_name": "Swing_Down",
 			"charged_attack_1_name": "Downstrike",
 			"signature_attack_1_name": "Signature_Whirlwind"
+		},
+		"Blowgun": {},
+		"Bomb": {},
+		"Claws": {
+			"rand_pct_mod_primary_attack_1_name": "Daggers_Swing_Left_Right_Damage",
+			
+			"rand_pct_mod_primary_attack_3_name": "Daggers_Swing_Right_Left_Damage",
+			
+			"rand_pct_mod_charged_attack_1_name": "Daggers_Stab_Double_Charged_Damage",
+			"rand_pct_mod_charged_attack_2_name": "Daggers_Lunge_Double_Charged_Damage",
+		},
+		"Club": {
+			"primary_attack_1_name": "Club_Swing_Left",
+			"primary_attack_2_name": "Club_Swing_Right",
+			"charged_attack_1_name": "Club_Swing_Down_Charged",
+			"rand_pct_mod_primary_attack_1_name": "Club_Swing_Left",
+			"rand_pct_mod_primary_attack_2_name": "Club_Swing_Right",
+			"rand_pct_mod_charged_attack_1_name": "Club_Swing_Down_Charged",
+		},
+		"Crossbow": {
+			"shoot_primary_1_name": "Standard_Projectile",
+			"shoot_charged_1_name": "Combo_Projectile",
+			"shoot_signature_1_name": "Signature_BigArrow",
+			"guard_bash_1_name": "Guard_Bash",
+		},
+		"Dart": {
+			"primary_attack_1_name": "Knife_Swing_Left",
+			"primary_attack_2_name": "Knife_Swing_Right",
+			"primary_attack_3_name": "Knife_Stab",
+			"charged_attack_1_name": "Knife_Lunge",
+			"rand_pct_mod_primary_attack_1_name": "Knife_Swing_Left",
+			"rand_pct_mod_primary_attack_2_name": "Knife_Swing_Right",
+			"rand_pct_mod_primary_attack_3_name": "Knife_Stab",
+			"rand_pct_mod_charged_attack_1_name": "Knife_Lunge",
 		},
 		"Daggers": {
 			"primary_attack_1_name": "Swing_Left",
@@ -109,6 +141,17 @@
 			"rear_signature_attack_2_name": "Razorstrike_Sweep",
 			"rear_signature_attack_3_name": "Razorstrike_Lunge",
 		},
+		"Gun": {
+			"primary_attack_1_name": "Gun_Swing_Left",
+			"rand_pct_mod_primary_attack_1_name": "Gun_Swing_Left",
+		},
+		"Kunai": {},
+		"Longsword": {
+			"primary_attack_1_name": "Longsword_Swing_Left",
+			"primary_attack_2_name": "Longsword_Swing_Right",
+			"primary_attack_3_name": "Longsword_Swing_Up_Left",
+			"charged_attack_1_name": "Longsword_Stab_Charged",
+		},
 		"Mace": {
 			"primary_attack_1_name": "Swing_Left",
 			"primary_attack_2_name": "Swing_Right",
@@ -118,6 +161,22 @@
 			"charged_attack_3_name": "Swing_Up_Left_Charged",
 			"signature_attack_1_name": "Groundslam",
 		},
+		"Shield": {
+			"guard_bash_1_name": "Guard_Bash_Damage",
+		},
+		"Shortbow": {
+			"shoot_primary_1_name": "Primary_Shoot_Damage_Strength_0",
+			"shoot_primary_2_name": "Primary_Shoot_Damage_Strength_1",
+			"shoot_primary_3_name": "Primary_Shoot_Damage_Strength_2",
+			"shoot_primary_4_name": "Primary_Shoot_Damage_Strength_3",
+			"shoot_primary_5_name": "Primary_Shoot_Damage_Strength_4",
+			"shoot_signature_1_name": "Signature_Volley_Damage",
+		},
+		"Spear": {
+			"primary_attack_1_name": "Spear_Stab"
+		},
+		"Spellbook": {},
+		"Staff": {},
 		"Sword": {
 			"primary_attack_1_name": "Swing_Left",
 			"primary_attack_2_name": "Swing_Right",
@@ -126,31 +185,6 @@
 			"signature_attack_1_name": "Vortexstrike_Spin",
 			"signature_attack_2_name": "Vortexstrike_Stab",
 		},
-		"Spear": {
-			"primary_attack_1_name": "Spear_Stab"
-		},
-		"Axe": {
-			"primary_attack_1_name": "Axe_Swing_Down_Left",
-			"primary_attack_2_name": "Axe_Swing_Up_Right",
-			"charged_attack_1_name": "Axe_Swing_Left_Charged",
-		},
-		"Club": {
-			"primary_attack_1_name": "Club_Swing_Left",
-			"primary_attack_2_name": "Club_Swing_Right",
-			"charged_attack_1_name": "Club_Swing_Down_Charged",
-			"rand_pct_mod_primary_attack_1_name": "Club_Swing_Left",
-			"rand_pct_mod_primary_attack_2_name": "Club_Swing_Right",
-			"rand_pct_mod_charged_attack_1_name": "Club_Swing_Down_Charged",
-		},
-		"Longsword": {
-			"primary_attack_1_name": "Longsword_Swing_Left",
-			"primary_attack_2_name": "Longsword_Swing_Right",
-			"primary_attack_3_name": "Longsword_Swing_Up_Left",
-			"charged_attack_1_name": "Longsword_Stab_Charged",
-		},
-		"Gun": {
-			"primary_attack_1_name": "Gun_Swing_Left",
-			"rand_pct_mod_primary_attack_1_name": "Gun_Swing_Left",
-		},
-	},
+		"Wand": {},
+	}
 }
