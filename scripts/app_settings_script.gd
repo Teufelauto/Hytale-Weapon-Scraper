@@ -139,36 +139,13 @@ func first_load_license() -> void:
 func first_load_auto_determine_assets_location()->void:
 	## Load here so we can get default data, write over it, then save it.
 	load_app_settings_from_json() 
-	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
+	var hytale_roaming_folder: String = FileUtils.retrieve_roaming_Hytale_folder_location()
 	
 	## Pre-save paths. User defined pre-set to pre_release
-	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
-			+ build_folders[Assets.PREVIOUS_PRE_RELEASE] + "/"
+	first_auto_load_from_prerelease(hytale_roaming_folder)
 	
-	settings.assets.pre_release.previous_pre_release.set("assets_path", 
-			hytale_roaming_folder + previous_pre_release_path)
-	
-	settings.assets.user.user_defined_1.set("assets_path", 
-			hytale_roaming_folder + previous_pre_release_path) 
-	
-	var latest_pre_release_path: String = "/install/pre-release/package/game/latest/"
-	
-	settings.assets.pre_release.latest_pre_release.set("assets_path", 
-			hytale_roaming_folder + latest_pre_release_path)
-			
-	settings.assets.user.user_defined_2.set("assets_path", 
-			hytale_roaming_folder + latest_pre_release_path) 
-	
-	var previous_release_path: String = \
-			"/install/release/package/game/" + build_folders[Assets.PREVIOUS_RELEASE] + "/"
-			
-	settings.assets.release.previous_release.set("assets_path", 
-			hytale_roaming_folder + previous_release_path)
-	
-	var latest_release_path: String = "/install/release/package/game/latest/"
-	
-	settings.assets.release.latest_release.set("assets_path", 
-			hytale_roaming_folder + latest_release_path)
+	## Pre-save paths. release
+	first_auto_load_from_release(hytale_roaming_folder)
 	
 	## We fill in the user://output/ directery path so the user is not confused by "user://"
 	first_auto_load_output()
@@ -193,6 +170,39 @@ func load_app_settings_from_json() -> void:
 	refresh_assets_paths()
 
 
+func first_auto_load_from_prerelease(hytale_roaming_folder: String) -> void:
+	## Pre-save paths. User defined pre-set to pre_release
+	var previous_pre_release_path: String = "/install/pre-release/package/game/" \
+			+ build_folders[Assets.PREVIOUS_PRE_RELEASE] + "/"
+	
+	settings.assets.pre_release.previous_pre_release.set("assets_path", 
+			hytale_roaming_folder + previous_pre_release_path)
+	
+	settings.assets.user.user_defined_1.set("assets_path", 
+			hytale_roaming_folder + previous_pre_release_path) 
+	
+	var latest_pre_release_path: String = "/install/pre-release/package/game/latest/"
+	
+	settings.assets.pre_release.latest_pre_release.set("assets_path", 
+			hytale_roaming_folder + latest_pre_release_path)
+			
+	settings.assets.user.user_defined_2.set("assets_path", 
+			hytale_roaming_folder + latest_pre_release_path) 
+
+
+func first_auto_load_from_release(hytale_roaming_folder: String) -> void:
+	var previous_release_path: String = \
+			"/install/release/package/game/" + build_folders[Assets.PREVIOUS_RELEASE] + "/"
+			
+	settings.assets.release.previous_release.set("assets_path", 
+			hytale_roaming_folder + previous_release_path)
+	
+	var latest_release_path: String = "/install/release/package/game/latest/"
+	
+	settings.assets.release.latest_release.set("assets_path", 
+			hytale_roaming_folder + latest_release_path)
+
+
 func first_auto_load_output() -> void:
 	## We fill in the user://output/ directery path so the user is not confused by "user://"
 	var output_path: String = OS.get_user_data_dir().path_join("/output/") 
@@ -210,12 +220,99 @@ func first_auto_load_output() -> void:
 	settings.output.weapon_diff.set("json_from_csv_path", output_path)
 
 
+#region VERIFY FORMATTING
 ## Ensure paths in app_settings.json that may have gotten tampered with by user 
 ## end with a slash "/". Also ensure correct file extensions.
 func verify_settings_formatting() -> void:
 	var entries_with_errors: int = 0 ## Increment for each error found
 	
-	## -- Assets slashes
+	entries_with_errors = verify_slashes(entries_with_errors)
+	entries_with_errors = verify_assets_filename(entries_with_errors)
+
+	## -- Output extensions (.csv) (.json) - Need to deal with caps
+	## json extension
+	entries_with_errors = verify_output_json_ext(entries_with_errors)
+	## output csv extension
+	entries_with_errors = verify_output_csv_ext(entries_with_errors)
+	## -- Weapon diff
+	entries_with_errors = verify_wpn_diff_ext(entries_with_errors)
+	
+	## Save changes to file if errors found.
+	if entries_with_errors > 0:
+		print("Corrected ", entries_with_errors, " simple formatting error(s) in app_settings.json")
+		## Save the app settings to the user directory
+		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
+
+
+func verify_slashes(entries_with_errors: int) -> int:
+	entries_with_errors = verify_assets_slash(entries_with_errors)
+	entries_with_errors = verify_json_slash(entries_with_errors)
+	entries_with_errors = verify_csv_slash(entries_with_errors)
+	entries_with_errors = verify_diff_slash(entries_with_errors)
+	return entries_with_errors
+
+
+func verify_assets_filename(entries_with_errors: int) -> int:
+	## User defined filename
+	for key in ["user_defined_1","user_defined_2"]:
+		entries_with_errors = verify_user_filename(key, entries_with_errors)
+	
+	## Pre-Release filename
+	for key in ["latest_pre_release","previous_pre_release"]:
+		entries_with_errors = verify_prerelease_filename(key, entries_with_errors)
+	
+	## Release filename
+	for key in ["latest_release","previous_release"]:
+		entries_with_errors = verify_release_filename(key, entries_with_errors)
+	return entries_with_errors
+
+
+func verify_output_json_ext(entries_with_errors: int) -> int:
+	if not settings.output.user_defined.exported_json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_output_ext_user_json()
+	
+	if not settings.output.pre_release.exported_json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_output_ext_prerel_json()
+	
+	if not settings.output.release.exported_json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_output_ext_rel_json()
+	return entries_with_errors
+
+
+func verify_output_csv_ext(entries_with_errors: int) -> int:
+	if not settings.output.user_defined.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_output_ext_user_csv()
+	
+	if not settings.output.pre_release.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_output_ext_prerel_csv()
+	
+	if not settings.output.release.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_output_ext_rel_csv()
+	return entries_with_errors
+
+
+func verify_wpn_diff_ext(entries_with_errors: int) -> int:
+	if not settings.output.weapon_diff.json_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_diff_ext_json()
+	
+	if not settings.output.weapon_diff.csv_filename.ends_with(".csv"):
+		entries_with_errors += 1
+		verify_diff_ext_csv()
+	
+	if not settings.output.weapon_diff.json_from_csv_filename.ends_with(".json"):
+		entries_with_errors += 1
+		verify_diff_ext_json_from_csv()
+	return entries_with_errors
+
+
+func verify_assets_slash(entries_with_errors: int) -> int:
 	for key in ["user_defined_1","user_defined_2"]:
 		if not settings.assets.user[key].assets_path.ends_with("/"):
 			entries_with_errors += 1
@@ -233,67 +330,10 @@ func verify_settings_formatting() -> void:
 			entries_with_errors += 1
 			settings.assets.release[key].assets_path = \
 					settings.assets.release[key].assets_path + "/"
-			
-	## -- Assets extensions (.zip)
-	
-	## User defined filename
-	for key in ["user_defined_1","user_defined_2"]:
-		if not settings.assets.user[key].assets_filename.ends_with(".zip"):
-			entries_with_errors += 1
-			var filename: String = settings.assets.user[key].assets_filename
-			
-			## Add extension if missing
-			if not filename.contains("."):
-				settings.assets.user[key].assets_filename = filename + ".zip"
-			
-			else:
-				## Change file name anyway. it NEEDS to be a zip for rest of code to work.
-				settings.assets.user[key].assets_filename = \
-						FileUtils.replace_file_extension(filename, ".zip")
-				print(key + " Assets filename in app_settings.json is not a zip: " + filename)
-	
-	## Pre-Release filename
-	for key in ["latest_pre_release","previous_pre_release"]:
-		if not settings.assets.pre_release[key].assets_filename.ends_with(".zip"):
-			entries_with_errors += 1
-			var filename: String = settings.assets.pre_release[key].assets_filename
-			
-			## Add extension if missing
-			if not filename.containsn("."):
-				settings.assets.pre_release[key].assets_filename = filename + ".zip"
-			
-			### Correct the extension if .ZIP, or .Zip etc.
-			#elif filename.containsn(".zip"):
-				#settings.assets.pre_release[key].set("assets_filename", 
-						#FileUtils.replace_file_extension(filename, ".zip"))
-			else:
-				## Change file name anyway. it NEEDS to be a zip for rest of code to work.
-				settings.assets.pre_release[key].set("assets_filename", 
-						FileUtils.replace_file_extension(filename, ".zip"))
-				print(key + " Assets filename in app_settings.json is not a zip: " + filename)
-	
-	## Release filename
-	for key in ["latest_release","previous_release"]:
-		if not settings.assets.release[key].assets_filename.ends_with(".zip"):
-			entries_with_errors += 1
-			var filename: String = settings.assets.release[key].assets_filename
-			
-			## Add extension if missing
-			if not filename.containsn("."):
-				settings.assets.release[key].assets_filename = filename + ".zip"
-			
-			### Correct the extension if .ZIP, or .Zip etc.
-			#elif filename.containsn(".zip"):
-				#settings.assets.release[key].set("assets_filename", 
-						#FileUtils.replace_file_extension(filename, ".zip"))
-			else:
-				## Change file name anyway. it NEEDS to be a zip for rest of code to work.
-				settings.assets.release[key].set("assets_filename", 
-						FileUtils.replace_file_extension(filename, ".zip"))
-				print(key + " Assets filename in app_settings.json is not a zip: " + filename)
-	
-	## -- Output slashes
-	## json path
+	return entries_with_errors
+
+
+func verify_json_slash(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.exported_json_save_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.output.user_defined.exported_json_save_path = \
@@ -308,8 +348,10 @@ func verify_settings_formatting() -> void:
 		entries_with_errors += 1
 		settings.output.release.exported_json_save_path = \
 				settings.output.release.exported_json_save_path + "/"
-	
-	## csv path
+	return entries_with_errors
+
+
+func verify_csv_slash(entries_with_errors: int) -> int:
 	if not settings.output.user_defined.csv_save_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.output.user_defined.csv_save_path = \
@@ -324,8 +366,10 @@ func verify_settings_formatting() -> void:
 		entries_with_errors += 1
 		settings.output.release.csv_save_path = \
 				settings.output.release.csv_save_path + "/"
-	
-	## diff path
+	return entries_with_errors
+
+
+func verify_diff_slash(entries_with_errors: int) -> int:
 	if not settings.output.weapon_diff.json_path.ends_with("/"):
 		entries_with_errors += 1
 		settings.output.weapon_diff.json_path = \
@@ -340,124 +384,156 @@ func verify_settings_formatting() -> void:
 		entries_with_errors += 1
 		settings.output.weapon_diff.json_from_csv_path = \
 				settings.output.weapon_diff.json_from_csv_path + "/"
-	
-	## -- Output extensions (.csv) (.json) - Need to deal with caps
-	## json extension
-	if not settings.output.user_defined.exported_json_filename.ends_with(".json"):
+	return entries_with_errors
+
+
+func verify_user_filename(key: String, entries_with_errors: int) -> int:
+	if not settings.assets.user[key].assets_filename.ends_with(".zip"):
 		entries_with_errors += 1
-		var filename: String = settings.output.user_defined.exported_json_filename
+		var filename: String = settings.assets.user[key].assets_filename
 		
 		## Add extension if missing
 		if not filename.contains("."):
-			settings.output.user_defined.exported_json_filename = filename + ".json"
-		## Correct the extension.
+			settings.assets.user[key].assets_filename = filename + ".zip"
+		
 		else:
-			settings.output.user_defined.set("exported_json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	if not settings.output.pre_release.exported_json_filename.ends_with(".json"):
+			## Change file name anyway. it NEEDS to be a zip for rest of code to work.
+			settings.assets.user[key].assets_filename = \
+					FileUtils.replace_file_extension(filename, ".zip")
+			print(key + " Assets filename in app_settings.json is not a zip: " + filename)
+	return entries_with_errors
+
+
+func verify_prerelease_filename(key: String, entries_with_errors: int) -> int:
+	if not settings.assets.pre_release[key].assets_filename.ends_with(".zip"):
 		entries_with_errors += 1
-		var filename: String = settings.output.pre_release.exported_json_filename
+		var filename: String = settings.assets.pre_release[key].assets_filename
 		
 		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.pre_release.exported_json_filename = filename + ".json"
-		## Correct the extension.
+		if not filename.containsn("."):
+			settings.assets.pre_release[key].assets_filename = filename + ".zip"
 		else:
-			settings.output.pre_release.set("exported_json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	if not settings.output.release.exported_json_filename.ends_with(".json"):
+			## Change file name anyway. it NEEDS to be a zip for rest of code to work.
+			settings.assets.pre_release[key].set("assets_filename", 
+					FileUtils.replace_file_extension(filename, ".zip"))
+			print(key + " Assets filename in app_settings.json is not a zip: " + filename)
+	return entries_with_errors
+
+
+func verify_release_filename(key: String, entries_with_errors: int) -> int:
+	if not settings.assets.release[key].assets_filename.ends_with(".zip"):
 		entries_with_errors += 1
-		var filename: String = settings.output.release.exported_json_filename
+		var filename: String = settings.assets.release[key].assets_filename
 		
 		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.release.exported_json_filename = filename + ".json"
-		## Correct the extension.
+		if not filename.containsn("."):
+			settings.assets.release[key].assets_filename = filename + ".zip"
 		else:
-			settings.output.release.set("exported_json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	## csv extension
-	if not settings.output.user_defined.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.user_defined.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.user_defined.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.user_defined.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	if not settings.output.pre_release.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.pre_release.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.pre_release.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.pre_release.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	if not settings.output.release.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.release.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.release.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.release.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	## -- Weapon diff
-	if not settings.output.weapon_diff.json_filename.ends_with(".json"):
-		entries_with_errors += 1
-		var filename: String = settings.output.weapon_diff.json_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.weapon_diff.json_filename = filename + ".json"
-		## Correct the extension.
-		else:
-			settings.output.weapon_diff.set("json_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	if not settings.output.weapon_diff.csv_filename.ends_with(".csv"):
-		entries_with_errors += 1
-		var filename: String = settings.output.weapon_diff.csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.weapon_diff.csv_filename = filename + ".csv"
-		## Correct the extension.
-		else:
-			settings.output.weapon_diff.set("csv_filename", 
-					FileUtils.replace_file_extension(filename, ".csv"))
-	
-	if not settings.output.weapon_diff.json_from_csv_filename.ends_with(".json"):
-		entries_with_errors += 1
-		var filename: String = settings.output.weapon_diff.json_from_csv_filename
-		
-		## Add extension if missing
-		if not filename.contains("."):
-			settings.output.weapon_diff.json_from_csv_filename = filename + ".json"
-		## Correct the extension.
-		else:
-			settings.output.weapon_diff.set("json_from_csv_filename", 
-					FileUtils.replace_file_extension(filename, ".json"))
-	
-	## Save changes to file if errors found.
-	if entries_with_errors > 0:
-		print("Corrected %d simple formatting error(s) in app_settings.json" % entries_with_errors)
-		## Save the app settings to the user directory
-		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
+			## Change file name anyway. it NEEDS to be a zip for rest of code to work.
+			settings.assets.release[key].set("assets_filename", 
+					FileUtils.replace_file_extension(filename, ".zip"))
+			print(key + " Assets filename in app_settings.json is not a zip: " + filename)
+	return entries_with_errors
+
+
+func verify_output_ext_user_json() -> void:
+	var filename: String = settings.output.user_defined.exported_json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.user_defined.exported_json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.user_defined.set("exported_json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_output_ext_prerel_json() -> void:
+	var filename: String = settings.output.pre_release.exported_json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.pre_release.exported_json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.pre_release.set("exported_json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_output_ext_rel_json() -> void:
+	var filename: String = settings.output.release.exported_json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.release.exported_json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.release.set("exported_json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_output_ext_user_csv() -> void:
+	var filename: String = settings.output.user_defined.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.user_defined.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.user_defined.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_output_ext_prerel_csv() -> void:
+	var filename: String = settings.output.pre_release.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.pre_release.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.pre_release.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_output_ext_rel_csv() -> void:
+	var filename: String = settings.output.release.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.release.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.release.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_diff_ext_json() -> void:
+	var filename: String = settings.output.weapon_diff.json_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.weapon_diff.json_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.weapon_diff.set("json_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+
+
+func verify_diff_ext_csv() -> void:
+	var filename: String = settings.output.weapon_diff.csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.weapon_diff.csv_filename = filename + ".csv"
+	## Correct the extension.
+	else:
+		settings.output.weapon_diff.set("csv_filename", 
+				FileUtils.replace_file_extension(filename, ".csv"))
+
+
+func verify_diff_ext_json_from_csv() -> void:
+	var filename: String = settings.output.weapon_diff.json_from_csv_filename
+	## Add extension if missing
+	if not filename.contains("."):
+		settings.output.weapon_diff.json_from_csv_filename = filename + ".json"
+	## Correct the extension.
+	else:
+		settings.output.weapon_diff.set("json_from_csv_filename", 
+				FileUtils.replace_file_extension(filename, ".json"))
+#endregion
 
 
 func convert_build_numbers_to_names() -> void:
@@ -478,7 +554,14 @@ func convert_build_numbers_to_names() -> void:
 			"build-" + str(build_numbers[Assets.LATEST_RELEASE])
 	
 	## USER_DEFINED_1 value
-	
+	build_folders_user1()
+	## USER_DEFINED_2 value
+	build_folders_user2()
+
+	print(build_folders)
+
+
+func build_folders_user1() -> void:
 	## Retrieved from app_settings.json for user defined. If user knows where zip came from,
 	## they can choose correct type for archiving.
 	
@@ -491,8 +574,9 @@ func convert_build_numbers_to_names() -> void:
 	
 	build_folders[Assets.USER_DEFINED_1] = "build-" \
 			+ str(build_numbers[Assets.USER_DEFINED_1])
-	
-	## USER_DEFINED_2 value
+
+
+func build_folders_user2() -> void:
 	if settings.assets.user.user_defined_2.build_type.get("pre_release", false):
 		build_type[Assets.USER_DEFINED_2] = "pre-release"
 	elif settings.assets.user.user_defined_2.build_type.get("release", false):
@@ -503,123 +587,43 @@ func convert_build_numbers_to_names() -> void:
 	build_folders[Assets.USER_DEFINED_2] = "build-" \
 			+ str(build_numbers[Assets.USER_DEFINED_2])
 
-	print(build_folders)
 
-
-## Assign load and save paths based upon data from app_settings.json
+#region Assign load and save paths based upon data from app_settings.json
 func choose_which_filepaths_to_process() -> void:
-	## shortcut to get inside pre, rel, user branch
-	var branch: Dictionary
-	## previous, latest, of pre or rel. Or user_defined_1 or 2
-	var choice: String
-	## user, pre-release or release 
-	var output_choice: String
+	## branch: shortcut to get inside pre, rel, user branch
+	## choice: previous, latest, of pre or rel. Or user_defined_1 or 2
+	## output_choice: user, pre-release or release 
+	
+	## "branch", "choice", "output_choice"
+	var three_vars: Dictionary = { "branch": {}, "choice": "", "output_choice": "" }
 	
 	## Populate active assets array so we can know which files to scrape or diff
 	for i in 2:
 		# If pre-release
 		if settings.assets.pre_release.previous_pre_release.scrape_assets[i]:
-			branch = settings.assets.get("pre_release")
-			choice = "previous_pre_release"
-			output_choice = "pre_release"
-			active_assets[i] = Assets.PREVIOUS_PRE_RELEASE
-			active_build_type[i] = "pre"
-			active_build_folders[i] = build_folders[Assets.PREVIOUS_PRE_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.PREVIOUS_PRE_RELEASE]
+			three_vars = scrape_previous_prerelease(i)
 		
 		elif settings.assets.pre_release.latest_pre_release.scrape_assets[i]:
-			branch = settings.assets.get("pre_release")
-			choice = "latest_pre_release"
-			output_choice = "pre_release"
-			active_assets[i] = Assets.LATEST_PRE_RELEASE
-			active_build_type[i] = "pre"
-			active_build_folders[i] = build_folders[Assets.LATEST_PRE_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.LATEST_PRE_RELEASE]
+			three_vars = scrape_latest_prerelease(i)
 		
 		# If Release
 		elif settings.assets.release.previous_release.scrape_assets[i]:
-			branch = settings.assets.get("release")
-			choice = "previous_release"
-			output_choice = "release"
-			active_assets[i] = Assets.PREVIOUS_RELEASE
-			active_build_type[i] = "rel"
-			active_build_folders[i] = build_folders[Assets.PREVIOUS_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.PREVIOUS_RELEASE]
+			three_vars = scrape_previous_release(i)
 		
 		elif settings.assets.release.latest_release.scrape_assets[i]:
-			branch = settings.assets.get("release")
-			choice = "latest_release"
-			output_choice = "release"
-			active_assets[i] = Assets.LATEST_RELEASE
-			active_build_type[i] = "rel"
-			active_build_folders[i] = build_folders[Assets.LATEST_RELEASE]
-			active_build_numbers[i] = build_numbers[Assets.LATEST_RELEASE]
+			three_vars = scrape_latest_release(i)
 			
 		# if User defined
 		elif settings.assets.user.user_defined_1.scrape_assets[i]:
-			branch = settings.assets.get("user")
-			choice = "user_defined_1"
-			output_choice = "user_defined"
-			active_assets[i] = Assets.USER_DEFINED_1
-			
-			if build_type[Assets.USER_DEFINED_1] == "pre-release":
-				active_build_type[i] = "pre"
-			elif build_type[Assets.USER_DEFINED_1] == "release":
-				active_build_type[i] = "rel"
-			else: ## in settings, build_type.user:true is technically optional
-				active_build_type[i] = "usr"
-
-			active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
-			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
+			three_vars = scrape_user_1(i)
 		
 		elif settings.assets.user.user_defined_2.scrape_assets[i]:
-			branch = settings.assets.get("user")
-			choice = "user_defined_2"
-			output_choice = "user_defined"
-			active_assets[i] = Assets.USER_DEFINED_2
-			
-			if build_type[Assets.USER_DEFINED_2] == "pre-release":
-				active_build_type[i] = "pre"
-			elif build_type[Assets.USER_DEFINED_2] == "release":
-				active_build_type[i] = "rel"
-			else: ## in settings, build_type.user:true is technically optional
-				active_build_type[i] = "usr"
-			
-			active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
-			active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
-		
-		
-		
+			three_vars = scrape_user_2(i)
 		
 		## Define paths to be used.
-		if i == 0:
-			asset_1_zip_path = branch[choice].assets_path \
-					+ branch[choice].assets_filename
-			exported_csv_1_save_path = settings.output[output_choice].csv_save_path \
-					+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
-			exported_json_1_save_path = settings.output[output_choice].exported_json_save_path \
-					+ assemble_output_filename(settings.output[output_choice] \
-					.exported_json_filename, i)
-			
-			
-		else:
-			asset_2_zip_path = branch[choice].assets_path \
-					+ branch[choice].assets_filename
-			exported_csv_2_save_path = settings.output[output_choice].csv_save_path \
-					+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
-			exported_json_2_save_path = settings.output[output_choice].exported_json_save_path \
-					+ assemble_output_filename(settings.output[output_choice] \
-					.exported_json_filename, i)
-	
+		define_save_paths(three_vars, i)
 	## saving the diffs with thier respectively formatted output.
-	diff_json_save_path = settings.output.weapon_diff.json_path \
-			+ assemble_output_filename(settings.output.weapon_diff.json_filename, 0, true)
-			
-	diff_csv_save_path = settings.output.weapon_diff.csv_path \
-			+ assemble_output_filename(settings.output.weapon_diff.csv_filename, 0, true)
-			
-	diff_json_from_csv_save_path = settings.output.weapon_diff.json_from_csv_path \
-			+ assemble_output_filename(settings.output.weapon_diff.json_from_csv_filename, 0, true)
+	define_diff_paths()
 	
 	#print(active_assets)
 	#print(asset_1_zip_path)
@@ -630,13 +634,153 @@ func choose_which_filepaths_to_process() -> void:
 	#print(diff_csv_save_path)
 
 
+func scrape_previous_prerelease(i: int) -> Dictionary:
+	active_assets[i] = Assets.PREVIOUS_PRE_RELEASE
+	active_build_type[i] = "pre"
+	active_build_folders[i] = build_folders[Assets.PREVIOUS_PRE_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.PREVIOUS_PRE_RELEASE]
+	
+	var branch = settings.assets.get("pre_release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "previous_pre_release",
+		"output_choice": "pre_release",
+	}	
+	return three_vars
+
+
+func scrape_latest_prerelease(i: int) -> Dictionary:
+	active_assets[i] = Assets.LATEST_PRE_RELEASE
+	active_build_type[i] = "pre"
+	active_build_folders[i] = build_folders[Assets.LATEST_PRE_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.LATEST_PRE_RELEASE]
+	
+	var branch = settings.assets.get("pre_release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "latest_pre_release",
+		"output_choice": "pre_release",
+	}	
+	return three_vars
+
+
+func scrape_previous_release(i: int) -> Dictionary:
+	active_assets[i] = Assets.PREVIOUS_RELEASE
+	active_build_type[i] = "rel"
+	active_build_folders[i] = build_folders[Assets.PREVIOUS_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.PREVIOUS_RELEASE]
+	
+	var branch = settings.assets.get("release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "previous_release",
+		"output_choice": "release",
+	}	
+	return three_vars
+
+
+func scrape_latest_release(i: int) -> Dictionary:
+	active_assets[i] = Assets.LATEST_RELEASE
+	active_build_type[i] = "rel"
+	active_build_folders[i] = build_folders[Assets.LATEST_RELEASE]
+	active_build_numbers[i] = build_numbers[Assets.LATEST_RELEASE]
+	
+	var branch = settings.assets.get("release")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "latest_release",
+		"output_choice": "release",
+	}	
+	return three_vars
+
+
+func scrape_user_1(i: int) -> Dictionary:
+	active_assets[i] = Assets.USER_DEFINED_1
+	
+	if build_type[Assets.USER_DEFINED_1] == "pre-release":
+		active_build_type[i] = "pre"
+	elif build_type[Assets.USER_DEFINED_1] == "release":
+		active_build_type[i] = "rel"
+	else: ## in settings, build_type.user:true is technically optional
+		active_build_type[i] = "usr"
+
+	active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
+	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
+	
+	var branch = settings.assets.get("user")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "user_defined_1",
+		"output_choice": "user_defined",
+	}	
+	return three_vars
+
+
+func scrape_user_2(i: int) -> Dictionary:
+	active_assets[i] = Assets.USER_DEFINED_2
+	
+	if build_type[Assets.USER_DEFINED_2] == "pre-release":
+		active_build_type[i] = "pre"
+	elif build_type[Assets.USER_DEFINED_2] == "release":
+		active_build_type[i] = "rel"
+	else: ## in settings, build_type.user:true is technically optional
+		active_build_type[i] = "usr"
+	
+	active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
+	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
+	
+	var branch = settings.assets.get("user")
+	var three_vars: Dictionary = { 
+		"branch": branch, 
+		"choice": "user_defined_2",
+		"output_choice": "user_defined",
+	}	
+	return three_vars
+
+
+func define_save_paths(three_vars: Dictionary, i: int) -> void:
+	## Define paths to be used.
+	var branch: Dictionary = three_vars.get("branch")
+	var choice: String = three_vars.get("choice")
+	var output_choice: String = three_vars.get("output_choice")
+	
+	if i == 0:
+		asset_1_zip_path = branch[choice].assets_path \
+				+ branch[choice].assets_filename
+		exported_csv_1_save_path = settings.output[output_choice].csv_save_path \
+				+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
+		exported_json_1_save_path = settings.output[output_choice].exported_json_save_path \
+				+ assemble_output_filename(settings.output[output_choice] \
+				.exported_json_filename, i)
+	else:
+		asset_2_zip_path = branch[choice].assets_path \
+				+ branch[choice].assets_filename
+		exported_csv_2_save_path = settings.output[output_choice].csv_save_path \
+				+ assemble_output_filename(settings.output[output_choice].csv_filename, i)
+		exported_json_2_save_path = settings.output[output_choice].exported_json_save_path \
+				+ assemble_output_filename(settings.output[output_choice] \
+				.exported_json_filename, i)
+
+
+func define_diff_paths() -> void:
+	## saving the diffs with thier respectively formatted output.
+	diff_json_save_path = settings.output.weapon_diff.json_path \
+			+ assemble_output_filename(settings.output.weapon_diff.json_filename, 0, true)
+			
+	diff_csv_save_path = settings.output.weapon_diff.csv_path \
+			+ assemble_output_filename(settings.output.weapon_diff.csv_filename, 0, true)
+			
+	diff_json_from_csv_save_path = settings.output.weapon_diff.json_from_csv_path \
+			+ assemble_output_filename(settings.output.weapon_diff.json_from_csv_filename, 0, true)
+#endregion
+
+
 ## index is Asset #1 (0), or Asset #2 (1) for retrieving build folder name
 ## index can be whatever for a diff
 func assemble_output_filename(generic_filename: String, scrape_assets_index: int, 
 		is_diff: bool = false) -> String:
 	
 	match is_diff:
-		
 		## Export book (encyclopedia) filenames
 		false when generic_filename.ends_with(".json"):
 			return generic_filename.replacen(".json", 
@@ -658,7 +802,6 @@ func assemble_output_filename(generic_filename: String, scrape_assets_index: int
 			return generic_filename.replacen(".csv", "_" 
 					+ active_build_type[0] + "-" + str(active_build_numbers[0]) + "_v_" 
 					+ active_build_type[1] + "-" + str(active_build_numbers[1]) + ".csv")
-	
 	return generic_filename
 
 

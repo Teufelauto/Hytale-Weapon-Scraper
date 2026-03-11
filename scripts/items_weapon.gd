@@ -109,7 +109,7 @@ func parse_template_weapon_item_info(weapon_family: String, parent: String) -> D
 		return item_weapon_info_as_dict
 
 
-#region Extract values
+#region Extract values. Add elif with any new move type ============================================
 ## Add elif with any new move type ============================================
 ## Get value for the table cell
 func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: String, 
@@ -162,7 +162,15 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 			dmg = extract_rear_physical_attack_dmg(item_parent_dict, key) ## Inherit
 		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
 		return dmg
-
+	
+	## Check if key is guard bash damage in JSON.
+	elif column_header.begins_with("guard_"):
+		var dmg: int = extract_guard_bash_dmg(item_child_dict, key)
+		if dmg < 0:
+			dmg = extract_guard_bash_dmg(item_parent_dict, key) ## Inherit
+		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
+		return dmg
+		
 	else:
 		print("Error: Couldn't find the key value to scrape!")
 		return null
@@ -264,10 +272,29 @@ func extract_rear_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:
 		return -6
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
 			.DamageCalculator.BaseDamage.get("Physical", -7)
+			
+## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
+## Negative returns are for inheritance flow control.
+func extract_guard_bash_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
+	if not item_weapon_as_dict.has("InteractionVars"): 
+		return -1
+	if not item_weapon_as_dict.InteractionVars.has(move_name):
+		print(move_name)
+		return -2 
+	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
+		return -3 
+	# The [0] is to deal with the array inside json.
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
+		return -4 
+	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
+			.has("BaseDamage"):
+		return -5 
+	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
+			.BaseDamage.get("Physical", -6) 
 #endregion
 
 
-#region Assembling json
+#region Assembling json. Add elif for any new move type ============================================
 ## add elif for any new move type ============================================
 ## Puts the found value in the correct place inside the unique weapon dictionary.
 func assign_values_to_unique_dictionary(unique_child: Dictionary, 
@@ -311,11 +338,15 @@ func assign_values_to_unique_dictionary(unique_child: Dictionary,
 		
 	# Determine if we need to enter primary projectile attack branch.
 	elif key.begins_with("shoot_primary"):
-		unique_child = key_begins_with_shoot_primary_attack(unique_child, key, value)	
+		unique_child = key_begins_with_shoot_primary_attack(unique_child, key, value)
 	
 	# Determine if we need to enter primary projectile attack branch.
 	elif key.begins_with("shoot_signature"):
-		unique_child = key_begins_with_shoot_signature_attack(unique_child, key, value)	
+		unique_child = key_begins_with_shoot_signature_attack(unique_child, key, value)
+	
+	# Determine if we need to enter guard_bash branch.
+	elif key.begins_with("guard_bash"):
+		unique_child = key_begins_with_guard_bash_attack(unique_child, key, value)
 	
 	else:
 		unique_child.set(key, value)
@@ -542,7 +573,7 @@ func key_begins_with_rand_pct_mod_charged_attack(unique_child: Dictionary,
 	
 	## Create branch if it doesn't exist.
 	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_primary_branch_if_needed(unique_child)
+	unique_child = create_attack_charged_branch_if_needed(unique_child)
 	if not unique_child.attack.charged.has("rand_pct_modifier"):
 		unique_child.attack.charged.set("rand_pct_modifier", [0]) #It'll be at least 1 value
 	
@@ -641,6 +672,35 @@ func key_begins_with_shoot_signature_attack(unique_child: Dictionary,
 	
 	unique_child.attack.signature.projectile[index] = value # Assign value to array in proper order.
 	return unique_child
+	
+	
+	## Determine data to enter guard bash branch of json.
+func key_begins_with_guard_bash_attack(unique_child: Dictionary, 
+		key: String, value: Variant) -> Dictionary:
+	
+	if value is String: # We don't need to add to array, as move does not exist.
+		return unique_child
+	
+	## Index of the move within array, such as attack 1 would index to 0
+	var index: int = assign_move_index(key)
+	if index < 0:
+		print("Error with guard bash index")
+		return unique_child
+	
+	## Create branch if it doesn't exist.
+	unique_child = create_attack_branch_if_needed(unique_child)
+	unique_child = create_attack_guard_bash_branch_if_needed(unique_child)
+	if not unique_child.attack.guard_bash.has("physical"):
+		unique_child.attack.guard_bash.set("physical", [0]) #It'll be at least 1 value
+	
+	# Grow array as needed for number of attacks. Changes based on weapon family.
+	var array_min_size: int = index + 1
+	if unique_child.attack.guard_bash.physical.size() < array_min_size:
+		# Make array bigger if index is larger than array.
+		unique_child.attack.guard_bash.physical.resize(array_min_size)
+		
+	unique_child.attack.guard_bash.physical[index] = value # Assign value to array in proper order.
+	return unique_child
 #endregion
 
 
@@ -677,17 +737,24 @@ func create_attack_primary_branch_if_needed(unique_child: Dictionary) -> Diction
 	return unique_child
 
 	
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
+## Create 'charged' branch if it doesn't exist in weapon deictionary.
 func create_attack_charged_branch_if_needed(unique_child: Dictionary) -> Dictionary:
 	if not unique_child.attack.has("charged"):
 		unique_child.attack.set("charged", {} ) #It'll be at least 1 value
 	return unique_child
 
 
-## Create 'attack' branch if it doesn't exist in weapon deictionary.
+## Create 'signature' branch if it doesn't exist in weapon deictionary.
 func create_attack_signature_branch_if_needed(unique_child: Dictionary) -> Dictionary:
 	if not unique_child.attack.has("signature"):
 		unique_child.attack.set("signature", {} ) #It'll be at least 1 value
+	return unique_child
+
+
+## Create 'guard_bash' branch if it doesn't exist in weapon deictionary.
+func create_attack_guard_bash_branch_if_needed(unique_child: Dictionary) -> Dictionary:
+	if not unique_child.attack.has("guard_bash"):
+		unique_child.attack.set("guard_bash", {} ) #It'll be at least 1 value
 	return unique_child
 #endregion
 	
