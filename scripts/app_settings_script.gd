@@ -615,10 +615,10 @@ func choose_which_filepaths_to_process() -> void:
 			
 		# if User defined
 		elif settings.assets.user.user_defined_1.scrape_assets[i]:
-			three_vars = scrape_user_1(i)
+			three_vars = scrape_user_x(i, Assets.USER_DEFINED_1, "user_defined_1")
 		
 		elif settings.assets.user.user_defined_2.scrape_assets[i]:
-			three_vars = scrape_user_2(i)
+			three_vars = scrape_user_x(i, Assets.USER_DEFINED_2, "user_defined_2")
 		
 		## Define paths to be used.
 		define_save_paths(three_vars, i)
@@ -694,45 +694,23 @@ func scrape_latest_release(i: int) -> Dictionary:
 	return three_vars
 
 
-func scrape_user_1(i: int) -> Dictionary:
-	active_assets[i] = Assets.USER_DEFINED_1
+func scrape_user_x(i: int, assets_index: int, choice: String) -> Dictionary:
+	active_assets[i] = assets_index
 	
-	if build_type[Assets.USER_DEFINED_1] == "pre-release":
+	if build_type[assets_index] == "pre-release":
 		active_build_type[i] = "pre"
-	elif build_type[Assets.USER_DEFINED_1] == "release":
+	elif build_type[assets_index] == "release":
 		active_build_type[i] = "rel"
 	else: ## in settings, build_type.user:true is technically optional
 		active_build_type[i] = "usr"
 
-	active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
-	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
+	active_build_folders[i] = build_folders[assets_index]
+	active_build_numbers[i] = build_numbers[assets_index]
 	
 	var branch = settings.assets.get("user")
 	var three_vars: Dictionary = { 
 		"branch": branch, 
-		"choice": "user_defined_1",
-		"output_choice": "user_defined",
-	}	
-	return three_vars
-
-
-func scrape_user_2(i: int) -> Dictionary:
-	active_assets[i] = Assets.USER_DEFINED_2
-	
-	if build_type[Assets.USER_DEFINED_2] == "pre-release":
-		active_build_type[i] = "pre"
-	elif build_type[Assets.USER_DEFINED_2] == "release":
-		active_build_type[i] = "rel"
-	else: ## in settings, build_type.user:true is technically optional
-		active_build_type[i] = "usr"
-	
-	active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
-	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
-	
-	var branch = settings.assets.get("user")
-	var three_vars: Dictionary = { 
-		"branch": branch, 
-		"choice": "user_defined_2",
+		"choice": choice,
 		"output_choice": "user_defined",
 	}	
 	return three_vars
