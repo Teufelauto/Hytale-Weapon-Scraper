@@ -78,7 +78,7 @@ func process_column(current_family: String, current_column: int,
 	## filling in the table.
 	var retrieved_key: String = weapon_families_Xref_dict[current_family].get(column_header)
 
-	## Value to be put in the Table or unique dictionary
+	## Value to be put in the Table and unique dictionary
 	var value: Variant = get_key_value(item_child_dict, app_headers, retrieved_key, column_header)
 	
 	## Makes value integer if req. (item level, max durability, maxStack)
@@ -121,7 +121,7 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 		column_header: String) -> Variant:
 	
 	## Skip the moves that don't exist for this weapon.
-	if key == "_Damage" :
+	if key == "" :
 		return ""
 	
 	## Check if key is one of the app-made headers.
@@ -139,10 +139,11 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 			or column_header.begins_with("signature_attack_") \
 			or column_header.begins_with("shoot_") \
 			or column_header.begins_with("guard_"):
-		var dmg: int = extract_physical_attack_dmg(item_child_dict,key)
+		var dmg_type: String = "Projectile" if column_header.begins_with("shoot_") else "Physical"
+		var dmg: int = extract_6_step_attack_dmg(item_child_dict ,key, dmg_type)
 		#print("Attack damage, or broken branch at: ", dmg)
 		if dmg < 0: ## Negative value means no valid value found.
-			dmg = extract_physical_attack_dmg(item_parent_dict,key) ## Inherit
+			dmg = extract_6_step_attack_dmg(item_parent_dict, key, dmg_type) ## Inherit
 		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
 		return dmg
 	
@@ -188,7 +189,8 @@ func common_key_in_weapon_check(item_weapon_as_dict:Dictionary, key: String) -> 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
 ## Negative returns are for inheritance flow control.
-func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
+func extract_6_step_attack_dmg(
+		item_weapon_as_dict:Dictionary, move_name:String, dmg_type: String = "Physical") -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return -1
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
@@ -203,7 +205,7 @@ func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:Strin
 		return -5
 	## We can finally see what kind of damage is done.
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.BaseDamage.get("Physical", -6)
+			.BaseDamage.get(dmg_type, -6)
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
@@ -288,9 +290,9 @@ func assign_values_to_unique_dictionary(passed_data: Dictionary) -> Dictionary:
 	elif passed_data.key.begins_with("rand_pct_mod_signature_attack"):
 		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "rand_pct_modifier")
 		
-	# Determine if we need to enter primary projectile attack branch.
+	# primary projectile attack branch. TRUE attack index starts at 0
 	elif passed_data.key.begins_with("shoot_primary"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "projectile")
+		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "projectile", true)
 		
 	# Determine if we need to enter charged projectile attack branch.
 	elif passed_data.key.begins_with("shoot_charged"):
@@ -310,13 +312,15 @@ func assign_values_to_unique_dictionary(passed_data: Dictionary) -> Dictionary:
 
 
 ## Determine data to enter primary attack branch of json.
-func enter_attack_value(passed_data: Dictionary, sub: String, type: String ) -> Dictionary:
+func enter_attack_value(passed_data: Dictionary, sub: String, type: String, index_starts_at_0: bool = false) -> Dictionary:
 	# passed_data = {unique_child: Dictionary, key: String, value: Variant}
 	if passed_data.value is String: # We don't need to add to array, as move does not exist.
 		return passed_data.unique_child
 	
 	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(passed_data.key)
+	var index: int = assign_move_index(passed_data.key, index_starts_at_0)
+	
+	
 	if index < 0:
 		print("Error with attack index in assign_values_to_unique_dictionary")
 		return passed_data.unique_child
@@ -339,10 +343,13 @@ func enter_attack_value(passed_data: Dictionary, sub: String, type: String ) -> 
 
 ## Assign index of value inside array.
 ## Helper for key_begins_with_ group of functions.
-func assign_move_index(key: String) -> int:
+func assign_move_index(key: String, named_index_starts_at_0: bool = false) -> int:
 	# Assign impossible value so invalid key will return indication.
-	var index: int = -1
-	if key.contains("1"):
+	var index: int = -2
+	
+	if key.contains("0"):
+		index = -1
+	elif key.contains("1"):
 		index = 0
 	elif key.contains("2"):
 		index = 1
@@ -352,6 +359,8 @@ func assign_move_index(key: String) -> int:
 		index = 3
 	elif key.contains("5"):
 		index = 4
+	if named_index_starts_at_0:
+		index += 1
 	return index
 
 
