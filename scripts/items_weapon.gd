@@ -46,8 +46,13 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 		## Assign value to Table
 		weapon_table[current_row][current_column] = value
 		
+		var passed_data: Dictionary = { 
+			"unique_child": unique_child, 
+			"key": column_header, 
+			"value": value,
+		}
 		## Assign value to current child dictionary, posibly in subdictionaries or arrays.
-		unique_child = assign_values_to_unique_dictionary(unique_child, column_header, value)
+		unique_child = assign_values_to_unique_dictionary(passed_data)
 		
 	## Now that all columns are processed, add this child to the Big Dictionary under family.
 	weapon_encyclopedia[current_family.to_lower()].set(current_child.to_lower(), 
@@ -131,19 +136,13 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 	## Check if key is frontal attack damage: "primary, charged, signature"
 	elif column_header.begins_with("primary_attack_") \
 			or column_header.begins_with("charged_attack_") \
-			or column_header.begins_with("signature_attack_"):
+			or column_header.begins_with("signature_attack_") \
+			or column_header.begins_with("shoot_") \
+			or column_header.begins_with("guard_"):
 		var dmg: int = extract_physical_attack_dmg(item_child_dict,key)
 		#print("Attack damage, or broken branch at: ", dmg)
 		if dmg < 0: ## Negative value means no valid value found.
 			dmg = extract_physical_attack_dmg(item_parent_dict,key) ## Inherit
-		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
-		return dmg
-	
-	## Check if key is shooting attack damage in JSON.
-	elif column_header.begins_with("shoot_"):
-		var dmg: int = extract_shoot_attack_dmg(item_child_dict, key)
-		if dmg < 0:
-			dmg = extract_shoot_attack_dmg(item_parent_dict, key) ## Inherit
 		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
 		return dmg
 	
@@ -160,14 +159,6 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 		var dmg: int = extract_rear_physical_attack_dmg(item_child_dict, key)
 		if dmg < 0:
 			dmg = extract_rear_physical_attack_dmg(item_parent_dict, key) ## Inherit
-		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
-		return dmg
-	
-	## Check if key is guard bash damage in JSON.
-	elif column_header.begins_with("guard_"):
-		var dmg: int = extract_guard_bash_dmg(item_child_dict, key)
-		if dmg < 0:
-			dmg = extract_guard_bash_dmg(item_parent_dict, key) ## Inherit
 		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
 		return dmg
 		
@@ -216,26 +207,6 @@ func extract_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:Strin
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-## Negative returns are for inheritance flow control.
-func extract_shoot_attack_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
-	if not item_weapon_as_dict.has("InteractionVars"): 
-		return -1
-	if not item_weapon_as_dict.InteractionVars.has(move_name):
-		print(move_name)
-		return -2 
-	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return -3 
-	# The [0] is to deal with the array inside json.
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
-		return -4 
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.has("BaseDamage"):
-		return -5 
-	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.BaseDamage.get("Projectile", -6) 
-
-
-## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
 ## Get RandomPercentageModifier Negative returns are for inheritance flow control.
 func extract_rand_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name: String) -> float:
 	if not item_weapon_as_dict.has("InteractionVars"): 
@@ -272,439 +243,100 @@ func extract_rear_physical_attack_dmg(item_weapon_as_dict:Dictionary, move_name:
 		return -6
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].AngledDamage[0] \
 			.DamageCalculator.BaseDamage.get("Physical", -7)
-			
-## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
-## Negative returns are for inheritance flow control.
-func extract_guard_bash_dmg(item_weapon_as_dict:Dictionary, move_name:String) -> int:
-	if not item_weapon_as_dict.has("InteractionVars"): 
-		return -1
-	if not item_weapon_as_dict.InteractionVars.has(move_name):
-		print(move_name)
-		return -2 
-	if not item_weapon_as_dict.InteractionVars[move_name].has("Interactions"):
-		return -3 
-	# The [0] is to deal with the array inside json.
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].has("DamageCalculator"): 
-		return -4 
-	if not item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.has("BaseDamage"):
-		return -5 
-	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.BaseDamage.get("Physical", -6) 
-#endregion
 
+#endregion
 
 #region Assembling json. Add elif for any new move type ============================================
-## add elif for any new move type ============================================
+## add elif for any new move type ============================================   
+##		unique_child: Dictionary, key: String, value: Variant
 ## Puts the found value in the correct place inside the unique weapon dictionary.
-func assign_values_to_unique_dictionary(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
+func assign_values_to_unique_dictionary(passed_data: Dictionary) -> Dictionary:
 	
-	if key == "item_count": # We don't want Item Count in the JSON.
-		return unique_child # So we skip it and go back to scrape function without assigning value.
+	if passed_data.key == "item_count": # We don't want Item Count in the JSON.
+		return passed_data.get("unique_child") # So we skip it and go back to scrape function without assigning value.
 	
 	# Determine if we need to enter primary attack branch.
-	if key.begins_with("primary_attack"):
-		unique_child = key_begins_with_primary_attack(unique_child, key, value)
+	if passed_data.key.begins_with("primary_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data, "primary", "physical")
 	
 	# Determine if we need to enter charged branch.
-	elif key.begins_with("charged_attack"):
-		unique_child = key_begins_with_charged_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("charged_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "physical")
 	
 	# Determine if we need to enter signature branch.
-	elif key.begins_with("signature_attack"):
-		unique_child = key_begins_with_signature_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("signature_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "physical")
 	
 	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_primary_attack"):
-		unique_child = key_begins_with_rear_primary_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("rear_primary_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "rear_physical")
 	
 	# Determine if we need to make or enter rear charged branch.
-	elif key.begins_with("rear_charged_attack"):
-		unique_child = key_begins_with_rear_charged_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("rear_charged_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "rear_physical")
 	
-	# Determine if we need to make or enter rear signature branch.
-	elif key.begins_with("rear_signature_attack"):
-		unique_child = key_begins_with_rear_signature_attack(unique_child, key, value)
+	## Determine if we need to make or enter rear signature branch.
+	elif passed_data.key.begins_with("rear_signature_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "rear_physical")
 	
-	elif key.begins_with("rand_pct_mod_primary_attack"):
-		unique_child = key_begins_with_rand_pct_mod_primary_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("rand_pct_mod_primary_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "rand_pct_modifier")
 	
-	elif key.begins_with("rand_pct_mod_charged_attack"):
-		unique_child = key_begins_with_rand_pct_mod_charged_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("rand_pct_mod_charged_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "rand_pct_modifier")
 	
-	elif key.begins_with("rand_pct_mod_signature_attack"):
-		unique_child = key_begins_with_rand_pct_mod_signature_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("rand_pct_mod_signature_attack"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "rand_pct_modifier")
 		
 	# Determine if we need to enter primary projectile attack branch.
-	elif key.begins_with("shoot_primary"):
-		unique_child = key_begins_with_shoot_primary_attack(unique_child, key, value)
-	
-	# Determine if we need to enter primary projectile attack branch.
-	elif key.begins_with("shoot_signature"):
-		unique_child = key_begins_with_shoot_signature_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("shoot_primary"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "projectile")
+		
+	# Determine if we need to enter charged projectile attack branch.
+	elif passed_data.key.begins_with("shoot_charged"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "projectile")
+		
+	# Determine if we need to enter signature projectile attack branch.
+	elif passed_data.key.begins_with("shoot_signature"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "projectile")
 	
 	# Determine if we need to enter guard_bash branch.
-	elif key.begins_with("guard_bash"):
-		unique_child = key_begins_with_guard_bash_attack(unique_child, key, value)
+	elif passed_data.key.begins_with("guard_bash"):
+		passed_data.unique_child = enter_attack_value(passed_data,  "guard_bash", "physical")
 	
 	else:
-		unique_child.set(key, value)
-	return unique_child
+		passed_data.unique_child.set(passed_data.key, passed_data.value)
+	return passed_data.unique_child
 
 
 ## Determine data to enter primary attack branch of json.
-func key_begins_with_primary_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
+func enter_attack_value(passed_data: Dictionary, sub: String, type: String ) -> Dictionary:
+	# passed_data = {unique_child: Dictionary, key: String, value: Variant}
+	if passed_data.value is String: # We don't need to add to array, as move does not exist.
+		return passed_data.unique_child
 	
 	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
+	var index: int = assign_move_index(passed_data.key)
 	if index < 0:
-		print("Error with primary attack index in assign_values_to_unique_dictionary")
-		return unique_child
+		print("Error with attack index in assign_values_to_unique_dictionary")
+		return passed_data.unique_child
 	
 	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_primary_branch_if_needed(unique_child)
-	if not unique_child.attack.primary.has("physical"):
-		unique_child.attack.primary.set("physical", [0]) #It'll be at least 1 value
+	passed_data.unique_child = create_attack_branch_if_needed(passed_data.unique_child)
+	passed_data.unique_child = create_attack_sub_branch_if_needed(passed_data.unique_child, sub)
+	if not passed_data.unique_child.attack[sub].has(type):
+		passed_data.unique_child.attack[sub].set(type, [0]) #It'll be at least 1 value
 	
 	# Grow array as needed for number of attacks. Changes based on weapon family.
 	var array_min_size: int = index + 1
-	if unique_child.attack.primary.physical.size() < array_min_size:
+	if passed_data.unique_child.attack[sub][type].size() < array_min_size:
 		# Make array bigger if index is larger than array.
-		unique_child.attack.primary.physical.resize(array_min_size)
+		passed_data.unique_child.attack[sub][type].resize(array_min_size)
 		
-	unique_child.attack.primary.physical[index] = value # Assign value to array in proper order.
-	return unique_child
+	passed_data.unique_child.attack[sub][type][index] = passed_data.value # Assign value to array in proper order.
+	return passed_data.unique_child
 
 
-## Determine data to enter charged attack branch of json.
-func key_begins_with_charged_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with charged attack index in key_begins_with_charged_attack")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_charged_branch_if_needed(unique_child)
-	if not unique_child.attack.charged.has("physical"):
-		unique_child.attack.charged.set("physical", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.charged.physical.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.charged.physical.resize(array_min_size)
-		
-	unique_child.attack.charged.physical[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter signature attack branch of json.
-func key_begins_with_signature_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with attack index in key_begins_with_signature_attack")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_signature_branch_if_needed(unique_child)
-	if not unique_child.attack.signature.has("physical"):
-		unique_child.attack.signature.set("physical", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.signature.physical.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.signature.physical.resize(array_min_size)
-	
-	unique_child.attack.signature.physical[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter rear primary attack branch of json. (Not used by daggers)
-## This is a 'Just in case' function.
-func key_begins_with_rear_primary_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with rear primary attack index in key_begins_with_rear_primary_attack")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_charged_branch_if_needed(unique_child)
-	if not unique_child.attack.primary.has("rear_physical"):
-		unique_child.attack.primary.set("rear_physical", [0]) #It'll be at least 1 value
-	
-	## Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.primary.rear_physical.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.primary.rear_physical.resize(array_min_size)
-		
-	unique_child.attack.primary.rear_physical[index] = value # Assign value to array in proper order.
-	return unique_child
-	
-
-## Determine data to enter rear charged attack branch of json.
-func key_begins_with_rear_charged_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with rear charged attack index in key_begins_with_rear_charged_attack")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_charged_branch_if_needed(unique_child)
-	if not unique_child.attack.charged.has("rear_physical"):
-		unique_child.attack.charged.set("rear_physical", [0]) #It'll be at least 1 value
-	
-
-	## Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.charged.rear_physical.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.charged.rear_physical.resize(array_min_size)
-		
-	unique_child.attack.charged.rear_physical[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter rear signature attack branch of json.
-func key_begins_with_rear_signature_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with rear signature attack index in key_begins_with_rear_signature_attack")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_signature_branch_if_needed(unique_child)
-	if not unique_child.attack.signature.has("rear_physical"):
-		unique_child.attack.signature.set("rear_physical", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.signature.rear_physical.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.signature.rear_physical.resize(array_min_size)
-		
-	unique_child.attack.signature.rear_physical[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter pct mod attack branch of json.
-func key_begins_with_rand_pct_mod_primary_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with rand modifier")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_primary_branch_if_needed(unique_child)
-	if not unique_child.attack.primary.has("rand_pct_modifier"):
-		unique_child.attack.primary.set("rand_pct_modifier", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.primary.rand_pct_modifier.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.primary.rand_pct_modifier.resize(array_min_size)
-		
-	unique_child.attack.primary.rand_pct_modifier[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter pct mod attack branch of json.
-func key_begins_with_rand_pct_mod_charged_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with rand modifier")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_charged_branch_if_needed(unique_child)
-	if not unique_child.attack.charged.has("rand_pct_modifier"):
-		unique_child.attack.charged.set("rand_pct_modifier", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.charged.rand_pct_modifier.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.charged.rand_pct_modifier.resize(array_min_size)
-		
-	unique_child.attack.charged.rand_pct_modifier[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter pct mod attack branch of json.
-func key_begins_with_rand_pct_mod_signature_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with rand modifier")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_primary_branch_if_needed(unique_child)
-	if not unique_child.attack.signature.has("rand_pct_modifier"):
-		unique_child.attack.signature.set("rand_pct_modifier", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.signature.rand_pct_modifier.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.signature.rand_pct_modifier.resize(array_min_size)
-		
-	unique_child.attack.signature.rand_pct_modifier[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter primary attack branch of json.
-func key_begins_with_shoot_primary_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with primary attack index in assign_values_to_unique_dictionary")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_primary_branch_if_needed(unique_child)
-	if not unique_child.attack.primary.has("projectile"):
-		unique_child.attack.primary.set("projectile", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.primary.projectile.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.primary.projectile.resize(array_min_size)
-		
-	unique_child.attack.primary.projectile[index] = value # Assign value to array in proper order.
-	return unique_child
-
-
-## Determine data to enter signature attack branch of json.
-func key_begins_with_shoot_signature_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with attack index in key_begins_with_signature_attack")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_signature_branch_if_needed(unique_child)
-	if not unique_child.attack.signature.has("projectile"):
-		unique_child.attack.signature.set("projectile", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.signature.projectile.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.signature.projectile.resize(array_min_size)
-	
-	unique_child.attack.signature.projectile[index] = value # Assign value to array in proper order.
-	return unique_child
-	
-	
-	## Determine data to enter guard bash branch of json.
-func key_begins_with_guard_bash_attack(unique_child: Dictionary, 
-		key: String, value: Variant) -> Dictionary:
-	
-	if value is String: # We don't need to add to array, as move does not exist.
-		return unique_child
-	
-	## Index of the move within array, such as attack 1 would index to 0
-	var index: int = assign_move_index(key)
-	if index < 0:
-		print("Error with guard bash index")
-		return unique_child
-	
-	## Create branch if it doesn't exist.
-	unique_child = create_attack_branch_if_needed(unique_child)
-	unique_child = create_attack_guard_bash_branch_if_needed(unique_child)
-	if not unique_child.attack.guard_bash.has("physical"):
-		unique_child.attack.guard_bash.set("physical", [0]) #It'll be at least 1 value
-	
-	# Grow array as needed for number of attacks. Changes based on weapon family.
-	var array_min_size: int = index + 1
-	if unique_child.attack.guard_bash.physical.size() < array_min_size:
-		# Make array bigger if index is larger than array.
-		unique_child.attack.guard_bash.physical.resize(array_min_size)
-		
-	unique_child.attack.guard_bash.physical[index] = value # Assign value to array in proper order.
-	return unique_child
-#endregion
-
-
-#region Assembling json helper functions
 ## Assign index of value inside array.
 ## Helper for key_begins_with_ group of functions.
 func assign_move_index(key: String) -> int:
@@ -730,32 +362,14 @@ func create_attack_branch_if_needed(unique_child: Dictionary) -> Dictionary:
 	return unique_child
 
 
-## Create 'attack/primary' branch if it doesn't exist in weapon deictionary.
-func create_attack_primary_branch_if_needed(unique_child: Dictionary) -> Dictionary:
-	if not unique_child.attack.has("primary"):
-		unique_child.attack.set("primary", {} ) #It'll be at least 1 value
+## Create 'attack/primary etc' branch if it doesn't exist in weapon deictionary.
+func create_attack_sub_branch_if_needed(unique_child: Dictionary, branch_name: String) -> Dictionary:
+	if not unique_child.attack.has(branch_name):
+		unique_child.attack.set(branch_name, {} ) #It'll be at least 1 value
 	return unique_child
 
-	
-## Create 'charged' branch if it doesn't exist in weapon deictionary.
-func create_attack_charged_branch_if_needed(unique_child: Dictionary) -> Dictionary:
-	if not unique_child.attack.has("charged"):
-		unique_child.attack.set("charged", {} ) #It'll be at least 1 value
-	return unique_child
-
-
-## Create 'signature' branch if it doesn't exist in weapon deictionary.
-func create_attack_signature_branch_if_needed(unique_child: Dictionary) -> Dictionary:
-	if not unique_child.attack.has("signature"):
-		unique_child.attack.set("signature", {} ) #It'll be at least 1 value
-	return unique_child
-
-
-## Create 'guard_bash' branch if it doesn't exist in weapon deictionary.
-func create_attack_guard_bash_branch_if_needed(unique_child: Dictionary) -> Dictionary:
-	if not unique_child.attack.has("guard_bash"):
-		unique_child.attack.set("guard_bash", {} ) #It'll be at least 1 value
-	return unique_child
 #endregion
+	
+	
 	
 		
