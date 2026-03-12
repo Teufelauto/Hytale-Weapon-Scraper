@@ -602,16 +602,16 @@ func choose_which_filepaths_to_process() -> void:
 		# If pre-release
 		if settings.assets.pre_release.previous_pre_release.scrape_assets[i]:
 			three_vars = scrape_x_release(
-					i, Assets.LATEST_RELEASE, "pre_release", "previous_pre_release", "pre")
+					i, Assets.PREVIOUS_PRE_RELEASE, "pre_release", "previous_pre_release", "pre")
 		
 		elif settings.assets.pre_release.latest_pre_release.scrape_assets[i]:
 			three_vars = scrape_x_release(
-					i, Assets.LATEST_RELEASE, "pre_release", "latest_pre_release", "pre")
+					i, Assets.LATEST_PRE_RELEASE, "pre_release", "latest_pre_release", "pre")
 		
 		# If Release
 		elif settings.assets.release.previous_release.scrape_assets[i]:
 			three_vars = scrape_x_release(
-					i, Assets.LATEST_RELEASE, "release", "previous_release", "rel")
+					i, Assets.PREVIOUS_RELEASE, "release", "previous_release", "rel")
 		
 		elif settings.assets.release.latest_release.scrape_assets[i]:
 			three_vars = scrape_x_release(
