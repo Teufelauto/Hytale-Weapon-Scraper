@@ -14,24 +14,24 @@ func _ready() -> void:
 	#print("CPU: " + OS.get_processor_name())
 	print()
 	
-	retrieve_app_settings() ## Load up all the settings saved in json
-	
-	## Check app settings to see whether to run headless.
-	if app.settings.get("run_app_headless"):
-		print()
+	## Check to see whether to run headless.
+	if DisplayServer.get_name() == "headless":
+		print("Running in headless mode")
+		var arguments: Dictionary = check_cmd_line_args() ## Check for commandline arguments --key=value
+		
+		retrieve_app_settings() ## Load up all the settings saved in json
 		
 		process_assets() ## Process and save books and tables.
 		diff_the_assets() ## produce the diff files for selected assets.
 		
 	# TODO  Check if NOT Headless from App_Settings, and deal with that in a seperate main-loop.
 	else:
-		print("Error- Not Headless.")
-		#main_gui.set_visible(true)
+		print("Not Headless.")
 		
+		retrieve_app_settings() ## Load up all the settings saved in json
 		## wait for go from button
 		## TODO Allow Edit app_settings.json in app
 		## TODO if Headless=false, save_app_settings_to_json()
-	
 	
 	## After run, close up shop.
 	
@@ -39,11 +39,28 @@ func _ready() -> void:
 	get_tree().quit() # Closes app
 
 
+## -- Check for comandline arguments --            --key=value
+func check_cmd_line_args() -> Dictionary:
+	var arguments: Dictionary = {}
+	for argument in OS.get_cmdline_user_args():
+		if argument.contains("="):
+			var key_value = argument.split("=")
+			arguments[key_value[0].trim_prefix("--")] = key_value[1]
+		else:
+			# Options without an argument will be present in the dictionary,
+			# with the value set to an empty string.
+			arguments[argument.trim_prefix("--")] = ""
+	print()
+	print(arguments)
+	print()
+	return arguments
+
+
 func retrieve_app_settings() -> void:
 	app.check_if_first_load()
 	app.load_app_settings_from_json()
 	app.check_for_processed_books()
-	
+
 
 ## (Headless) Call the Weapons class for each Assets.zip to be processed
 func process_assets() -> void:
