@@ -86,11 +86,11 @@ func initialize_weapon_table() -> void:
 ## Gets Column headers from weapon_dictionary JSON.
 func determine_weapon_table_columns() -> Array:
 	var table_columns: Array = []
+	
 	for i in weapon_dict.weapon_table_columns.size():
-		var i_as_string: String = str(i)
-		var value: String = weapon_dict.weapon_table_columns.get \
-				(i_as_string,"Error Creating Table")
+		var value: String = weapon_dict.weapon_table_columns.get(i)
 		table_columns.append(value)
+	
 	family_weapon_columns_dictionary(table_columns)
 	#print(table_columns)
 	return table_columns
