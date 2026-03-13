@@ -182,7 +182,7 @@
 			"primary_attack_2_damage": "Swing_Right_Damage",
 			"primary_attack_3_damage": "Swing_Down_Damage",
 			"charged_attack_1_damage": "Thrust_Damage",
-			"signature_attack_1_damage": "Vortexstrike_Spi_Damage",
+			"signature_attack_1_damage": "Vortexstrike_Spin_Damage",
 			"signature_attack_2_damage": "Vortexstrike_Stab_Damage",
 		},
 		"Wand": {},
