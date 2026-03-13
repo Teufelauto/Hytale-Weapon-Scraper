@@ -5,7 +5,7 @@
 - App may take a minute to go through the two 3 GB Assets.zip being compared with an NVME drive. It may appear frozen, but it's probably still parsing. It will save the files, and close when it's done. If running --headless in a terminal, you can see the progress as it processes each weapon.
 - Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
 
-- v0.5.1 adds all weapons. Known problem with claws due to source json sructure.
+- v0.5.1 adds all weapons.
 - Version 0.5.0 nests attack damage one fork higher so random damage modifier can be paraellel. Also allows other tyopes of damage beyond 'physical'.
 - Version 0.4.0 saves each output with the Release/Pre-Release build-number in the filename. Compares two Assets without needing them to be reprocessed if output exists already. (Files must be in the folders identified in app_settings.json)
 - More parameters will be added to output, but the goal is to not make breaking changes affecting APIs using this app.
