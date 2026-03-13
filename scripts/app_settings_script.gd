@@ -601,24 +601,28 @@ func choose_which_filepaths_to_process() -> void:
 	for i in 2:
 		# If pre-release
 		if settings.assets.pre_release.previous_pre_release.scrape_assets[i]:
-			three_vars = scrape_previous_prerelease(i)
+			three_vars = scrape_x_release(
+					i, Assets.PREVIOUS_PRE_RELEASE, "pre_release", "previous_pre_release", "pre")
 		
 		elif settings.assets.pre_release.latest_pre_release.scrape_assets[i]:
-			three_vars = scrape_latest_prerelease(i)
+			three_vars = scrape_x_release(
+					i, Assets.LATEST_PRE_RELEASE, "pre_release", "latest_pre_release", "pre")
 		
 		# If Release
 		elif settings.assets.release.previous_release.scrape_assets[i]:
-			three_vars = scrape_previous_release(i)
+			three_vars = scrape_x_release(
+					i, Assets.PREVIOUS_RELEASE, "release", "previous_release", "rel")
 		
 		elif settings.assets.release.latest_release.scrape_assets[i]:
-			three_vars = scrape_latest_release(i)
-			
+			three_vars = scrape_x_release(
+					i, Assets.LATEST_RELEASE, "release", "latest_release", "rel")
+		
 		# if User defined
 		elif settings.assets.user.user_defined_1.scrape_assets[i]:
-			three_vars = scrape_user_1(i)
+			three_vars = scrape_user_x(i, Assets.USER_DEFINED_1, "user_defined_1")
 		
 		elif settings.assets.user.user_defined_2.scrape_assets[i]:
-			three_vars = scrape_user_2(i)
+			three_vars = scrape_user_x(i, Assets.USER_DEFINED_2, "user_defined_2")
 		
 		## Define paths to be used.
 		define_save_paths(three_vars, i)
@@ -634,105 +638,38 @@ func choose_which_filepaths_to_process() -> void:
 	#print(diff_csv_save_path)
 
 
-func scrape_previous_prerelease(i: int) -> Dictionary:
-	active_assets[i] = Assets.PREVIOUS_PRE_RELEASE
-	active_build_type[i] = "pre"
-	active_build_folders[i] = build_folders[Assets.PREVIOUS_PRE_RELEASE]
-	active_build_numbers[i] = build_numbers[Assets.PREVIOUS_PRE_RELEASE]
+func scrape_x_release(i: int, assets_index: int, output_choice: String, choice: String, shrt_typ: String) -> Dictionary:
+	active_assets[i] = assets_index
+	active_build_type[i] = shrt_typ
+	active_build_folders[i] = build_folders[assets_index]
+	active_build_numbers[i] = build_numbers[assets_index]
 	
-	var branch = settings.assets.get("pre_release")
+	var branch = settings.assets.get(output_choice)
 	var three_vars: Dictionary = { 
 		"branch": branch, 
-		"choice": "previous_pre_release",
-		"output_choice": "pre_release",
+		"choice": choice,
+		"output_choice": output_choice,
 	}	
 	return three_vars
 
 
-func scrape_latest_prerelease(i: int) -> Dictionary:
-	active_assets[i] = Assets.LATEST_PRE_RELEASE
-	active_build_type[i] = "pre"
-	active_build_folders[i] = build_folders[Assets.LATEST_PRE_RELEASE]
-	active_build_numbers[i] = build_numbers[Assets.LATEST_PRE_RELEASE]
+func scrape_user_x(i: int, assets_index: int, choice: String) -> Dictionary:
+	active_assets[i] = assets_index
 	
-	var branch = settings.assets.get("pre_release")
-	var three_vars: Dictionary = { 
-		"branch": branch, 
-		"choice": "latest_pre_release",
-		"output_choice": "pre_release",
-	}	
-	return three_vars
-
-
-func scrape_previous_release(i: int) -> Dictionary:
-	active_assets[i] = Assets.PREVIOUS_RELEASE
-	active_build_type[i] = "rel"
-	active_build_folders[i] = build_folders[Assets.PREVIOUS_RELEASE]
-	active_build_numbers[i] = build_numbers[Assets.PREVIOUS_RELEASE]
-	
-	var branch = settings.assets.get("release")
-	var three_vars: Dictionary = { 
-		"branch": branch, 
-		"choice": "previous_release",
-		"output_choice": "release",
-	}	
-	return three_vars
-
-
-func scrape_latest_release(i: int) -> Dictionary:
-	active_assets[i] = Assets.LATEST_RELEASE
-	active_build_type[i] = "rel"
-	active_build_folders[i] = build_folders[Assets.LATEST_RELEASE]
-	active_build_numbers[i] = build_numbers[Assets.LATEST_RELEASE]
-	
-	var branch = settings.assets.get("release")
-	var three_vars: Dictionary = { 
-		"branch": branch, 
-		"choice": "latest_release",
-		"output_choice": "release",
-	}	
-	return three_vars
-
-
-func scrape_user_1(i: int) -> Dictionary:
-	active_assets[i] = Assets.USER_DEFINED_1
-	
-	if build_type[Assets.USER_DEFINED_1] == "pre-release":
+	if build_type[assets_index] == "pre-release":
 		active_build_type[i] = "pre"
-	elif build_type[Assets.USER_DEFINED_1] == "release":
+	elif build_type[assets_index] == "release":
 		active_build_type[i] = "rel"
 	else: ## in settings, build_type.user:true is technically optional
 		active_build_type[i] = "usr"
 
-	active_build_folders[i] = build_folders[Assets.USER_DEFINED_1]
-	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_1]
+	active_build_folders[i] = build_folders[assets_index]
+	active_build_numbers[i] = build_numbers[assets_index]
 	
 	var branch = settings.assets.get("user")
 	var three_vars: Dictionary = { 
 		"branch": branch, 
-		"choice": "user_defined_1",
-		"output_choice": "user_defined",
-	}	
-	return three_vars
-
-
-func scrape_user_2(i: int) -> Dictionary:
-	active_assets[i] = Assets.USER_DEFINED_2
-	
-	if build_type[Assets.USER_DEFINED_2] == "pre-release":
-		active_build_type[i] = "pre"
-	elif build_type[Assets.USER_DEFINED_2] == "release":
-		active_build_type[i] = "rel"
-	else: ## in settings, build_type.user:true is technically optional
-		active_build_type[i] = "usr"
-	
-	active_build_folders[i] = build_folders[Assets.USER_DEFINED_2]
-	active_build_numbers[i] = build_numbers[Assets.USER_DEFINED_2]
-	
-	var branch = settings.assets.get("user")
-	var three_vars: Dictionary = { 
-		"branch": branch, 
-		"choice": "user_defined_2",
+		"choice": choice,
 		"output_choice": "user_defined",
 	}	
 	return three_vars
