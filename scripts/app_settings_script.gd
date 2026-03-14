@@ -159,8 +159,10 @@ func load_app_settings_from_json(user_arguments: Dictionary) -> void:
 	# Retrieve app settings from json
 	settings = FileUtils.load_json_data_to_dict("user://app_settings.json")
 	
-	check_headless_changes(user_arguments)
-
+	if DisplayServer.get_name() == "headless":
+		check_input_changes(user_arguments)
+		#check_output_changes(user_arguments)
+		#check_diff_changes(user_arguments)
 	verify_settings_formatting()
 	
 	## Determine build numbers currently installed on system.
@@ -171,49 +173,97 @@ func load_app_settings_from_json(user_arguments: Dictionary) -> void:
 
 
 ## If "--headless" and commandline arguments are given, do something.
-func check_headless_changes(user_arguments: Dictionary) -> void:
-	if DisplayServer.get_name() == "headless":
-		## Check for both files specd by args.
-		if user_arguments.has("path1") and \
-				user_arguments.has("type1") and \
-				user_arguments.has("build1") and \
-				user_arguments.has("path2") and \
-				user_arguments.has("type2") and \
-				user_arguments.has("build2") and \
-				user_arguments.type1 in ["pre", "rel", "usr"] and\
-				user_arguments.type2 in ["pre", "rel", "usr"] and\
-				# build can be whatever.
-				FileUtils.check_os_file_exists(user_arguments.path1) and \
-				FileUtils.check_os_file_exists(user_arguments.path2):
-			print("Headless user arguments specified. app_settings.json will be modified.")
-			mod_app_settings_by_user_args(user_arguments, true)
-		## check if 1 file is speced by args.
-		elif user_arguments.has("path1") and \
-				user_arguments.has("type1") and \
-				user_arguments.has("build1") and \
-				user_arguments.type1 in ["pre", "rel", "usr"] and\
-				# build can be whatever.
-				FileUtils.check_os_file_exists(user_arguments.path1):
-			print("Headless user arguments specified. app_settings.json will be modified.")
-			mod_app_settings_by_user_args(user_arguments, false)
-		else:
-			print("Not all required command line user arguments defined. \
-					app_settings.json will not be modified.")
-			print("App will run using parameters set in app_settings.json.")
+func check_input_changes(user_arguments: Dictionary) -> void:
+	## Check for both files specd by args.
+	if user_arguments.has("path1") and user_arguments.has("path2"):
+		check_for_both_input_changes(user_arguments)
+	## check if user1 is speced by args.
+	elif user_arguments.has("path1"):
+			check_for_user1_input_changes(user_arguments)
+	## check if user2 is speced by args.
+	elif user_arguments.has("path2"):
+			check_for_user2_input_changes(user_arguments)
+	else:
+		print("Not all required command line user arguments defined. \
+				app_settings.json will not be modified.")
+		print("App will run using parameters set in app_settings.json.")
 
 
-## Edit user sections of app_settings.[br]
+func check_for_both_input_changes(user_arguments: Dictionary, scrape_this: bool = false) -> void:
+	if user_arguments.has("path1") and \
+			user_arguments.has("type1") and \
+			user_arguments.has("build1") and \
+			user_arguments.has("path2") and \
+			user_arguments.has("type2") and \
+			user_arguments.has("build2") and \
+			user_arguments.type1 in ["pre", "rel", "usr"] and\
+			user_arguments.type2 in ["pre", "rel", "usr"] and\
+			# build can be whatever.
+			FileUtils.check_os_file_exists(user_arguments.path1) and \
+			FileUtils.check_os_file_exists(user_arguments.path2):
+		print("User1 and 2 app_settings.json will be modified.")
+		if DisplayServer.get_name() == "headless":
+			make_index0_scrape_assets_false()
+			make_index1_scrape_assets_false()
+			scrape_this = true
+		mod_app_settings_input1(user_arguments, scrape_this)
+		mod_app_settings_input2(user_arguments, scrape_this)
+
+func check_for_user1_input_changes(user_arguments: Dictionary, scrape_this: bool = false) -> void:
+	## check if user1 is speced by args.
+	if user_arguments.has("path1") and \
+			user_arguments.has("type1") and \
+			user_arguments.has("build1") and \
+			user_arguments.type1 in ["pre", "rel", "usr"] and\
+			# build can be whatever.
+			FileUtils.check_os_file_exists(user_arguments.path1):
+		print("User1 inputs app_settings.json will be modified.")
+		if DisplayServer.get_name() == "headless":
+			make_index0_scrape_assets_false()
+		mod_app_settings_input1(user_arguments, scrape_this)
+
+func check_for_user2_input_changes(user_arguments: Dictionary, scrape_this: bool = false) -> void:
+	## check if user2 is speced by args.
+	if user_arguments.has("path2") and \
+			user_arguments.has("type2") and \
+			user_arguments.has("build2") and \
+			user_arguments.type1 in ["pre", "rel", "usr"] and\
+			# build can be whatever.
+			FileUtils.check_os_file_exists(user_arguments.path2):
+		print("User2 input app_settings.json will be modified.")
+		if DisplayServer.get_name() == "headless":
+			make_index1_scrape_assets_false()
+		mod_app_settings_input2(user_arguments, scrape_this)
+
+## make all 1st scrape bools false for easier headless assignment of trues.
+func make_index0_scrape_assets_false() -> void:
+	settings.assets.pre_release.previous_pre_release.scrape_assets[0].set(false)
+	settings.assets.pre_release.latest_pre_release.scrape_assets[0].set(false)
+	settings.assets.release.previous_release.scrape_assets[0].set(false)
+	settings.assets.release.latest_release.scrape_assets[0].set(false)
+	settings.use.user_defined_1.scrape_assets[0].set(false)
+	settings.use.user_defined_2.scrape_assets[0].set(false)
+
+## make all 2nd scrape bools false for easier headless assignment of trues.
+func make_index1_scrape_assets_false() -> void:
+	settings.assets.pre_release.previous_pre_release.scrape_assets[1].set(false)
+	settings.assets.pre_release.latest_pre_release.scrape_assets[1].set(false)
+	settings.assets.release.previous_release.scrape_assets[1].set(false)
+	settings.assets.release.latest_release.scrape_assets[1].set(false)
+	settings.use.user_defined_1.scrape_assets[1].set(false)
+	settings.use.user_defined_2.scrape_assets[1].set(false)
+
+## Edit user1 input sections of app_settings.[br]
 ## user_arguments and bool=true if two assets.
-func mod_app_settings_by_user_args(user_arguments: Dictionary, two_assets: bool) -> void:
-	
+func mod_app_settings_input1(user_arguments: Dictionary, scrape_this: bool) -> void:
 	
 	
 	pass
 
 
-## Edit user input sections of app_settings.[br]
+## Edit user2 input sections of app_settings.[br]
 ## user_arguments and bool=true if two assets.
-func mod_app_settings_input(user_arguments: Dictionary, two_assets: bool) -> void:
+func mod_app_settings_input2(user_arguments: Dictionary, scrape_this: bool) -> void:
 	
 	
 	pass
@@ -221,7 +271,7 @@ func mod_app_settings_input(user_arguments: Dictionary, two_assets: bool) -> voi
 
 ## Edit user output of app_settings.[br]
 ## user_arguments and bool=true if two assets.
-func mod_app_settings_output(user_arguments: Dictionary, two_assets: bool) -> void:
+func mod_app_settings_output(user_arguments: Dictionary) -> void:
 	
 	
 	pass
@@ -229,7 +279,7 @@ func mod_app_settings_output(user_arguments: Dictionary, two_assets: bool) -> vo
 
 ## Edit diff output of app_settings.[br]
 ## user_arguments and bool=true if two assets.
-func mod_app_diff_output(user_arguments: Dictionary, two_assets: bool) -> void:
+func mod_app_diff_output(user_arguments: Dictionary) -> void:
 	
 	
 	pass

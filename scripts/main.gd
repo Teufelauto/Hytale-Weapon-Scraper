@@ -65,7 +65,7 @@ func check_cmd_line_args() -> Dictionary:
 
 func retrieve_app_settings(user_arguments: Dictionary) -> void:
 	app.check_if_first_load()
-	app.load_app_settings_from_json()
+	app.load_app_settings_from_json(user_arguments)
 	app.check_for_processed_books()
 
 
