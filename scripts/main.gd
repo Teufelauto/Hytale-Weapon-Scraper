@@ -13,13 +13,14 @@ func _ready() -> void:
 	print("Operating System: " + OS.get_name() + " " + OS.get_version_alias())
 	#print("CPU: " + OS.get_processor_name())
 	print()
+	var user_arguments: Dictionary = {}
 	
 	## Check to see whether to run headless.
 	if DisplayServer.get_name() == "headless":
 		print("Running in headless mode")
-		var arguments: Dictionary = check_cmd_line_args() ## Check for commandline arguments --key=value
+		user_arguments = check_cmd_line_args() ## Check for commandline arguments --key=value
 		
-		retrieve_app_settings() ## Load up all the settings saved in json
+		retrieve_app_settings(user_arguments) ## Load up all the settings saved in json
 		
 		process_assets() ## Process and save books and tables.
 		diff_the_assets() ## produce the diff files for selected assets.
@@ -28,7 +29,7 @@ func _ready() -> void:
 	else:
 		print("Not Headless.")
 		
-		retrieve_app_settings() ## Load up all the settings saved in json
+		retrieve_app_settings(user_arguments) ## Load up all the settings saved in json
 		## wait for go from button
 		## TODO Allow Edit app_settings.json in app
 		## TODO if Headless=false, save_app_settings_to_json()
@@ -39,12 +40,18 @@ func _ready() -> void:
 	get_tree().quit() # Closes app
 
 
-## -- Check for comandline arguments --            --key=value
+## Check for commandline arguments --key=value   i.e.[br]
+## --path1="C:/MyArchiveFolder/Assets-pre26-archive.zip"[br]
+## --type1="pre" or "rel" or "usr"[br]
+## --build1="26"[br]
+## --path2=C:/MyArchiveFolder/Assets-pre27-archive.zip"[br]
+## --type1="pre" or "rel" or "usr"[br]
+## --build1="27"[br]
 func check_cmd_line_args() -> Dictionary:
 	var arguments: Dictionary = {}
 	for argument in OS.get_cmdline_user_args():
 		if argument.contains("="):
-			var key_value = argument.split("=")
+			var key_value: Array[String] = argument.split("=")
 			arguments[key_value[0].trim_prefix("--")] = key_value[1]
 		else:
 			# Options without an argument will be present in the dictionary,
@@ -56,7 +63,7 @@ func check_cmd_line_args() -> Dictionary:
 	return arguments
 
 
-func retrieve_app_settings() -> void:
+func retrieve_app_settings(user_arguments: Dictionary) -> void:
 	app.check_if_first_load()
 	app.load_app_settings_from_json()
 	app.check_for_processed_books()

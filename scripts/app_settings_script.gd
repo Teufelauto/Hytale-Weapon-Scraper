@@ -138,7 +138,7 @@ func first_load_license() -> void:
 ## The first time app_settings is created, pre-fill file-path for assets.
 func first_load_auto_determine_assets_location()->void:
 	## Load here so we can get default data, write over it, then save it.
-	load_app_settings_from_json() 
+	load_app_settings_from_json( {} ) 
 	var hytale_roaming_folder: String = FileUtils.retrieve_roaming_Hytale_folder_location()
 	
 	## Pre-save paths. User defined pre-set to pre_release
@@ -155,19 +155,84 @@ func first_load_auto_determine_assets_location()->void:
 
 
 ## Populate dictionary with data from the json and follow settings.
-func load_app_settings_from_json() -> void:
+func load_app_settings_from_json(user_arguments: Dictionary) -> void:
 	# Retrieve app settings from json
 	settings = FileUtils.load_json_data_to_dict("user://app_settings.json")
 	
+	check_headless_changes(user_arguments)
+
 	verify_settings_formatting()
 	
 	## Determine build numbers currently installed on system.
 	build_numbers = FileUtils.determine_assets_builds()
 	convert_build_numbers_to_names()
-	
-	choose_which_filepaths_to_process() 
-	
+	choose_which_filepaths_to_process()
 	refresh_assets_paths()
+
+
+## If "--headless" and commandline arguments are given, do something.
+func check_headless_changes(user_arguments: Dictionary) -> void:
+	if DisplayServer.get_name() == "headless":
+		## Check for both files specd by args.
+		if user_arguments.has("path1") and \
+				user_arguments.has("type1") and \
+				user_arguments.has("build1") and \
+				user_arguments.has("path2") and \
+				user_arguments.has("type2") and \
+				user_arguments.has("build2") and \
+				user_arguments.type1 in ["pre", "rel", "usr"] and\
+				user_arguments.type2 in ["pre", "rel", "usr"] and\
+				# build can be whatever.
+				FileUtils.check_os_file_exists(user_arguments.path1) and \
+				FileUtils.check_os_file_exists(user_arguments.path2):
+			print("Headless user arguments specified. app_settings.json will be modified.")
+			mod_app_settings_by_user_args(user_arguments, true)
+		## check if 1 file is speced by args.
+		elif user_arguments.has("path1") and \
+				user_arguments.has("type1") and \
+				user_arguments.has("build1") and \
+				user_arguments.type1 in ["pre", "rel", "usr"] and\
+				# build can be whatever.
+				FileUtils.check_os_file_exists(user_arguments.path1):
+			print("Headless user arguments specified. app_settings.json will be modified.")
+			mod_app_settings_by_user_args(user_arguments, false)
+		else:
+			print("Not all required command line user arguments defined. \
+					app_settings.json will not be modified.")
+			print("App will run using parameters set in app_settings.json.")
+
+
+## Edit user sections of app_settings.[br]
+## user_arguments and bool=true if two assets.
+func mod_app_settings_by_user_args(user_arguments: Dictionary, two_assets: bool) -> void:
+	
+	
+	
+	pass
+
+
+## Edit user input sections of app_settings.[br]
+## user_arguments and bool=true if two assets.
+func mod_app_settings_input(user_arguments: Dictionary, two_assets: bool) -> void:
+	
+	
+	pass
+
+
+## Edit user output of app_settings.[br]
+## user_arguments and bool=true if two assets.
+func mod_app_settings_output(user_arguments: Dictionary, two_assets: bool) -> void:
+	
+	
+	pass
+
+
+## Edit diff output of app_settings.[br]
+## user_arguments and bool=true if two assets.
+func mod_app_diff_output(user_arguments: Dictionary, two_assets: bool) -> void:
+	
+	
+	pass
 
 
 func first_auto_load_from_prerelease(hytale_roaming_folder: String) -> void:
@@ -712,7 +777,7 @@ func define_diff_paths() -> void:
 #endregion
 
 
-## index is Asset #1 (0), or Asset #2 (1) for retrieving build folder name
+## index is Asset #1 (0), or Asset #2 (1) for retrieving build folder name.[br]
 ## index can be whatever for a diff
 func assemble_output_filename(generic_filename: String, scrape_assets_index: int, 
 		is_diff: bool = false) -> String:
@@ -742,8 +807,8 @@ func assemble_output_filename(generic_filename: String, scrape_assets_index: int
 	return generic_filename
 
 
-## Update app_settings.json 'previous paths'.
-## Refresh the previous build Assets path, in case a newwer build has replaced it.
+## Update app_settings.json 'previous paths'.[br]
+## Refresh the previous build Assets path, in case a newer build has replaced it.
 func refresh_assets_paths() -> void:
 	
 	var hytale_roaming_folder = FileUtils.retrieve_roaming_Hytale_folder_location()
