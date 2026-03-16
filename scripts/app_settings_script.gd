@@ -160,7 +160,7 @@ func load_app_settings_from_json(user_arguments: Dictionary) -> void:
 	settings = FileUtils.load_json_data_to_dict("user://app_settings.json")
 	
 	if DisplayServer.get_name() == "headless":
-		check_input_changes(user_arguments)
+		check_headless_input_changes(user_arguments)
 		#check_output_changes(user_arguments)
 		#check_diff_changes(user_arguments)
 	verify_settings_formatting()
@@ -173,89 +173,94 @@ func load_app_settings_from_json(user_arguments: Dictionary) -> void:
 
 
 ## If "--headless" and commandline arguments are given, do something.
-func check_input_changes(user_arguments: Dictionary) -> void:
-	## Check for both files specd by args.
-	if user_arguments.has("path1") and user_arguments.has("path2"):
-		check_for_both_input_changes(user_arguments)
+func check_headless_input_changes(user_arguments: Dictionary) -> void:
+	
+	if user_arguments.has("scrape1"):
+		check_and_apply_scrape_selection(user_arguments, 1)
+	if user_arguments.has("scrape2"):
+		check_and_apply_scrape_selection(user_arguments, 2)
+	
 	## check if user1 is speced by args.
-	elif user_arguments.has("path1"):
-			check_for_user1_input_changes(user_arguments)
+	if user_arguments.has("path1") or user_arguments.has("type1") or user_arguments.has("build1"):
+			check_user_input_changes(user_arguments, 1)
 	## check if user2 is speced by args.
-	elif user_arguments.has("path2"):
-			check_for_user2_input_changes(user_arguments)
-	else:
-		print("Not all required command line user arguments defined. \
-				app_settings.json will not be modified.")
-		print("App will run using parameters set in app_settings.json.")
+	if user_arguments.has("path2") or user_arguments.has("type2") or user_arguments.has("build2"):
+			check_user_input_changes(user_arguments, 2)
+	#else:
+		#print("Not all required command line user arguments defined. \
+				#app_settings.json will not be modified.")
+		#print("App will run using parameters set in app_settings.json.")
+
+## Select Assets to scrape.
+## --scrape1=prev_pre , latest_pre , prev_rel , latest_rel , usr1 , usr2 , false [br]
+## --scrape2=prev_pre , latest_pre , prev_rel , latest_rel , usr1 , usr2 , false [br]
+func check_and_apply_scrape_selection(user_arguments: Dictionary, slot_number: int) -> void:
+	var index: int = slot_number - 1
+	var scrape_x: String = "scrape1"
+	if slot_number == 2:
+		scrape_x = "scrape2"
+	
+	match user_arguments[scrape_x]:
+		"prev_pre":
+			make_index_scrape_assets_false(index)
+			settings.assets.pre_release.previous_pre_release.scrape_assets[index].set(true)
+		
+		"latest_pre":
+			pass
+		"prev_rel":
+			pass
+		"latest_rel":
+			pass
+		"usr1":
+			pass
+		"usr2":
+			pass
+		"false":
+			pass
+		_:
+			print("No valid string identifier to scrape was specified.")
+		
+
+#func check_for_both_input_changes(user_arguments: Dictionary, scrape_this: bool = false) -> void:
+	#if user_arguments.has("path1") and \
+			#user_arguments.has("type1") and \
+			#user_arguments.has("build1") and \
+			#user_arguments.has("path2") and \
+			#user_arguments.has("type2") and \
+			#user_arguments.has("build2") and \
+			#user_arguments.type1 in ["pre", "rel", "usr"] and\
+			#user_arguments.type2 in ["pre", "rel", "usr"] and\
+			## build can be whatever.
+			#FileUtils.check_os_file_exists(user_arguments.path1) and \
+			#FileUtils.check_os_file_exists(user_arguments.path2):
+		#print("User1 and 2 app_settings.json will be modified.")
+		#if DisplayServer.get_name() == "headless":
+			#make_index0_scrape_assets_false()
+			#make_index1_scrape_assets_false()
+			#scrape_this = true
+		#mod_app_settings_input1(user_arguments, scrape_this)
+		#mod_app_settings_input2(user_arguments, scrape_this)
 
 
-func check_for_both_input_changes(user_arguments: Dictionary, scrape_this: bool = false) -> void:
-	if user_arguments.has("path1") and \
-			user_arguments.has("type1") and \
-			user_arguments.has("build1") and \
-			user_arguments.has("path2") and \
-			user_arguments.has("type2") and \
-			user_arguments.has("build2") and \
-			user_arguments.type1 in ["pre", "rel", "usr"] and\
-			user_arguments.type2 in ["pre", "rel", "usr"] and\
-			# build can be whatever.
-			FileUtils.check_os_file_exists(user_arguments.path1) and \
-			FileUtils.check_os_file_exists(user_arguments.path2):
-		print("User1 and 2 app_settings.json will be modified.")
-		if DisplayServer.get_name() == "headless":
-			make_index0_scrape_assets_false()
-			make_index1_scrape_assets_false()
-			scrape_this = true
-		mod_app_settings_input1(user_arguments, scrape_this)
-		mod_app_settings_input2(user_arguments, scrape_this)
-
-func check_for_user1_input_changes(user_arguments: Dictionary, scrape_this: bool = false) -> void:
+## User-Number i.e. user1 or user2
+func check_user_input_changes(user_arguments: Dictionary, user_number: int) -> void:
 	## check if user1 is speced by args.
-	if user_arguments.has("path1") and \
-			user_arguments.has("type1") and \
-			user_arguments.has("build1") and \
-			user_arguments.type1 in ["pre", "rel", "usr"] and\
-			# build can be whatever.
-			FileUtils.check_os_file_exists(user_arguments.path1):
+	if user_arguments.has("path1") and FileUtils.check_os_file_exists(user_arguments.path1):
+		
+		
 		print("User1 inputs app_settings.json will be modified.")
-		if DisplayServer.get_name() == "headless":
-			make_index0_scrape_assets_false()
-		mod_app_settings_input1(user_arguments, scrape_this)
-
-func check_for_user2_input_changes(user_arguments: Dictionary, scrape_this: bool = false) -> void:
-	## check if user2 is speced by args.
-	if user_arguments.has("path2") and \
-			user_arguments.has("type2") and \
-			user_arguments.has("build2") and \
-			user_arguments.type1 in ["pre", "rel", "usr"] and\
+	
+			#user_arguments.has("type1") and \
+			#user_arguments.has("build1") and \
+			#user_arguments.type1 in ["pre", "rel", "usr"] and\
 			# build can be whatever.
-			FileUtils.check_os_file_exists(user_arguments.path2):
-		print("User2 input app_settings.json will be modified.")
-		if DisplayServer.get_name() == "headless":
-			make_index1_scrape_assets_false()
-		mod_app_settings_input2(user_arguments, scrape_this)
+		
+		mod_app_settings_input1(user_arguments)
 
-## make all 1st scrape bools false for easier headless assignment of trues.
-func make_index0_scrape_assets_false() -> void:
-	settings.assets.pre_release.previous_pre_release.scrape_assets[0].set(false)
-	settings.assets.pre_release.latest_pre_release.scrape_assets[0].set(false)
-	settings.assets.release.previous_release.scrape_assets[0].set(false)
-	settings.assets.release.latest_release.scrape_assets[0].set(false)
-	settings.use.user_defined_1.scrape_assets[0].set(false)
-	settings.use.user_defined_2.scrape_assets[0].set(false)
-
-## make all 2nd scrape bools false for easier headless assignment of trues.
-func make_index1_scrape_assets_false() -> void:
-	settings.assets.pre_release.previous_pre_release.scrape_assets[1].set(false)
-	settings.assets.pre_release.latest_pre_release.scrape_assets[1].set(false)
-	settings.assets.release.previous_release.scrape_assets[1].set(false)
-	settings.assets.release.latest_release.scrape_assets[1].set(false)
-	settings.use.user_defined_1.scrape_assets[1].set(false)
-	settings.use.user_defined_2.scrape_assets[1].set(false)
 
 ## Edit user1 input sections of app_settings.[br]
 ## user_arguments and bool=true if two assets.
-func mod_app_settings_input1(user_arguments: Dictionary, scrape_this: bool) -> void:
+func mod_app_settings_input1(user_arguments: Dictionary) -> void:
 	
 	
 	pass
@@ -263,7 +268,7 @@ func mod_app_settings_input1(user_arguments: Dictionary, scrape_this: bool) -> v
 
 ## Edit user2 input sections of app_settings.[br]
 ## user_arguments and bool=true if two assets.
-func mod_app_settings_input2(user_arguments: Dictionary, scrape_this: bool) -> void:
+func mod_app_settings_input2(user_arguments: Dictionary) -> void:
 	
 	
 	pass
@@ -283,6 +288,16 @@ func mod_app_diff_output(user_arguments: Dictionary) -> void:
 	
 	
 	pass
+
+
+## make all corresponding scrape bools false for easier assignment of trues.
+func make_index_scrape_assets_false(array_index: int) -> void:
+	settings.assets.pre_release.previous_pre_release.scrape_assets[array_index].set(false)
+	settings.assets.pre_release.latest_pre_release.scrape_assets[array_index].set(false)
+	settings.assets.release.previous_release.scrape_assets[array_index].set(false)
+	settings.assets.release.latest_release.scrape_assets[array_index].set(false)
+	settings.use.user_defined_1.scrape_assets[array_index].set(false)
+	settings.use.user_defined_2.scrape_assets[array_index].set(false)
 
 
 func first_auto_load_from_prerelease(hytale_roaming_folder: String) -> void:
