@@ -18,6 +18,14 @@ config/custom_user_dir_name="Hytale-Weapon-Scraper"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[display]
+
+window/energy_saving/keep_screen_on=false
+
+[editor]
+
+run/main_run_args="--headless "
+
 [file_customization]
 
 folder_colors={

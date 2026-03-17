@@ -51,7 +51,7 @@ func check_cmd_line_args() -> Dictionary:
 	var arguments: Dictionary = {}
 	for argument in OS.get_cmdline_user_args():
 		if argument.contains("="):
-			var key_value: Array[String] = argument.split("=")
+			var key_value: Array = argument.split("=")
 			arguments[key_value[0].trim_prefix("--")] = key_value[1]
 		else:
 			# Options without an argument will be present in the dictionary,

@@ -161,9 +161,11 @@ func load_app_settings_from_json(user_arguments: Dictionary) -> void:
 	
 	if DisplayServer.get_name() == "headless":
 		check_headless_input_changes(user_arguments)
-		#check_output_changes(user_arguments)
-		#check_diff_changes(user_arguments)
+		## Only the inputs. For changing outputs, edit json, since that should be one-time thing.
+		FileUtils.export_dict_to_json(settings, "user://app_settings.json")
 	verify_settings_formatting()
+	## Save the app settings to the user directory
+	
 	
 	## Determine build numbers currently installed on system.
 	build_numbers = FileUtils.determine_assets_builds()
@@ -195,33 +197,36 @@ func check_headless_input_changes(user_arguments: Dictionary) -> void:
 		mod_user_input_build_changes(user_arguments, "build2", "user_defined_2")
 
 
-## Select Assets to scrape. [br]
-## --scrape1=prev_pre , latest_pre , prev_rel , latest_rel , usr1 , usr2 , false [br]
-## --scrape2=prev_pre , latest_pre , prev_rel , latest_rel , usr1 , usr2 , false [br]
+
+#region Modify app_settings json here.
+
+## Select Assets to scrape. --scrape1 or --scrape2[br]
+## --scrape1=prev_pre , latest_pre , prev_rel , latest_rel , user1 , user2 , false [br]
+## Specifying false prevents doing diff. Can be used if only have 1 asset to add to pool.
 func mod_scrape_selection(user_arguments: Dictionary, slot_number: int) -> void:
 	var index: int = slot_number - 1
 	var scrape_x: String = "scrape1"
 	if slot_number == 2:
 		scrape_x = "scrape2"
-	if user_arguments not in ["prev_pre", "latest_pre", 
-			"prev_rel", "latest_rel", "usr1", "usr2", "false"]:
+	if user_arguments[scrape_x] not in ["prev_pre", "latest_pre", 
+			"prev_rel", "latest_rel", "user1", "user2", "false"]:
 		print("No valid string value to scrape was specified. \
 					No change was made for scrape", slot_number)
 		return
 	make_index_scrape_assets_false(index)
 	match user_arguments[scrape_x]:
 		"prev_pre":
-			settings.assets.pre_release.previous_pre_release.scrape_assets[index].set(true)
+			settings.assets.pre_release.previous_pre_release.scrape_assets.set(index, true)
 		"latest_pre":
-			settings.assets.pre_release.latest_pre_release.scrape_assets[index].set(true)
+			settings.assets.pre_release.latest_pre_release.scrape_assets.set(index, true)
 		"prev_rel":
-			settings.assets.release.previous_release.scrape_assets[index].set(true)
+			settings.assets.release.previous_release.scrape_assets.set(index, true)
 		"latest_rel":
-			settings.assets.release.latest_release.scrape_assets[index].set(true)
-		"usr1":
-			settings.assets.user.user_defined_1.scrape_assets[index].set(true)
-		"usr2":
-			settings.assets.user.user_defined_2.scrape_assets[index].set(true)
+			settings.assets.release.latest_release.scrape_assets.set(index, true)
+		"user1":
+			settings.assets.user.user_defined_1.scrape_assets.set(index, true)
+		"user2":
+			settings.assets.user.user_defined_2.scrape_assets.set(index, true)
 		"false":
 			pass
 		_:
@@ -237,8 +242,8 @@ func mod_user_input_path_changes(user_arguments: Dictionary, path_x: String, use
 			return
 		## Split path up
 		var path: String = user_arguments[path_x].get_base_dir() + "/"
-		settings.assets.user[user_x].assets_path.set(path)
-		settings.assets.user[user_x].assets_filename.set(user_arguments[path_x].get_file())
+		settings.assets.user[user_x].assets_path = path
+		settings.assets.user[user_x].assets_filename = user_arguments[path_x].get_file()
 
 
 func mod_user_input_type_changes(user_arguments: Dictionary, type_x: String, user_x: String) -> void:
@@ -248,48 +253,34 @@ func mod_user_input_type_changes(user_arguments: Dictionary, type_x: String, use
 	make_build_type_false(user_x)
 	match user_arguments[type_x]:
 		"pre":
-			settings.assets.user[user_x].build_type.pre_release.set(true)
+			settings.assets.user[user_x].build_type.set("pre_release", true)
 		"rel":
-			settings.assets.user[user_x].build_type.release.set(true)
+			settings.assets.user[user_x].build_type.set("release", true)
 		"usr":
-			settings.assets.user[user_x].build_type.user.set(true)
+			settings.assets.user[user_x].build_type.set("user", true)
 
 
 func mod_user_input_build_changes(user_arguments: Dictionary, build_x: String, user_x: String) -> void:
-	settings.assets.user[user_x].build_number.set(int(user_arguments[build_x]))
-
-
-## Edit user output of app_settings.[br]
-## user_arguments and bool=true if two assets.
-func mod_app_settings_output(user_arguments: Dictionary) -> void:
-	
-	
-	pass
-
-
-## Edit diff output of app_settings.[br]
-## user_arguments and bool=true if two assets.
-func mod_app_diff_output(user_arguments: Dictionary) -> void:
-	
-	
-	pass
+	settings.assets.user[user_x].build_number = int(user_arguments[build_x])
 
 
 ## make all corresponding scrape bools false for easier assignment of trues.
 func make_index_scrape_assets_false(array_index: int) -> void:
-	settings.assets.pre_release.previous_pre_release.scrape_assets[array_index].set(false)
-	settings.assets.pre_release.latest_pre_release.scrape_assets[array_index].set(false)
-	settings.assets.release.previous_release.scrape_assets[array_index].set(false)
-	settings.assets.release.latest_release.scrape_assets[array_index].set(false)
-	settings.use.user_defined_1.scrape_assets[array_index].set(false)
-	settings.use.user_defined_2.scrape_assets[array_index].set(false)
+	settings.assets.pre_release.previous_pre_release.scrape_assets.set(array_index, false)
+	settings.assets.pre_release.latest_pre_release.scrape_assets.set(array_index, false)
+	settings.assets.release.previous_release.scrape_assets.set(array_index, false)
+	settings.assets.release.latest_release.scrape_assets.set(array_index, false)
+	settings.assets.user.user_defined_1.scrape_assets.set(array_index, false)
+	settings.assets.user.user_defined_2.scrape_assets.set(array_index, false)
 
 
 ## make all corresponding build type bools false for easier assignment of trues.
 func make_build_type_false(user_x: String) -> void:
-	settings.assets.user[user_x].build_type.pre_release.set(false)
-	settings.assets.user[user_x].build_type.release.set(false)
-	settings.assets.user[user_x].build_type.user.set(false)
+	settings.assets.user[user_x].build_type.pre_release = false
+	settings.assets.user[user_x].build_type.release = false
+	settings.assets.user[user_x].build_type.user = false
+
+#endregion
 
 
 func first_auto_load_from_prerelease(hytale_roaming_folder: String) -> void:
