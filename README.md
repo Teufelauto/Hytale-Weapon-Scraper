@@ -5,6 +5,7 @@
 - App may take a minute to go through the two 3 GB Assets.zip being compared with an NVME drive. It may appear frozen, but it's probably still parsing. It will save the files, and close when it's done. If running --headless in a terminal, you can see the progress as it processes each weapon.
 - Produces a JSON and CSV of Weapons in a folder of your choice. Default assets path, and location of the saves can be changed to a location of your choosing by editing the app_settings.json file.
 
+- v0.5.4 adds headless arguments.
 - v0.5.1 adds all weapons.
 - Version 0.5.0 nests attack damage one fork higher so random damage modifier can be paraellel. Also allows other tyopes of damage beyond 'physical'.
 - Version 0.4.0 saves each output with the Release/Pre-Release build-number in the filename. Compares two Assets without needing them to be reprocessed if output exists already. (Files must be in the folders identified in app_settings.json)
@@ -49,7 +50,7 @@
     },  ... etc.
 ```
 # Instructions
-There is no GUI yet. It just opens a rectangle while it runs, then closes when the json and csv are written.
+There is no GUI yet. It just opens a rectangle while it runs, then closes when the json and csv are written. Optionally, Using `--headless` argument in console will run without opening a window.
 
 App creates folder:
 
@@ -58,6 +59,28 @@ WIN: `C:/Users/%UserName%/AppData/Roaming/Hytale-Weapon-Scraper`
 LINUX:  `~/.local/share/Hytale-Weapon-Scraper`
 
 The app creates an app_settings.json in this folder. If you want to change filenames or paths, or which version of Hytale to scrape, do it here.
+
+## Running headless
+`Scraper.exe --headless` will run program using settings saved in app_settings.json. Defualt is the 2 latest pre-releases. You can edit certain options in the app_settings.json from the command line. these include which assets to scrape, and redefining user-defined asset locations and identifiers. Save locations are not editable from the command line, because they aught only be set once. Editing the json in an editor, or the gui (when completed) is much more convenient for a one-time change.<br/>
+`Scraper.exe --headless -- --scrape1=false --scrape2=latest_rel` will turn off scraping for the first asset, so only the second asset (latest release) will be scraped. NOTE THE `--` ALL BY ITSELF.<br/>
+
+### Remember the extra `--` between headless and user args.<br/>
+Arguments edit the app_settings.json. <br/>
+
+The following select Assets to scrape: previous_pre_release, latest_pre_release, previous_release, latest_release, user_defined_1, user_defined_2, Do_Not_Scrape_This<br/>
+`--scrape1=prev_pre` , `latest_pre` , `prev_rel` , `latest_rel` , `user1` , `user2` or `false`<br/>
+`--scrape2=prev_pre` , `latest_pre` , `prev_rel` , `latest_rel` , `user1` , `user2` or `false` <br/>
+
+User-defined Assets Changes:<br/>
+`--path1=C:/MyArchiveFolder/Assets-pre19.zip`  A path to a user-defined archived asset. <br/>
+`--type1=pre` , `rel` or `usr`  "Pre-release", "Release", or "User-Defined" if you don't know. <br/>
+`--build1=19` The Build-Number, if you know it, or a self-assigned number for User-defined. <br/>
+
+`--path2=C:/MyArchiveFolder/Assets-pre25.zip`<br/>
+`--type2=pre` , `rel` or `usr` <br/>
+`--build2=25`  <br/>
+
+
 
 ## app_settings.json
 The app scrapes the latest Pre-Release on your system, by default. If you wish to scrape a different version, change true to false for pre-release, and false to true for either latest release, or user_defined. Change the user_defined Assets_Path to the desired path, such as a previous version you've saved somewhere on your machine.
