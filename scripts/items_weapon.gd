@@ -42,6 +42,7 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 				item_child_dict, app_headers)
 		var column_header: String = columnheader_and_value.get("column_header")
 		var value: Variant = columnheader_and_value.get("value")
+		var dmg_base: String = columnheader_and_value.get("dmg_base")
 		
 		## Assign value to Table
 		weapon_table[current_row][current_column] = value
@@ -50,6 +51,7 @@ func scrape_weapon_item_data(current_family: String, current_child: String,
 			"unique_child": unique_child, 
 			"key": column_header, 
 			"value": value,
+			"dmg_base": dmg_base,
 		}
 		## Assign value to current child dictionary, posibly in subdictionaries or arrays.
 		unique_child = assign_values_to_unique_dictionary(passed_data)
@@ -79,14 +81,16 @@ func process_column(current_family: String, current_column: int,
 	var retrieved_key: String = weapon_families_Xref_dict[current_family].get(column_header)
 
 	## Value to be put in the Table and unique dictionary
-	var value: Variant = get_key_value(item_child_dict, app_headers, retrieved_key, column_header)
-	
+	var value_array: Array = get_key_value(item_child_dict, app_headers, retrieved_key, column_header)
+	var value: Variant = value_array[0]
+	var dmg_base: String = value_array[1]
+		
 	## Makes value integer if req. (item level, max durability, maxStack)
 	## Attack functions already return as int)
 	if retrieved_key in KEYS_WITH_INT_VALUES:
 		value = int(value)
 	
-	return { "column_header": column_header, "value": value }
+	return { "column_header": column_header, "value": value, "dmg_base": dmg_base }
 
 
 ## Parse Template weapon server/item/itemsinfo json and turn it into a Dictionary 
@@ -118,20 +122,20 @@ func parse_template_weapon_item_info(weapon_family: String, parent: String) -> D
 ## Add elif with any new move type ============================================
 ## Get value for the table cell
 func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: String, 
-		column_header: String) -> Variant:
+		column_header: String) -> Array:
 	
 	## Skip the moves that don't exist for this weapon.
 	if key == "" :
-		return ""
+		return ["", ""]
 	
 	## Check if key is one of the app-made headers.
 	elif app_headers.has(key):
-		return app_headers.get(key)
+		return [app_headers.get(key), ""]
 		
 	## Check if key is in the first level inside JSON.
 	elif weapon_dict.common_table_headers.find_key(key) :
 		# need to retrieve from template if not in item_dict
-		return common_key_in_weapon_check(item_child_dict, key)
+		return [common_key_in_weapon_check(item_child_dict, key), ""]
 	
 	## Check if key is frontal attack damage: "primary, charged, signature"
 	elif column_header.begins_with("primary_attack_") \
@@ -139,13 +143,26 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 			or column_header.begins_with("signature_attack_") \
 			or column_header.begins_with("shoot_") \
 			or column_header.begins_with("guard_"):
-		var dmg_type: String = "Projectile" if column_header.begins_with("shoot_") else "Physical"
-		var dmg: int = extract_6_step_attack_dmg(item_child_dict ,key, dmg_type)
+		var dmg_base: String = "Projectile" if column_header.begins_with("shoot_") else "Physical"
+		var dmg: int = extract_6_step_attack_dmg(item_child_dict ,key, dmg_base)
 		#print("Attack damage, or broken branch at: ", dmg)
 		if dmg < 0: ## Negative value means no valid value found.
-			dmg = extract_6_step_attack_dmg(item_parent_dict, key, dmg_type) ## Inherit
-		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
-		return dmg
+			dmg = extract_6_step_attack_dmg(item_parent_dict, key, dmg_base) ## Inherit
+		
+		if dmg < 0: ## Need to check for alternative primary attack damage modes if still < 0.
+			dmg_base = "Fire" 
+			dmg = extract_6_step_attack_dmg(item_child_dict ,key, dmg_base)
+		#print("Attack damage, or broken branch at: ", dmg)
+			if dmg < 0: ## Negative value means no valid value found.
+				dmg = extract_6_step_attack_dmg(item_parent_dict, key, dmg_base) ## Inherit
+			if dmg > 0:
+				return [dmg, dmg_base]
+		
+		## Not in child or parent, so make it 0. May indicate missing base damage mode.
+		if dmg < 0: 
+			dmg = 0
+			dmg_base = ""
+		return [dmg, dmg_base]
 	
 	## Check if key is random modifier to attack damage in JSON.
 	elif column_header.begins_with("rand_pct_mod_"):
@@ -153,7 +170,7 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 		if mod < 0:
 			mod = extract_rand_physical_attack_dmg(item_parent_dict, key) ## Inherit
 		if mod < 0: mod = 0 ## Not in child or parent, so make it 0
-		return mod
+		return [mod, ""]
 	
 	## Check if key is rear attack damage in JSON.
 	elif column_header.begins_with("rear_"):
@@ -161,11 +178,11 @@ func get_key_value(item_child_dict:Dictionary, app_headers: Dictionary, key: Str
 		if dmg < 0:
 			dmg = extract_rear_physical_attack_dmg(item_parent_dict, key) ## Inherit
 		if dmg < 0: dmg = 0 ## Not in child or parent, so make it 0
-		return dmg
+		return [dmg, ""]
 		
 	else:
 		print("Error: Couldn't find the key value to scrape!")
-		return null
+		return [null, null]
 
 
 ## Deterimine if item weapon has key in top level. If not, tries to retrieve
@@ -190,7 +207,7 @@ func common_key_in_weapon_check(item_weapon_as_dict:Dictionary, key: String) -> 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
 ## Negative returns are for inheritance flow control.
 func extract_6_step_attack_dmg(
-		item_weapon_as_dict:Dictionary, move_name:String, dmg_type: String = "Physical") -> int:
+		item_weapon_as_dict:Dictionary, move_name:String, dmg_base: String = "Physical") -> int:
 	if not item_weapon_as_dict.has("InteractionVars"): 
 		return -1
 	if not item_weapon_as_dict.InteractionVars.has(move_name):
@@ -205,7 +222,7 @@ func extract_6_step_attack_dmg(
 		return -5
 	## We can finally see what kind of damage is done.
 	return item_weapon_as_dict.InteractionVars[move_name].Interactions[0].DamageCalculator \
-			.BaseDamage.get(dmg_type, -6)
+			.BaseDamage.get(dmg_base, -6)
 
 
 ## JSON needs special treatment for safety. All the ifs are for if a key doesn't exist in json.
@@ -258,53 +275,62 @@ func assign_values_to_unique_dictionary(passed_data: Dictionary) -> Dictionary:
 		return passed_data.get("unique_child") # So we skip it and go back to scrape function without assigning value.
 	
 	# Determine if we need to enter primary attack branch.
-	if passed_data.key.begins_with("primary_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data, "primary", "physical")
+	elif passed_data.key.begins_with("primary_attack"):
+		if passed_data.dmg_base == "Fire":
+			passed_data.unique_child = enter_attack_value(passed_data, "primary", "fire")
+		else:
+			passed_data.unique_child = enter_attack_value(passed_data, "primary", "physical")
 	
 	# Determine if we need to enter charged branch.
 	elif passed_data.key.begins_with("charged_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "physical")
-	
+		if passed_data.dmg_base == "Fire":
+			passed_data.unique_child = enter_attack_value(passed_data, "charged", "fire")
+		else:
+			passed_data.unique_child = enter_attack_value(passed_data, "charged", "physical")
+		
 	# Determine if we need to enter signature branch.
 	elif passed_data.key.begins_with("signature_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "physical")
-	
+		if passed_data.dmg_base == "Fire":
+			passed_data.unique_child = enter_attack_value(passed_data, "signature", "fire")
+		else:
+			passed_data.unique_child = enter_attack_value(passed_data, "signature", "physical")
+		
 	# Determine if we need to make or enter rear charged branch.
 	elif passed_data.key.begins_with("rear_primary_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "rear_physical")
+		passed_data.unique_child = enter_attack_value(passed_data, "primary", "rear_physical")
 	
 	# Determine if we need to make or enter rear charged branch.
 	elif passed_data.key.begins_with("rear_charged_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "rear_physical")
+		passed_data.unique_child = enter_attack_value(passed_data, "charged", "rear_physical")
 	
 	## Determine if we need to make or enter rear signature branch.
 	elif passed_data.key.begins_with("rear_signature_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "rear_physical")
+		passed_data.unique_child = enter_attack_value(passed_data, "signature", "rear_physical")
 	
 	elif passed_data.key.begins_with("rand_pct_mod_primary_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "rand_pct_modifier")
+		passed_data.unique_child = enter_attack_value(passed_data, "primary", "rand_pct_modifier")
 	
 	elif passed_data.key.begins_with("rand_pct_mod_charged_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "rand_pct_modifier")
+		passed_data.unique_child = enter_attack_value(passed_data, "charged", "rand_pct_modifier")
 	
 	elif passed_data.key.begins_with("rand_pct_mod_signature_attack"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "rand_pct_modifier")
+		passed_data.unique_child = enter_attack_value(passed_data, "signature", "rand_pct_modifier")
 		
 	# primary projectile attack branch. TRUE attack index starts at 0
 	elif passed_data.key.begins_with("shoot_primary"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "primary", "projectile", true)
+		passed_data.unique_child = enter_attack_value(passed_data, "primary", "projectile", true)
 		
 	# Determine if we need to enter charged projectile attack branch.
 	elif passed_data.key.begins_with("shoot_charged"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "charged", "projectile")
+		passed_data.unique_child = enter_attack_value(passed_data, "charged", "projectile")
 		
 	# Determine if we need to enter signature projectile attack branch.
 	elif passed_data.key.begins_with("shoot_signature"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "signature", "projectile")
+		passed_data.unique_child = enter_attack_value(passed_data, "signature", "projectile")
 	
 	# Determine if we need to enter guard_bash branch.
 	elif passed_data.key.begins_with("guard_bash"):
-		passed_data.unique_child = enter_attack_value(passed_data,  "guard_bash", "physical")
+		passed_data.unique_child = enter_attack_value(passed_data, "guard_bash", "physical")
 	
 	else:
 		passed_data.unique_child.set(passed_data.key, passed_data.value)
