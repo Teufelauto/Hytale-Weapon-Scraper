@@ -105,7 +105,7 @@
 			"rand_pct_mod_charged_attack_1_damage": "Club_Swing_Down_Charged_Damage",
 		},
 		"Crossbow": {
-			"shoot_primary_1_damage": "Standard_Projectile_Damage",
+			"shoot_primary_0_damage": "Standard_Projectile_Damage",
 			"shoot_charged_1_damage": "Combo_Projectile_Damage",
 			"shoot_signature_1_damage": "Signature_BigArrow_Damage",
 			"guard_bash_1_damage": "Guard_Bash_Damage",
