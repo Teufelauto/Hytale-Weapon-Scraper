@@ -49,7 +49,10 @@
 		"shoot_primary_2_damage",
 		"shoot_primary_3_damage",
 		"shoot_primary_4_damage",
+		"shoot_charged_1_damage",
+		"shoot_charged_2_damage",
 		"shoot_signature_1_damage",
+		"shoot_signature_2_damage",
 		"guard_bash_1_damage",
 	],
 	"common_table_headers": {
