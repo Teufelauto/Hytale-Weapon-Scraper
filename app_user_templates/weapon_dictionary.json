@@ -145,7 +145,11 @@
 			"primary_attack_1_damage": "Longsword_Swing_Left_Damage",
 			"primary_attack_2_damage": "Longsword_Swing_Right_Damage",
 			"primary_attack_3_damage": "Longsword_Swing_Up_Left_Damage",
+			"rand_pct_mod_primary_attack_1_damage": "Longsword_Swing_Left_Damage",
+			"rand_pct_mod_primary_attack_2_damage": "Longsword_Swing_Right_Damage",
+			"rand_pct_mod_primary_attack_3_damage": "Longsword_Swing_Up_Left_Damage",
 			"charged_attack_1_damage": "Longsword_Stab_Charged_Damage",
+			"rand_pct_mod_charged_attack_1_damage": "Longsword_Stab_Charged_Damage"
 		},
 		"Mace": {
 			"primary_attack_1_damage": "Swing_Left_Damage",
