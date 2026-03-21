@@ -17,6 +17,7 @@ config/use_custom_user_dir=true
 config/custom_user_dir_name="Hytale-Weapon-Scraper"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
+config/tags=PackedStringArray("tool")
 
 [display]
 
